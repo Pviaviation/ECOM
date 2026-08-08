@@ -88,12 +88,18 @@ a{color:var(--c-blue)}
   font-size:12px; color:#DCE3F5; background:rgba(255,255,255,.10);
   border:1px solid rgba(255,255,255,.18); padding:5px 12px; border-radius:999px; white-space:nowrap;
 }
-.roleswitch{display:flex; background:rgba(255,255,255,.12); border-radius:999px; padding:3px; border:1px solid rgba(255,255,255,.15)}
-.roleswitch button{
-  border:0; background:transparent; color:#CBD5EE; font-size:13px; font-weight:600;
-  padding:6px 15px; border-radius:999px; transition:all .18s ease;
+/* Thanh quay lại — nằm trên cùng bên trái của mỗi trang chi tiết */
+.backbar{display:flex; align-items:center; gap:14px; margin-top:16px; flex-wrap:wrap}
+.backbar[hidden]{display:none}
+.btn-back-big{
+  display:inline-flex; align-items:center; gap:8px; border:0; background:var(--red); color:#fff;
+  font-size:15.5px; font-weight:800; padding:11px 22px; border-radius:12px; cursor:pointer;
+  box-shadow:var(--shadow); transition:transform .15s ease, box-shadow .15s ease; white-space:nowrap;
 }
-.roleswitch button.active{background:#fff; color:var(--navy)}
+.btn-back-big:hover{transform:translateY(-2px); box-shadow:var(--shadow-lift)}
+.bb-hint{font-size:14px; color:var(--muted)}
+.bb-hint b{color:var(--ink)}
+@media(max-width:560px){ .bb-hint{font-size:12.5px} }
 .btn-present{
   border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.08); color:#fff;
   font-size:13px; padding:6px 13px; border-radius:9px; transition:background .15s;
@@ -112,26 +118,47 @@ a{color:var(--c-blue)}
 @media(max-width:520px){ .period-pick select{font-size:12px; padding:5px 26px 5px 10px} }
 body.present .period-pick{display:none}
 
-/* ============ MODE / SECTION VISIBILITY ============ */
+/* ============ VIEWS: trang chính + các trang chi tiết ============ */
 main{transition:opacity .15s ease}
 main.fading{opacity:0}
-body.ld-mode .only-cv{display:none!important}
-body.cv-mode .only-ld{display:none!important}
-body.cv-mode .cv-section{display:none}
-body.cv-mode .cv-section.tab-active{display:block}
-body.ld-mode .cv-section{display:block}
-body.ld-mode .cv-section[data-tab]:not([data-tab="tongquan"]){display:none}
+.view{display:none}
+.view.active{display:block; animation:viewIn .22s ease}
+@keyframes viewIn{from{opacity:0; transform:translateY(8px)}to{opacity:1; transform:none}}
 
-/* Tab bar (CV desktop) */
-.tabs{display:none; gap:4px; margin:16px 0 0; overflow-x:auto}
-body.cv-mode .tabs{display:flex}
-.tabs button{
-  border:1px solid var(--line); background:var(--card); color:var(--muted);
-  font-size:13.5px; font-weight:600; padding:8px 18px; border-radius:10px 10px 0 0;
-  border-bottom:none; transition:all .15s; white-space:nowrap;
+/* ============ CẢNH BÁO TRANG CHÍNH ============ */
+.alerts{display:flex; flex-direction:column; gap:8px}
+.alert-line{
+  display:flex; align-items:center; gap:12px; background:var(--card);
+  border:1px solid var(--line); border-left:4px solid var(--c-redneg); border-radius:10px;
+  padding:10px 14px; cursor:pointer; box-shadow:var(--shadow);
+  transition:transform .15s ease, box-shadow .15s ease;
 }
-.tabs button.active{background:var(--navy); border-color:var(--navy); color:#fff}
-@media(max-width:767px){ .tabs{display:none!important} }
+.alert-line:hover{transform:translateY(-2px); box-shadow:var(--shadow-lift)}
+.alert-line.amber{border-left-color:var(--c-amber)}
+.alert-line .tx{font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0}
+.alert-line .go{margin-left:auto; color:var(--muted); font-size:12px; white-space:nowrap; flex-shrink:0}
+@media(max-width:560px){ .alert-line .tx{white-space:normal} }
+
+/* ============ LƯỚI MODULE (trang chính) ============ */
+.modgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+@media(max-width:1000px){ .modgrid{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:600px){ .modgrid{grid-template-columns:1fr} }
+.modcard{
+  position:relative; background:var(--card); border:1px solid var(--line); border-radius:14px;
+  padding:15px 16px 12px; cursor:pointer; box-shadow:var(--shadow);
+  display:flex; flex-direction:column; gap:6px; text-align:left; color:var(--ink);
+  transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+.modcard:hover{transform:translateY(-3px); box-shadow:var(--shadow-lift); border-color:var(--c-blue)}
+.modcard .mtop{display:flex; align-items:center; gap:10px}
+.modcard .mico{width:34px; height:34px; border-radius:9px; background:var(--chip); display:flex; align-items:center; justify-content:center; flex-shrink:0}
+.modcard .mico svg{width:19px; height:19px; stroke:var(--c-blue); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+.modcard .mnum{margin-left:auto; font-size:11.5px; font-weight:800; color:var(--red); letter-spacing:1.5px}
+.modcard .mtitle{font-size:15px; font-weight:800; letter-spacing:.1px}
+.modcard .mdesc{font-size:12.5px; color:var(--muted); line-height:1.45; flex:1}
+.modcard .mfoot{display:flex; align-items:center; gap:8px; border-top:1px dashed var(--line); padding-top:9px; margin-top:4px}
+.modcard .mstat{font-size:12px; font-weight:700; color:var(--c-blue); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.modcard .mopen{margin-left:auto; font-size:12.5px; font-weight:700; color:var(--red); white-space:nowrap; flex-shrink:0}
 
 /* Bottom app bar (mobile) */
 .bottombar{
@@ -297,6 +324,40 @@ body.present .kpi .v{font-size:46px}
 .g-today{position:absolute; top:17px; bottom:2px; width:2px; background:var(--red); opacity:.8; z-index:2; pointer-events:none}
 .g-today b{position:absolute; top:-14px; left:-14px; font-size:9px; color:var(--red); letter-spacing:.6px; text-transform:uppercase; white-space:nowrap}
 @media(max-width:560px){ .gantt{--glbl:104px} .g-lbl{font-size:11.5px} }
+/* roadmap dùng lại khung gantt nhưng lưới 6 cột (T8→Q1/27) */
+.roadmap .g-track{background:repeating-linear-gradient(90deg, var(--grid) 0 1px, transparent 1px 16.6667%)}
+
+/* ============ SƠ ĐỒ KPI (hình tròn chia tỷ lệ) ============ */
+.kpimap{display:grid; grid-template-columns:310px 1fr; gap:22px; align-items:center}
+@media(max-width:900px){ .kpimap{grid-template-columns:1fr} }
+.kpimap-pie{margin:0 auto; width:min(100%,310px)}
+.kpimap-pie svg{display:block; width:100%; height:auto}
+.owner-cols{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+@media(max-width:700px){ .owner-cols{grid-template-columns:1fr} }
+.owner-col{background:var(--card2); border:1px solid var(--line); border-radius:12px; padding:11px 13px}
+.owner-col .oh{display:flex; align-items:center; gap:8px; font-weight:800; font-size:13.5px; padding-bottom:8px; border-bottom:1px solid var(--line); margin-bottom:9px}
+.owner-col .oh .sum{margin-left:auto; font-size:12px; color:var(--muted); font-weight:700}
+.orow{display:flex; align-items:center; gap:8px; font-size:12.5px; margin-bottom:7px}
+.orow .sw{width:10px; height:10px; border-radius:3px; flex-shrink:0}
+.orow .n{font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.orow .k{margin-left:auto; color:var(--muted); font-size:12px; white-space:nowrap}
+.kpimap-note{font-size:11.5px; color:var(--muted); margin-top:12px; line-height:1.55}
+
+/* ============ PIPELINE 2027 ============ */
+.pipe{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+@media(max-width:900px){ .pipe{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:560px){ .pipe{grid-template-columns:1fr} }
+.pipe-card{display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--line); border-left:4px solid var(--c-green); border-radius:10px; padding:11px 13px; box-shadow:var(--shadow)}
+.pipe-card.nostaff{border-left-color:var(--c-redneg)}
+.pipe-card .t{font-weight:700; font-size:13.5px}
+.pipe-badge{margin-left:auto; font-size:10.5px; font-weight:800; letter-spacing:.4px; padding:3px 10px; border-radius:999px; white-space:nowrap}
+
+/* ============ TIMELINE: trạng thái mốc ============ */
+.tl-item.done::before{border-color:var(--c-green); background:var(--c-green)}
+.tl-item.done .d{color:var(--c-green)}
+.tl-chip{display:inline-block; font-size:10px; font-weight:800; letter-spacing:.4px; padding:2px 8px; border-radius:999px; margin-top:5px}
+.tl-chip.ok{background:rgba(30,158,90,.13); color:var(--c-green)}
+.tl-chip.due{background:rgba(224,152,42,.16); color:var(--c-amber)}
 
 /* ============ DETAIL CARDS (CV mode + modal) ============ */
 .cards-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px}
@@ -399,7 +460,7 @@ svg text{font-family:inherit}
 
 /* ============ PRESENT MODE ============ */
 body.present{font-size:17px}
-body.present .roleswitch,body.present .tabs{display:none!important}
+body.present .backbar{display:none!important}
 body.present .sec-h h2{font-size:21px}
 body.present .kcard .t{font-size:15px}
 .btn-exit-present{
@@ -417,13 +478,74 @@ body.present .btn-exit-present{display:block}
 @media print{
   body{background:#fff; color:#000; padding-bottom:0}
   .app-header{position:static; box-shadow:none}
-  .roleswitch,.btn-present,.bottombar,.tabs,.btn-exit-present{display:none!important}
+  .backbar,.btn-present,.bottombar,.btn-exit-present{display:none!important}
   .card,.hotrow,.kcol{box-shadow:none; break-inside:avoid}
   .hero{box-shadow:none}
-  body.cv-mode .cv-section{display:block!important}
+  .view{display:block!important}
   .sec{margin-top:14px}
 }
 :where(button,a):focus-visible{outline:2px solid var(--c-blue); outline-offset:2px}
+
+/* ============ PHÓNG TO CỠ CHỮ TOÀN TRANG (yêu cầu 08/08 — sếp cần chữ to) ============ */
+body{font-size:16.5px}
+.brand .ttl b{font-size:16px}
+.brand .ttl span{font-size:13px}
+.chip-date{font-size:13px}
+.period-pick select{font-size:14.5px}
+.btn-present{font-size:14px}
+.sec-h h2{font-size:20px}
+.sec-h .sub{font-size:13.5px}
+.kpi .lb{font-size:13px}
+.kpi .v{font-size:38px}
+.kpi .v small{font-size:17px}
+.kpi .d{font-size:13.5px}
+.progress-blk .pl{font-size:13.5px}
+.progress-blk .pl b{font-size:14.5px}
+.hbar-t{font-size:13px}
+.hbar-row{font-size:14px; grid-template-columns:112px 1fr 66px}
+.alert-line .tx{font-size:15px}
+.alert-line .go{font-size:13px}
+.modcard .mtitle{font-size:17px}
+.modcard .mdesc{font-size:14px}
+.modcard .mstat{font-size:13.5px}
+.modcard .mopen{font-size:14px}
+.kcol-h{font-size:14.5px}
+.kcard .t{font-size:15px}
+.kcard .m{font-size:14px}
+.hotrow .bd .p{font-size:16px}
+.hotrow .bd .w{font-size:14.5px}
+.hotrow .bd .s{font-size:14px}
+.lvl{font-size:11.5px}
+.tl-item .d{font-size:13px}
+.tl-item .p{font-size:14px}
+.tl-item .m{font-size:13.5px}
+.tl-item{min-width:150px}
+.tl-chip{font-size:11px}
+.owner-col .oh{font-size:15px}
+.orow{font-size:14px}
+.orow .k{font-size:13px}
+.kpimap-note{font-size:13px}
+.pipe-card .t{font-size:15px}
+.pipe-badge{font-size:11.5px}
+.g-lbl{font-size:13.5px}
+.gantt{--glbl:170px}
+.g-tick{font-size:11.5px}
+.g-bar{font-size:11px}
+.dstat .l{font-size:11.5px}
+.dstat .v{font-size:20px}
+.dbody{font-size:14.5px}
+.dbody h4{font-size:12px}
+.dbody .note{font-size:14px}
+.dcard-h .t{font-size:16.5px}
+.dcard-h .pt{font-size:13px}
+.badge{font-size:11.5px}
+table{font-size:14.5px}
+.chart-card h3{font-size:15.5px}
+.chart-card .cs{font-size:13px}
+.bar-row{font-size:13.5px}
+.legend{font-size:13px}
+.bottombar button{font-size:11.5px}
+@media(max-width:560px){ .kpi .v{font-size:32px} .sec-h h2{font-size:18px} .gantt{--glbl:120px} }
 </style>
 
 <header class="app-header">
@@ -438,48 +560,78 @@ body.present .btn-exit-present{display:block}
     <div class="hd-spacer"></div>
     <label class="period-pick"><span>Kỳ báo cáo</span><select id="period-select" aria-label="Chọn kỳ báo cáo"></select></label>
     <span class="chip-date num" id="chip-date">Chốt số: 30/06/2026</span>
-    <div class="roleswitch" id="roleswitch" role="tablist" aria-label="Chế độ xem">
-      <button data-role="ld" class="active">Lãnh đạo</button>
-      <button data-role="cv">Chuyên viên</button>
-    </div>
     <button class="btn-present" id="btn-present">▣ Trình chiếu</button>
   </div>
 </header>
 
 <main class="wrap" id="main">
 
-  <!-- CV tab bar -->
-  <nav class="tabs only-cv" id="tabs">
-    <button data-tab="tongquan" class="active">Tổng quan</button>
-    <button data-tab="doanhthu">Doanh thu</button>
-    <button data-tab="duan">Dự án</button>
-    <button data-tab="phancong">Phân công</button>
-    <button data-tab="kehoach">Kế hoạch T7</button>
-  </nav>
+  <!-- Thanh quay lại — hiện ở TRÊN CÙNG BÊN TRÁI khi đang xem trang chi tiết -->
+  <div class="backbar" id="backbar" hidden>
+    <button class="btn-back-big" data-view="home">‹ Quay lại Trang chính</button>
+    <span class="bb-hint">Đang xem: <b id="bb-title"></b> — bấm nút đỏ bên trái (hoặc phím Esc) để về màn hình chính</span>
+  </div>
 
-  <!-- ===== TAB: TỔNG QUAN (Khối A–D, dùng chung 2 chế độ) ===== -->
-  <section class="cv-section tab-active" data-tab="tongquan">
+  <!-- ===== VIEW: TRANG CHÍNH — chỉ những điểm quan trọng nhất ===== -->
+  <section class="view active" data-view="home">
 
     <!-- Khối A: HERO -->
     <div class="hero" id="hero">
       <div class="hero-in" id="hero-in"></div>
     </div>
 
+    <!-- Khối A2: SƠ ĐỒ KPI — sếp muốn nhìn thấy ngay ở trang chính -->
+    <div class="sec" id="sec-kpi">
+      <div class="sec-h"><h2>Sơ đồ doanh thu dự kiến 2026 · theo dự án &amp; người phụ trách</h2><span class="sub">sơ đồ hóa bảng "Tóm tắt các dự án"</span><span class="rule"></span></div>
+      <div class="card reveal">
+        <div class="kpimap">
+          <div class="kpimap-pie"><svg id="kpi-pie" viewBox="0 0 300 300" role="img" aria-label="Hình tròn tỷ trọng doanh thu dự kiến theo dự án"></svg></div>
+          <div class="owner-cols" id="owner-cols"></div>
+        </div>
+        <div class="kpimap-note">Tỷ trọng tính theo doanh thu dự kiến / KPI PVI của từng dự án — MobiFone tính theo A08 (15 tỷ/năm); quy mô phía đối tác (Cổng BH 316 tỷ, MDP 1.900 tỷ/năm) xem chú thích khi rê chuột. Nguồn: bảng "Tóm tắt các dự án" P.TMĐT.</div>
+      </div>
+    </div>
+
+    <!-- Cảnh báo cần chú ý ngay -->
+    <div class="sec" id="sec-alerts">
+      <div class="sec-h"><h2>Cần lãnh đạo chú ý</h2><span class="sub">chạm để xem chi tiết</span><span class="rule"></span></div>
+      <div class="alerts" id="alerts"></div>
+    </div>
+
+    <!-- Lưới module: chạm để mở báo cáo chi tiết -->
+    <div class="sec" id="sec-mods">
+      <div class="sec-h"><h2>Báo cáo chi tiết</h2><span class="sub">chạm một thẻ để mở</span><span class="rule"></span></div>
+      <div class="modgrid" id="modgrid"></div>
+    </div>
+  </section>
+
+  <!-- ===== VIEW: 13 DỰ ÁN ===== -->
+  <section class="view" data-view="duan">
     <!-- Khối B: KANBAN -->
     <div class="sec">
       <div class="sec-h"><h2>Trạng thái 13 dự án</h2><span class="sub">chạm thẻ để xem chi tiết</span><span class="rule"></span></div>
       <div class="kanban" id="kanban"></div>
     </div>
+    <div class="sec">
+      <div class="sec-h"><h2>Chi tiết 13 dự án</h2><span class="rule"></span></div>
+      <div class="cards-grid" id="detail-cards"></div>
+    </div>
+  </section>
 
+  <!-- ===== VIEW: KHÓ KHĂN ===== -->
+  <section class="view" data-view="khokhan">
     <!-- Khối C: ĐIỂM NÓNG -->
     <div class="sec" id="sec-hot">
       <div class="sec-h"><h2>Dự án gặp khó khăn · cần lãnh đạo hỗ trợ</h2><span class="rule"></span></div>
       <div class="hot" id="hotspots"></div>
     </div>
+  </section>
 
+  <!-- ===== VIEW: LỊCH & KẾ HOẠCH ===== -->
+  <section class="view" data-view="lich">
     <!-- Khối D: TIMELINE -->
     <div class="sec" id="sec-tl">
-      <div class="sec-h"><h2>Lịch go-live &amp; mốc tháng 7</h2><span class="rule"></span></div>
+      <div class="sec-h"><h2>Lịch go-live &amp; mốc quan trọng</h2><span class="sub">cập nhật trạng thái mỗi kỳ báo cáo</span><span class="rule"></span></div>
       <div class="card reveal">
         <div class="tl-scroll"><div class="tl" id="timeline"></div></div>
       </div>
@@ -493,10 +645,34 @@ body.present .btn-exit-present{display:block}
         <div class="gantt-scroll"><div class="gantt" id="gantt"></div></div>
       </div>
     </div>
+
+    <!-- Kế hoạch tiếp theo của từng dự án -->
+    <div class="sec">
+      <div class="sec-h"><h2 id="plan-title">Kế hoạch tiếp theo</h2><span class="rule"></span></div>
+      <div class="cards-grid" id="plan-cards"></div>
+    </div>
   </section>
 
-  <!-- ===== TAB: DOANH THU (CV) ===== -->
-  <section class="cv-section only-cv" data-tab="doanhthu">
+  <!-- ===== VIEW: ROADMAP & PIPELINE 2027 ===== -->
+  <section class="view" data-view="roadmap">
+    <!-- Khối D2: PRODUCT ROADMAP T8/2026 → Q1/2027 -->
+    <div class="sec" id="sec-roadmap">
+      <div class="sec-h"><h2>Product roadmap · T8/2026 → Q1/2027</h2><span class="sub">dự kiến — Phòng cập nhật theo tiến độ thực tế mỗi kỳ</span><span class="rule"></span></div>
+      <div class="card reveal">
+        <div class="legend"><span><i style="background:var(--c-green)"></i>Đang tăng trưởng</span><span><i style="background:var(--c-amber)"></i>Sắp go-live</span><span><i style="background:var(--c-redneg)"></i>Cần chú ý</span><span><i style="background:var(--c-slate)"></i>Chờ đối tác / chuẩn bị</span></div>
+        <div class="gantt-scroll"><div class="gantt roadmap" id="roadmap"></div></div>
+      </div>
+    </div>
+
+    <!-- Khối D3: PIPELINE — dự án chuẩn bị / pilot cho 2027 -->
+    <div class="sec" id="sec-pipeline">
+      <div class="sec-h"><h2>Dự án chuẩn bị / pilot phục vụ tăng doanh thu 2027</h2><span class="sub" id="pipe-sub"></span><span class="rule"></span></div>
+      <div class="pipe" id="pipeline"></div>
+    </div>
+  </section>
+
+  <!-- ===== VIEW: DOANH THU ===== -->
+  <section class="view" data-view="doanhthu">
     <div class="sec">
       <div class="sec-h"><h2>Doanh thu &amp; bồi thường</h2><span class="rule"></span></div>
       <div class="chart-grid">
@@ -515,15 +691,15 @@ body.present .btn-exit-present{display:block}
         </div>
         <div class="card chart-card reveal">
           <h3>wBooking (HIO) — tỷ lệ bồi thường theo tháng</h3>
-          <div class="cs">Vùng đỏ = vượt 100% (lỗ nghiệp vụ) · 6T: 87,66%</div>
+          <div class="cs" id="wb-cs">Vùng đỏ = vượt 100% (lỗ nghiệp vụ)</div>
           <svg id="wb-line" width="100%" viewBox="0 0 560 260" preserveAspectRatio="xMidYMid meet"></svg>
         </div>
         <div class="card chart-card reveal">
-          <h3>TripCARE — 6T/2025 vs 6T/2026</h3>
+          <h3 id="tc-cmp-title">TripCARE — so sánh cùng kỳ</h3>
           <div class="cs">Dự án lõi · KPI 60 tỷ (PVI)</div>
           <div class="legend">
-            <span><i style="background:var(--c-slate)"></i>6T/2025</span>
-            <span><i style="background:var(--c-blue)"></i>6T/2026</span>
+            <span id="tc-cmp-l25"><i style="background:var(--c-slate)"></i>2025</span>
+            <span id="tc-cmp-l26"><i style="background:var(--c-blue)"></i>2026</span>
           </div>
           <div id="tc-compare"></div>
         </div>
@@ -531,7 +707,7 @@ body.present .btn-exit-present{display:block}
       <div class="sec">
         <div class="sec-h"><h2>TripCARE — doanh thu theo tháng</h2><span class="sub">nguồn: Google Sheet doanh thu</span><span class="rule"></span></div>
         <div class="card chart-card reveal">
-          <div class="legend"><span><i style="background:var(--c-blue)"></i>2026 (T1–T6)</span><span><i style="background:var(--c-slate)"></i>2025 (cùng kỳ)</span></div>
+          <div class="legend"><span><i style="background:var(--c-blue)"></i>2026 (T1–T7)</span><span><i style="background:var(--c-slate)"></i>2025 (cùng kỳ)</span></div>
           <svg id="tc-monthly" width="100%" viewBox="0 0 560 250" preserveAspectRatio="xMidYMid meet"></svg>
         </div>
       </div>
@@ -542,28 +718,12 @@ body.present .btn-exit-present{display:block}
     </div>
   </section>
 
-  <!-- ===== TAB: DỰ ÁN (CV) ===== -->
-  <section class="cv-section only-cv" data-tab="duan">
-    <div class="sec">
-      <div class="sec-h"><h2>Chi tiết 13 dự án</h2><span class="rule"></span></div>
-      <div class="cards-grid" id="detail-cards"></div>
-    </div>
-  </section>
-
-  <!-- ===== TAB: PHÂN CÔNG (CV) ===== -->
-  <section class="cv-section only-cv" data-tab="phancong">
+  <!-- ===== VIEW: PHÂN CÔNG ===== -->
+  <section class="view" data-view="phancong">
     <div class="sec">
       <div class="sec-h"><h2>Bảng phân công 22 đối tác</h2><span class="sub">sắp theo mức ưu tiên</span><span class="rule"></span></div>
       <div class="filters" id="pc-filters"></div>
       <div class="tbl-wrap reveal"><table id="pc-table"></table></div>
-    </div>
-  </section>
-
-  <!-- ===== TAB: KẾ HOẠCH T7 (CV) ===== -->
-  <section class="cv-section only-cv" data-tab="kehoach">
-    <div class="sec">
-      <div class="sec-h"><h2>Kế hoạch tháng 7/2026</h2><span class="rule"></span></div>
-      <div class="cards-grid" id="plan-cards"></div>
     </div>
   </section>
 
@@ -608,18 +768,102 @@ const PROJECTS = {
   khac:{ ten:"Các dự án khác", doiTac:"A05, 7-Eleven, OPES, Insurtech, Igloo…", uuTien:4, phuTrach:"Tùng", hoTro:"Duy", kpiNam:"—" }
 };
 
-/* TripCARE — doanh thu theo tháng (tỷ VNĐ) trích Google Sheet, cho biểu đồ xu hướng */
+/* TripCARE — doanh thu theo tháng (tỷ VNĐ) trích Google Sheet, cho biểu đồ xu hướng.
+   So cùng kỳ tính động theo số tháng của kỳ báo cáo (slice mảng). */
 const TRIPCARE_GS = {
-  nguon:"Google Sheet doanh thu TripCARE · cập nhật 08/07/2026",
-  thang2026:[4.918,3.453,5.042,3.464,3.698,4.784],           // T1–T6/2026
+  nguon:"Google Sheet doanh thu TripCARE · cập nhật 08/08/2026",
+  thang2026:[4.918,3.453,5.042,3.464,3.698,4.784,5.350],     // T1–T7/2026
   thang2025:[3.495,3.875,4.586,4.259,5.161,5.682,5.919,4.951,4.035,4.450,4.372,4.902], // T1–T12/2025
-  t7_2026_partial:1.227,   // đến 02/07
-  luyKe6T2026:25.358, don6T2026:116372, tbNgayT6:159.46,
-  luyKe6T2025:27.058, don6T2025:113042, caNam2025:55.686
+  don2026:[24461,17306,23312,16028,16050,19215,22077],       // số đơn T1–T7/2026
+  don2025:[15967,16682,19067,17726,21150,22450,23537,20575,17797,19745,20718,23472],
+  t8_2026_partial:0.968,   // đến 05/08: 967,7 tr / 4.189 đơn
+  caNam2025:55.686
 };
+function tcSum(arr,mo){ return arr.slice(0,mo).reduce((s,v)=>s+v,0); }
 
 /* ---------- CÁC KỲ BÁO CÁO (mới nhất lên đầu) ---------- */
 const PERIODS = [
+
+/* ===== KỲ THÁNG 07/2026 =====
+   Nguồn: TripCARE Google Sheet (08/08) · wBooking Google Sheet (08/08) ·
+   file "Theo dõi công nợ - BambooCARE.xlsx" · pvi-honda-report.netlify.app (03/08).
+   SPA, Flight Delay, Asahi, MobiFone, Zalopay, NNX, Viettel Store, Sun Group, Khác:
+   CHƯA có báo cáo T7 — tạm giữ số 6T, đã ghi chú từng dự án. */
+{
+  id:"2026-07", type:"month", label:"Tháng 07/2026", range:"01–31/07/2026", chot:"31/07/2026", mucTieuNam:100,
+  luuY:"Asahi, MobiFone, Zalopay, NNX, SPA, Viettel Store, Sun Group: tạm tính theo số 6T (chưa có báo cáo T7)",
+  data:{
+    tripcare:{ trangThai:"tang-truong", dt:5.350, luyKe:30.709, phanTramKPI:51.18, soDon:138449, tbNgay:172.52,
+      cungKy2025:32.977, soDon2025:136579,
+      ghiChu:"T7 đạt 5,35 tỷ (22.077 đơn), TB 172,52 tr/ngày — tháng cao nhất năm; lũy kế 7T 30,71 tỷ / 138.449 đơn (nguồn: Google Sheet)",
+      ketQua:["T7/2026: 5,35 tỷ (22.077 đơn) — vượt T3 thành tháng cao nhất năm","T8 đến 05/08: 967,7 tr (4.189 đơn)","Bồi thường 2026: 6 vụ / 44,75 tr (tỷ lệ 0,14%)"],
+      keHoach:["Go-live Phase 2 UI/UX TripCARE (Insider)","Chốt cơ cấu tái & kênh đại lý với Chubb","Đẩy truyền thông: voucher phòng chờ, bài Heritage"] },
+    spa:{ trangThai:"sap-golive", dt:0, luyKe:0, phanTramKPI:0,
+      ghiChu:"Chưa phát sinh doanh thu — mốc production Chubb CRS 06/08 đã đến hạn, chờ Phòng cập nhật kết quả (chưa có báo cáo T7)",
+      moc:["14/7: xong back-end","13–24/7: UAT với 1A","6/8: production Chubb CRS"],
+      ketQua:["(Chưa có báo cáo T7)"],
+      keHoach:["Cập nhật kết quả production 06/08","Thống nhất biểu phí multi-city","Hoàn thiện Quy tắc BH SPA GoSafe"] },
+    bamboocare:{ trangThai:"canh-bao", dt:0.0687, luyKe:0.9956, phanTramKPI:28.4, cungKy2025:2.016,
+      ghiChu:"T7 chỉ đạt 68,7 tr — thấp nhất năm; lũy kế 7T giảm 50,6% YoY; công nợ quá hạn tăng lên 368.203.154đ (T3–T6/2026)",
+      congNo:{ doiTac:"BAV", quaHan:368203154, kyThuoc:"T3–T6/2026 (quá hạn 12–103 ngày)", trangThai:"T1–T2/2026 đã thanh toán cấn trừ phí FLC; T7 (45,6 tr) hạn 25/08 — tiếp tục đôn đốc" },
+      ketQua:["Cập nhật file công nợ 08/08: quá hạn 368,2 tr (T3: 110,3 tr · T4: 78,1 tr · T5: 89,5 tr · T6: 90,2 tr)"],
+      keHoach:["Thu hồi công nợ quá hạn T3–T6/2026","Theo dõi hạn thanh toán kỳ T7 (25/08)"] },
+    wbooking:{ trangThai:"canh-bao", dt:0.2127, luyKe:1.801, boiThuong:1.567, tyLeBT:87.01, cungKy2025:2.706,
+      ghiChu:"Lũy kế 7T: DT 1,80 tỷ · BT 1,57 tỷ (87,01%); T7 cải thiện còn 57,6% nhưng T2, T4–T6 đều vượt 100% (nguồn: Google Sheet wBooking)",
+      bangThang:[[1,392389785,187500000,3,47.78],[2,112288662,125000000,3,111.32],[3,356553615,112500000,2,31.55],[4,304001027,432000000,2,142.11],[5,242407448,300000000,5,123.76],[6,180525803,287500000,4,159.26],[7,212711759,122500000,3,57.59]],
+      ketQua:["T7: DT 212,7 tr · 3 vụ bồi thường (122,5 tr) — tỷ lệ 57,6%, tốt nhất từ T3"],
+      keHoach:["Đào tạo 2 sân golf Vinpearl còn lại","Rà soát gói B20 do tỷ lệ bồi thường cao"] },
+    flightdelay:{ trangThai:"sap-golive", dt:0, luyKe:0,
+      ghiChu:"Kênh: Vntrip (sắp go-live), Hồng Ngọc Hà, Gotadi, đại lý VNA (chưa có báo cáo T7)",
+      ketQua:["(Chưa có báo cáo T7)"], keHoach:["Hoàn thiện test claim portal Igloo & triển khai OTA"] },
+    "asahi-npuv":{ trangThai:"canh-bao", dt:1.72, luyKe:11.05, tyLeBT:27.8,
+      ghiChu:"Số 6T — chưa có báo cáo T7 · Lũy kế 6T 11,05 tỷ, giảm 26,26% YoY",
+      ketQua:["(Chưa có báo cáo T7)"], keHoach:["Thống nhất lấy lead bệnh viện","Triển khai NPUV2","Landing page thu lead (ALCV)"] },
+    "asahi-apuv":{ trangThai:"canh-bao", dt:0.02634, luyKe:0.15449,
+      ghiChu:"Số 6T — chưa có báo cáo T7 · 6T đạt 154,49 tr (−28,15% YoY); chờ Asahi phản hồi phương án điều chỉnh APUV",
+      ketQua:["(Chưa có báo cáo T7)"], keHoach:["Asahi phản hồi phương án điều chỉnh APUV","Phối hợp Ban CN & Actuary thủ tục điều chỉnh SP"] },
+    mobifone:{ trangThai:"cho-doi-tac", luyKe:0.021, phanTramKPI:1.05,
+      ghiChu:"Số 6T — chưa có báo cáo T7 · Lũy kế mới đạt 21 tr = 1,05% KPI; MOU dự kiến ký trong T7, chờ cập nhật",
+      ketQua:["(Chưa có báo cáo T7)"], keHoach:["Ký MOU với MBF","Go-live BH Du lịch quốc tế trên Cổng BH"] },
+    zalopay:{ trangThai:"cho-doi-tac", dt:0.0603, luyKe:0.1382, canQuyetDinh:true,
+      ghiChu:"Số 6T — chưa có báo cáo T7 · Chờ chốt phương án triển khai mới sau khi tờ trình tăng ĐMCP bị từ chối",
+      ketQua:["(Chưa có báo cáo T7)"], keHoach:["Tính hiệu quả phương án mới","TRÌNH LÃNH ĐẠO phương án triển khai mới"] },
+    nnx:{ trangThai:"tang-truong", dt:1.94, luyKe:13.32,
+      ghiChu:"Số 6T — chưa có báo cáo T7 · 6T tăng 7,07 lần YoY — ngôi sao tăng trưởng",
+      ketQua:["(Chưa có báo cáo T7)"], keHoach:["Duy trì đà tăng, theo dõi chất lượng khai thác"] },
+    "plus-ew":{ trangThai:"tang-truong", dt:0.4525, luyKe:2.087, tbNgay:14.6,
+      ghiChu:"T7 phí 452,5 tr (+35,6% MoM) · 727 app (+25,6%) · 20 HEAD hoạt động (+25%) · Plus 99,5% / EW 0,5% (nguồn: pvi-honda-report.netlify.app, cập nhật 03/08)",
+      ketQua:["T7: phí BH 452,5 tr · incentive 90,5 tr","727 app (Plus 97,2% / EW 2,8%) · 20 HEAD hoạt động"],
+      keHoach:["Đẩy Plus toàn quốc nửa cuối 2026","Nâng cấp website hondaplus.vn","Trọng tâm HEAD ở tỉnh"] },
+    viettelstore:{ trangThai:"sap-golive", dt:0, luyKe:0,
+      ghiChu:"Mốc go-live ADLD & EW trong T7 đã đến hạn — chờ Phòng cập nhật kết quả (chưa có báo cáo T7)",
+      ketQua:["(Chưa có báo cáo T7)"], keHoach:["Cập nhật kết quả go-live ADLD & EW","Kết nối & go-live '1 đổi 1'","Hoàn thiện HĐ nhà tái AIG"] },
+    sungroup:{ trangThai:"sap-golive", dt:0, luyKe:0,
+      ghiChu:"Mốc go-live + MOU OPES trước 31/07 đã đến hạn — chờ Phòng cập nhật kết quả (chưa có báo cáo T7)",
+      ketQua:["(Chưa có báo cáo T7)"], keHoach:["Cập nhật kết quả MOU & go-live","Kết nối với SG"] },
+    khac:{ trangThai:"cho-doi-tac", dt:0, luyKe:0, ghiChu:"6 hướng đang đàm phán / chờ đối tác (chưa có báo cáo T7)",
+      danhSach:[{ten:"A05 — BH Cyber Shield SME",trangThai:"Đợi thông tin từ A05",uuTien:5},{ten:"7-Eleven — TNDS/Tai nạn",trangThai:"Hoàn thiện chứng chỉ đại lý",uuTien:3},{ten:"OPES–O-Car–VPBank — Vật chất xe",trangThai:"Đợi VPBank chấm điểm nhà BH",uuTien:5},{ten:"Insurtech–3GO",trangThai:"Hai bên đang phối hợp",uuTien:5},{ten:"Igloo — BH ung thư CPM",trangThai:"Đang định phí với nhà tái",uuTien:1},{ten:"GTEL / VNPT",trangThai:"Đang trao đổi",uuTien:2}],
+      keHoach:["Bám sát tiến độ phản hồi từng đối tác"] }
+  },
+  khoKhan:[
+    { muc:"gap", duAn:"BambooCARE", kho:"Công nợ BAV quá hạn tăng lên 368.203.154đ (T3–T6/2026, quá hạn 12–103 ngày); doanh thu T7 chỉ 68,7 tr — thấp nhất năm, 7T giảm 50,6% YoY", hoTro:"Chỉ đạo phương án thu hồi công nợ; tác động BAV ở cấp lãnh đạo" },
+    { muc:"gap", duAn:"Zalopay", kho:"Tờ trình tăng ĐMCP bị Ban KTKH từ chối; ~64% user từ chối tái tục sau khi hết KM miễn phí (chưa có cập nhật T7)", hoTro:"Chốt hướng triển khai mới: PVI chịu chi phí KM tháng đầu / phương án ZLP (nâng giá 40%, giảm 50% cho user, commission 60%)" },
+    { muc:"gap", duAn:"Asahi (NPUV + APUV)", kho:"Cả hai sản phẩm giảm >26% so cùng kỳ (số 6T); NPUV2/APUV2 vẫn chờ Asahi phản hồi", hoTro:"Duyệt phương án lấy lead tại bệnh viện + chủ trương điều chỉnh sản phẩm APUV" },
+    { muc:"theo-doi", duAn:"wBooking", kho:"Tỷ lệ bồi thường lũy kế 7T 87,01%; T2, T4–T6 vượt 100% — T7 cải thiện còn 57,6% nhưng chưa đủ kéo lại", hoTro:"Cho ý kiến rà soát gói B20 và cơ cấu tái" },
+    { muc:"theo-doi", duAn:"SPA GoSafe", kho:"Mốc production Chubb CRS 06/08 đã đến hạn — chưa có xác nhận kết quả", hoTro:"Đôn đốc cập nhật trạng thái go-live; tác động Chubb nếu tiếp tục trễ" },
+    { muc:"theo-doi", duAn:"MobiFone", kho:"Mới đạt 1,05% KPI năm (số 6T); MOU dự kiến ký trong T7 chưa có xác nhận", hoTro:"Thu xếp ký MOU cấp lãnh đạo hai bên để mở khóa Cổng BH" }
+  ],
+  /* st: "done" = đã hoàn thành · "qua" = đã đến hạn, chờ Phòng cập nhật kết quả */
+  mocThoiGian:[
+    { ngay:"01/07", duAn:"Viettel Store", moc:"Đổi nhà tái ADLD Allianz → AIG (hiệu lực)", hot:false, st:"done" },
+    { ngay:"Trong T7", duAn:"Viettel Store", moc:"Go-live ADLD & EW + kết nối '1 đổi 1'", hot:false, st:"qua" },
+    { ngay:"Trước 31/07", duAn:"Sun Group", moc:"Go-live SP nhúng + ký MOU với OPES", hot:true, st:"qua" },
+    { ngay:"Trong T7", duAn:"MobiFone", moc:"Ký MOU + go-live BH Du lịch quốc tế (Cổng BH)", hot:false, st:"qua" },
+    { ngay:"06/08", duAn:"SPA", moc:"Production release trên Chubb CRS", hot:true, st:"qua" },
+    { ngay:"25/08", duAn:"BambooCARE", moc:"Hạn thanh toán công nợ kỳ T7 (45,6 tr)", hot:false },
+    { ngay:"Trong T8", duAn:"TripCARE", moc:"Go-live Phase 2 UI/UX (Insider)", hot:false }
+  ]
+},
 
 /* ===== KỲ THÁNG 06/2026 ===== */
 {
@@ -682,14 +926,15 @@ const PERIODS = [
     { muc:"theo-doi", duAn:"SPA GoSafe", kho:"Chubb chậm thống nhất HĐ 3 bên & biểu phí — rủi ro lùi mốc go-live 06/08", hoTro:"Tác động Chubb ở cấp cao để chốt hợp đồng trong tuần đầu T7" },
     { muc:"theo-doi", duAn:"MobiFone", kho:"Mới đạt 1,05% KPI năm; MOU hợp tác chiến lược chưa ký", hoTro:"Thu xếp ký MOU cấp lãnh đạo hai bên để mở khóa Cổng BH" }
   ],
+  /* st: "done" = đã hoàn thành · "qua" = đã đến hạn, chờ Phòng cập nhật kết quả · bỏ trống = chưa đến hạn */
   mocThoiGian:[
-    { ngay:"01/07", duAn:"Viettel Store", moc:"Đổi nhà tái ADLD Allianz → AIG (hiệu lực)", hot:false },
-    { ngay:"14/07", duAn:"SPA", moc:"Hoàn thiện back-end sản phẩm", hot:true },
-    { ngay:"13–24/07", duAn:"SPA", moc:"Test UAT với 1A", hot:false },
-    { ngay:"Trước 31/07", duAn:"Sun Group", moc:"Go-live SP nhúng + ký MOU với OPES", hot:true },
-    { ngay:"Trong T7", duAn:"MobiFone", moc:"Ký MOU + go-live BH Du lịch quốc tế (Cổng BH)", hot:false },
-    { ngay:"Trong T7", duAn:"Viettel Store", moc:"Go-live ADLD & EW + kết nối '1 đổi 1'", hot:false },
-    { ngay:"06/08", duAn:"SPA", moc:"Production release trên Chubb CRS", hot:false }
+    { ngay:"01/07", duAn:"Viettel Store", moc:"Đổi nhà tái ADLD Allianz → AIG (hiệu lực)", hot:false, st:"done" },
+    { ngay:"14/07", duAn:"SPA", moc:"Hoàn thiện back-end sản phẩm", hot:true, st:"qua" },
+    { ngay:"13–24/07", duAn:"SPA", moc:"Test UAT với 1A", hot:false, st:"qua" },
+    { ngay:"Trước 31/07", duAn:"Sun Group", moc:"Go-live SP nhúng + ký MOU với OPES", hot:true, st:"qua" },
+    { ngay:"Trong T7", duAn:"MobiFone", moc:"Ký MOU + go-live BH Du lịch quốc tế (Cổng BH)", hot:false, st:"qua" },
+    { ngay:"Trong T7", duAn:"Viettel Store", moc:"Go-live ADLD & EW + kết nối '1 đổi 1'", hot:false, st:"qua" },
+    { ngay:"06/08", duAn:"SPA", moc:"Production release trên Chubb CRS", hot:false, st:"qua" }
   ]
 }
 
@@ -748,10 +993,123 @@ function renderGantt(){
   $('#gantt').innerHTML=out;
 }
 
+/* ---------- SƠ ĐỒ KPI: sơ đồ hóa bảng "Tóm tắt các dự án" (hình tròn chia tỷ lệ) ---------- */
+const KPI_MAP = [
+  { nguoi:"Hằng", mau:["#2E6BE6","#5C8BEC","#84A8F1","#ABC3F6","#CEDCFA"], duAn:[
+    { ten:"TripCARE",     kpi:60,   ct:"KPI PVI: 60 tỷ · KPI VNA: 80 tỷ" },
+    { ten:"SPA GoSafe",   kpi:9.6,  ct:"9,6 tỷ/cả năm (CR 5%) · 805 tr/tháng" },
+    { ten:"wBooking",     kpi:4,    ct:"KPI PVI: 4 tỷ · KPI wBooking: 16,15 tỷ (≈5,5 tỷ phí về PVI)" },
+    { ten:"BambooCARE",   kpi:3.5,  ct:"KPI PVI: 3,5 tỷ" },
+    { ten:"Flight Delay", kpi:2,    ct:"OTA: 600 tr – 2 tỷ/năm (attach rate 1–2%)" }
+  ]},
+  { nguoi:"Thư", mau:["#1E9E5A","#3FBF7F","#6FD3A0","#A6E4C4"], duAn:[
+    { ten:"Asahi",    kpi:31.86, ct:"NPUV: 31 tỷ · APUV: 862 triệu" },
+    { ten:"MobiFone", kpi:15,    ct:"A08: 15 tỷ/năm · quy mô đối tác: Cổng BH 316 tỷ/năm, MDP 1.900 tỷ/năm" },
+    { ten:"NNX",      kpi:10,    ct:"NNX: 10 tỷ (nhóm Khác: SPA, NNX, Igloo)" },
+    { ten:"Zalopay",  kpi:0.6,   ct:"600 triệu/năm" }
+  ]},
+  { nguoi:"Tùng", mau:["#E0982A","#EBB25C","#F3CC90"], duAn:[
+    { ten:"CRTC",          kpi:12.5, ct:"Kỳ vọng 12,5 tỷ/năm" },
+    { ten:"Plus & EW",     kpi:11,   ct:"KPI Plus: 10 tỷ/năm · KPI EW: 1 tỷ/năm" },
+    { ten:"Viettel Store", kpi:5,    ct:"KPI ADLD: 4 tỷ/năm · KPI EW: 1 tỷ/năm" }
+  ]}
+];
+function buildKpiPie(){
+  const svg=$('#kpi-pie'); if(!svg || svg.dataset.done) return; svg.dataset.done=1;
+  const flat=[]; KPI_MAP.forEach(g=>g.duAn.forEach((d,i)=>flat.push({ten:d.ten,kpi:d.kpi,ct:d.ct,nguoi:g.nguoi,mau:g.mau[i%g.mau.length]})));
+  const tong=flat.reduce((s,d)=>s+d.kpi,0);
+  const cx=150,cy=150,R=112,IR=64;
+  let a=-Math.PI/2, out='';
+  flat.forEach(d=>{
+    const frac=d.kpi/tong, a2=a+frac*2*Math.PI, large=(a2-a)>Math.PI?1:0;
+    const x1=cx+R*Math.cos(a), y1=cy+R*Math.sin(a), x2=cx+R*Math.cos(a2), y2=cy+R*Math.sin(a2);
+    const x3=cx+IR*Math.cos(a2), y3=cy+IR*Math.sin(a2), x4=cx+IR*Math.cos(a), y4=cy+IR*Math.sin(a);
+    out+='<path d="M'+x1.toFixed(1)+' '+y1.toFixed(1)+' A'+R+' '+R+' 0 '+large+' 1 '+x2.toFixed(1)+' '+y2.toFixed(1)+
+      ' L'+x3.toFixed(1)+' '+y3.toFixed(1)+' A'+IR+' '+IR+' 0 '+large+' 0 '+x4.toFixed(1)+' '+y4.toFixed(1)+' Z" fill="'+d.mau+
+      '" stroke="var(--card)" stroke-width="1.5" data-tip="<b>'+esc(d.ten)+'</b> · '+esc(d.nguoi)+'<br>'+esc(d.ct)+'<br>Tỷ trọng: '+nfmt(frac*100,1)+'%"/>';
+    const am=(a+a2)/2, lx=(cx+(R+IR)/2*Math.cos(am)).toFixed(1), ly=(cy+(R+IR)/2*Math.sin(am)).toFixed(1);
+    if(frac>0.09)
+      out+='<text x="'+lx+'" y="'+ly+'" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff" pointer-events="none"><tspan x="'+lx+'" dy="-2">'+esc(d.ten)+'</tspan><tspan x="'+lx+'" dy="12" class="num">'+nfmt(frac*100,1)+'%</tspan></text>';
+    else if(frac>0.05)
+      out+='<text x="'+lx+'" y="'+ly+'" text-anchor="middle" dominant-baseline="middle" font-size="10" font-weight="700" fill="#fff" pointer-events="none" class="num">'+nfmt(frac*100,1)+'%</text>';
+    a=a2;
+  });
+  out+='<text x="150" y="145" text-anchor="middle" font-size="27" font-weight="800" fill="var(--ink)" class="num">'+nfmt(Math.round(tong))+' tỷ</text>'+
+       '<text x="150" y="164" text-anchor="middle" font-size="10.5" fill="var(--muted)">doanh thu dự kiến 2026</text>';
+  svg.innerHTML=out;
+}
+function renderOwnerCols(){
+  const el=$('#owner-cols'); if(!el || el.dataset.done) return; el.dataset.done=1;
+  el.innerHTML = KPI_MAP.map(g=>{
+    const sum=g.duAn.reduce((s,d)=>s+d.kpi,0);
+    return '<div class="owner-col"><div class="oh"><span class="dot" style="background:'+g.mau[0]+'"></span>'+esc(g.nguoi)+
+      '<span class="sum num">'+nfmt(sum,1)+' tỷ</span></div>'+
+      g.duAn.map((d,i)=>'<div class="orow" data-tip="<b>'+esc(d.ten)+'</b><br>'+esc(d.ct)+'"><span class="sw" style="background:'+g.mau[i%g.mau.length]+'"></span><span class="n">'+esc(d.ten)+'</span><span class="k num">'+fmtTien(d.kpi)+'</span></div>').join('')+
+    '</div>';
+  }).join('');
+}
+
+/* ---------- PIPELINE: dự án chuẩn bị / pilot cho 2027 (chốt với Lãnh đạo Ban 07/08/2026) ---------- */
+const PIPELINE = [
+  { ten:"SUN",                        ai:"" },
+  { ten:"VPBank",                     ai:"" },
+  { ten:"Lotte Finance",              ai:"" },
+  { ten:"VETC",                       ai:"" },
+  { ten:"Insurtech",                  ai:"Tùng" },
+  { ten:"Cyber A05",                  ai:"Tùng" },
+  { ten:"Tổ hợp Telco: VNPT · GTEL",  ai:"" },
+  { ten:"Asahi Livwell Life",         ai:"Thư" },
+  { ten:"CPM — SP thuốc đích",        ai:"Thư" }
+];
+function renderPipeline(){
+  const el=$('#pipeline'); if(!el || el.dataset.done) return; el.dataset.done=1;
+  el.innerHTML = PIPELINE.map(p=>'<div class="pipe-card'+(p.ai?'':' nostaff')+' reveal"><span class="t">'+esc(p.ten)+'</span>'+
+    '<span class="pipe-badge '+(p.ai?'b-green':'b-red')+'">'+(p.ai?esc(p.ai):'Chưa có nhân sự')+'</span></div>').join('');
+  const thieu=PIPELINE.filter(p=>!p.ai).length;
+  $('#pipe-sub').textContent = PIPELINE.length+' dự án · '+thieu+' chưa có nhân sự phụ trách';
+}
+
+/* ---------- PRODUCT ROADMAP T8/2026 → Q1/2027 (cột = tháng; mốc điểm: it[1]=0) ---------- */
+const ROADMAP = {
+  cols:["T8/26","T9/26","T10/26","T11/26","T12/26","Q1/27"],
+  rows:[
+    { duAn:"TripCARE",           st:"tang-truong", items:[[1,1,"Go-live Phase 2 UI/UX (Insider)"],[2,6,"Đẩy kênh đại lý (Chubb) · cao điểm cuối năm · kế hoạch 2027"]] },
+    { duAn:"SPA GoSafe",         st:"sap-golive",  items:[[1.15,0,"06/08: Production Chubb CRS"],[1,2,"Bán chính thức + biểu phí multi-city"],[3,6,"Vận hành & mở rộng kênh 1A"]] },
+    { duAn:"Sun Group",          st:"sap-golive",  items:[[1,2,"Go-live SP nhúng + ký MOU OPES"],[3,6,"Mở rộng 4 SP theo mùa du lịch"]] },
+    { duAn:"Viettel Store",      st:"sap-golive",  items:[[1,1,"Go-live ADLD & EW"],[2,3,"Kết nối & go-live '1 đổi 1'"],[4,6,"Bán tại chuỗi toàn quốc"]] },
+    { duAn:"MobiFone",           st:"cho-doi-tac", items:[[1,2,"Ký MOU · go-live BH DLQT (Cổng BH)"],[3,6,"Triển khai A08 · mở rộng Cổng BH"]] },
+    { duAn:"Flight Delay",       st:"sap-golive",  items:[[1,2,"Go-live OTA: Vntrip · Gotadi · HNH"],[3,6,"Mở rộng đại lý VNA · tối ưu attach rate"]] },
+    { duAn:"Asahi",              st:"canh-bao",    items:[[1,2,"NPUV2 + lead bệnh viện · điều chỉnh APUV"],[3,6,"Pilot Asahi Livwell Life (Thư)"]] },
+    { duAn:"Zalopay",            st:"cho-doi-tac", items:[[1,1,"Trình & chốt phương án mới"],[2,5,"Tái triển khai theo phương án được duyệt"]] },
+    { duAn:"Plus & EW Honda",    st:"tang-truong", items:[[1,3,"Nâng cấp hondaplus.vn · mở rộng HEAD tỉnh"],[4,6,"Đẩy Plus toàn quốc"]] },
+    { duAn:"CPM — SP thuốc đích",st:"cho-doi-tac", items:[[1,3,"Định phí với nhà tái (Igloo)"],[4,6,"Pilot (Thư)"]] },
+    { duAn:"Insurtech · Cyber A05", st:"cho-doi-tac", items:[[1,3,"Kết nối 3GO · chờ thông tin A05"],[4,6,"Pilot (Tùng)"]] },
+    { duAn:"Pipeline 2027",      st:"cho-doi-tac", items:[[2,4,"Chuẩn bị SUN · VPBank · Lotte · VETC · Telco"],[5,6,"Pilot dự án đủ điều kiện · bổ sung nhân sự"]] }
+  ]
+};
+function renderRoadmap(){
+  const rm=ROADMAP, n=rm.cols.length, pct=u=>((u-1)/n*100);
+  let out='<div class="g-row g-head"><span class="g-lbl"></span><div class="g-track">'+
+    rm.cols.map((c,i)=>'<span class="g-tick" style="left:'+((i+0.5)/n*100)+'%">'+c+'</span>').join('')+'</div></div>';
+  out += rm.rows.map((r,ri)=>{
+    const col=TRANG_THAI[r.st].mau;
+    const bars=r.items.map(it=>{
+      if(it[1]===0)
+        return '<span class="g-moc" style="left:'+pct(it[0])+'%; background:'+col+'" data-tip="<b>'+esc(r.duAn)+'</b><br>'+esc(it[2])+'"></span>';
+      const l=pct(it[0]), w=pct(it[1]+1)-l;
+      return '<span class="g-bar" style="left:'+l+'%; width:'+w+'%; background:'+col+'; transition-delay:'+(ri*55)+'ms" data-tip="<b>'+esc(r.duAn)+'</b><br>'+esc(it[2])+'<br>'+esc(rm.cols[Math.floor(it[0])-1])+' → '+esc(rm.cols[Math.min(it[1],n)-1])+'">'+esc(it[2])+'</span>';
+    }).join('');
+    return '<div class="g-row"><span class="g-lbl" title="'+esc(r.duAn)+'">'+esc(r.duAn)+'</span><div class="g-track">'+bars+'</div></div>';
+  }).join('');
+  $('#roadmap').innerHTML=out;
+}
+
 /* ============ STATE ============ */
 let activePeriodId = PERIODS[0].id;
 function P(){ return PERIODS.find(p=>p.id===activePeriodId); }
 function isMonth(){ return P().type==="month"; }
+/* số tháng lũy kế của kỳ hiện tại (vd "2026-07" → 7) — dùng cho nhãn "7T", "sau 7/12 tháng" */
+function soThang(){ return parseInt(P().id.split('-')[1],10)||6; }
 /* danh sách dự án của kỳ hiện tại (theo thứ tự master) */
 function entries(){
   const d = P().data;
@@ -830,7 +1188,6 @@ function onPeriodChange(){
     document.querySelector('#wb-line').dataset.done='';
     refreshReveals();
     io.observe($('#hero'));
-    if(P().type==='month' || document.querySelector('.cv-section[data-tab="doanhthu"]').classList.contains('tab-active')){}
     window.scrollTo({top:0,behavior:'auto'});
   }, 150);
 }
@@ -855,15 +1212,16 @@ function renderHero(){
     const yoy = y25? (y26/y25-1)*100 : 0;
     const pctMT = tongLuyKe / P().mucTieuNam * 100;
     const tc = P().data.tripcare;
-    eyebrow = 'Doanh thu · lũy kế 6 tháng 2026';
+    const mo = soThang(), moL = mo+'T';
+    eyebrow = 'Doanh thu · lũy kế '+mo+' tháng 2026';
     kpis = [
-      { lb:'Lũy kế 6T/2026', id:'k1', val:tongLuyKe, dec:1, unit:'tỷ', sub:list.filter(e=>(e.d.luyKe||0)>0).length+' dự án đã phát sinh', scls:'flat' },
+      { lb:'Lũy kế '+moL+'/2026', id:'k1', val:tongLuyKe, dec:1, unit:'tỷ', sub:list.filter(e=>(e.d.luyKe||0)>0).length+' dự án đã phát sinh', scls:'flat', tip:P().luuY||'' },
       { lb:'Mục tiêu năm 2026', txt:'100', unit:'+ tỷ', sub:(list.length-1)+'+ dự án đang triển khai', scls:'flat' },
-      { lb:'So cùng kỳ 6T/2025', txt:(yoy>=0?'+':'−')+nfmt(Math.abs(yoy),1)+'%', sub:nfmt(y25,1)+' → '+nfmt(y26,1)+' tỷ', scls:(yoy>=0?'up':'down'), tip:'Chỉ cộng dự án có đủ số liệu cả 2 năm' },
-      { lb:'Số đơn TripCARE 6T', id:'k4', val:tc.soDon, dec:0, sub:'+'+nfmt(tc.soDon-TRIPCARE_GS.don6T2025)+' đơn so 6T/2025', scls:'up' }
+      { lb:'So cùng kỳ '+moL+'/2025', txt:(yoy>=0?'+':'−')+nfmt(Math.abs(yoy),1)+'%', sub:nfmt(y25,1)+' → '+nfmt(y26,1)+' tỷ', scls:(yoy>=0?'up':'down'), tip:'Chỉ cộng dự án có đủ số liệu cả 2 năm' },
+      { lb:'Số đơn TripCARE '+moL, id:'k4', val:tc.soDon, dec:0, sub:(tc.soDon2025!=null?'+'+nfmt(tc.soDon-tc.soDon2025)+' đơn so '+moL+'/2025':'lũy kế '+mo+' tháng'), scls:'up' }
     ];
     progLabel = 'Tiến độ mục tiêu 100 tỷ'; progPct = pctMT; progText = nfmt(pctMT,1)+'%';
-    barTitle = 'DOANH THU 6T THEO DỰ ÁN — TOP ĐÓNG GÓP';
+    barTitle = 'DOANH THU '+moL+' THEO DỰ ÁN — TOP ĐÓNG GÓP';
     barRows = list.filter(e=>(e.d.luyKe||0)>0.05).sort((a,b)=>b.d.luyKe-a.d.luyKe).slice(0,6)
       .map(e=>({ ten:e.m.ten, val:e.d.luyKe }));
   } else {
@@ -966,9 +1324,11 @@ function renderHotspots(){
 
 /* ============ RENDER: TIMELINE (Khối D) ============ */
 function renderTimeline(){
-  $('#timeline').innerHTML = P().mocThoiGian.map(m=>
-    '<div class="tl-item'+(m.hot?' hot':'')+'"><div class="d num">'+esc(m.ngay)+'</div><div class="p">'+esc(m.duAn)+'</div><div class="m">'+esc(m.moc)+'</div></div>'
-  ).join('');
+  $('#timeline').innerHTML = P().mocThoiGian.map(m=>{
+    const chip = m.st==='done' ? '<span class="tl-chip ok">✓ Hoàn thành</span>'
+               : m.st==='qua'  ? '<span class="tl-chip due">Đã đến hạn · chờ cập nhật</span>' : '';
+    return '<div class="tl-item'+(m.hot?' hot':'')+(m.st==='done'?' done':'')+'"><div class="d num">'+esc(m.ngay)+'</div><div class="p">'+esc(m.duAn)+'</div><div class="m">'+esc(m.moc)+'</div>'+chip+'</div>';
+  }).join('');
 }
 
 /* ============ RENDER: DOANH THU TAB ============ */
@@ -976,7 +1336,7 @@ function renderRevenueTab(){
   const list = entries();
   const monthMode = isMonth();
   // section title
-  $('#dt-title').textContent = monthMode ? 'Doanh thu 6T/2026 theo dự án' : 'Doanh thu tuần theo dự án';
+  $('#dt-title').textContent = monthMode ? 'Doanh thu '+soThang()+'T/2026 theo dự án' : 'Doanh thu tuần theo dự án';
   $('#dt-sub').textContent = monthMode ? 'Đơn vị: tỷ VNĐ · chỉ dự án đã phát sinh' : 'Đơn vị: theo doanh thu tuần báo cáo';
   // bar list
   let rows;
@@ -1005,9 +1365,9 @@ function buildDonut(){
   const svg = $('#donut'); if(svg.dataset.done) return; svg.dataset.done=1;
   let pct, label, centerLbl;
   if(isMonth()){
-    const tongLuyKe = entries().reduce((s,e)=>s+(e.d.luyKe||0),0);
-    pct = tongLuyKe/P().mucTieuNam*100; label='của 100 tỷ'; centerLbl='đã thực hiện<br>sau 6/12 tháng';
-    $('#donut-title').textContent='Hoàn thành mục tiêu năm'; $('#donut-cs').textContent='Lũy kế 6T so với mục tiêu 100 tỷ';
+    const tongLuyKe = entries().reduce((s,e)=>s+(e.d.luyKe||0),0), mo = soThang();
+    pct = tongLuyKe/P().mucTieuNam*100; label='của 100 tỷ'; centerLbl='đã thực hiện<br>sau '+mo+'/12 tháng';
+    $('#donut-title').textContent='Hoàn thành mục tiêu năm'; $('#donut-cs').textContent='Lũy kế '+mo+'T so với mục tiêu 100 tỷ';
   } else {
     const tc=P().data.tripcare; pct=tc.dtLuyKeThang/60*100; label='của 60 tỷ'; centerLbl='TripCARE<br>KPI năm';
     $('#donut-title').textContent='TripCARE — tiến độ KPI năm'; $('#donut-cs').textContent='Lũy kế tháng đến '+P().chot+' so với KPI 60 tỷ';
@@ -1026,7 +1386,7 @@ function buildDonut(){
 function buildTcMonthly(){
   const svg=$('#tc-monthly'); if(!svg) return;
   const g=TRIPCARE_GS, W=560,H=250,L=40,R=14,T=14,B=30, pw=W-L-R,ph=H-T-B;
-  const series26=g.thang2026.slice(), months=['T1','T2','T3','T4','T5','T6'];
+  const series26=g.thang2026.slice(), months=series26.map((_,i)=>'T'+(i+1));
   const ymax=6.5;
   const x=i=>L+i*(pw/(months.length-1)), y=v=>T+(1-v/ymax)*ph;
   let s='';
@@ -1052,7 +1412,10 @@ function buildWbLine(){
   const wb=P().data.wbooking;
   if(!wb || !wb.bangThang){ svg.closest('.chart-card').style.display='none'; return; }
   svg.closest('.chart-card').style.display='';
-  const rows=wb.bangThang, W=560,H=260,L=46,R=14,T=16,B=32, pw=W-L-R,ph=H-T-B,ymax=160;
+  const rows=wb.bangThang, W=560,H=260,L=46,R=14,T=16,B=32, pw=W-L-R,ph=H-T-B,ymax=175;
+  const csEl=$('#wb-cs');
+  if(csEl){ const sDT=rows.reduce((s,r)=>s+r[1],0), sBT=rows.reduce((s,r)=>s+r[2],0);
+    csEl.textContent='Vùng đỏ = vượt 100% (lỗ nghiệp vụ) · lũy kế '+rows.length+'T: '+nfmt(sBT/sDT*100,2)+'%'; }
   const x=i=>L+i*(pw/(rows.length-1)), y=v=>T+(1-v/ymax)*ph;
   let g='';
   g+='<rect x="'+L+'" y="'+T+'" width="'+pw+'" height="'+(y(100)-T)+'" fill="var(--c-redneg)" opacity="0.07"/>';
@@ -1076,15 +1439,20 @@ function buildWbLine(){
 function buildWbTable(){
   const wb=P().data.wbooking, card=$('#wb-table').closest('.sec');
   if(!wb || !wb.bangThang){ card.style.display='none'; return; } card.style.display='';
+  const sDT=wb.bangThang.reduce((s,r)=>s+r[1],0), sBT=wb.bangThang.reduce((s,r)=>s+r[2],0),
+        sVu=wb.bangThang.reduce((s,r)=>s+r[3],0), sTyLe=sDT?sBT/sDT*100:0;
   $('#wb-table').innerHTML =
     '<thead><tr><th>Tháng</th><th class="r">Doanh thu (đ)</th><th class="r">Bồi thường (đ)</th><th class="r">Số vụ</th><th class="r">Tỷ lệ BT</th></tr></thead><tbody>'+
     wb.bangThang.map(r=>'<tr><td class="num">T'+r[0]+'/2026</td><td class="r num">'+nfmt(r[1])+'</td><td class="r num">'+nfmt(r[2])+'</td><td class="r num">'+r[3]+'</td><td class="r"><span class="pill-bt '+(r[4]>100?'bad':'ok')+' num">'+nfmt(r[4],2)+'%</span></td></tr>').join('')+
-    '<tr style="font-weight:700"><td>Tổng 6T</td><td class="r num">1.590.806.340</td><td class="r num">1.394.500.000</td><td class="r num">17</td><td class="r"><span class="pill-bt bad num">87,66%</span></td></tr></tbody>';
+    '<tr style="font-weight:700"><td>Tổng '+wb.bangThang.length+'T</td><td class="r num">'+nfmt(sDT)+'</td><td class="r num">'+nfmt(sBT)+'</td><td class="r num">'+sVu+'</td><td class="r"><span class="pill-bt '+(sTyLe>100?'bad':'ok')+' num">'+nfmt(sTyLe,2)+'%</span></td></tr></tbody>';
 }
 
 function buildTcCompare(){
-  const g=TRIPCARE_GS;
-  const rows=[ {lb:'Số đơn',v25:g.don6T2025,v26:g.don6T2026,f:v=>nfmt(v)+' đơn'}, {lb:'Doanh thu',v25:g.luyKe6T2025,v26:g.luyKe6T2026,f:v=>fmtTien(v)} ];
+  const g=TRIPCARE_GS, mo=Math.min(isMonth()?soThang():g.thang2026.length, g.thang2026.length), moL=mo+'T';
+  const t=$('#tc-cmp-title'); if(t) t.textContent='TripCARE — '+moL+'/2025 vs '+moL+'/2026';
+  const l25=$('#tc-cmp-l25'), l26=$('#tc-cmp-l26');
+  if(l25) l25.lastChild.textContent=moL+'/2025'; if(l26) l26.lastChild.textContent=moL+'/2026';
+  const rows=[ {lb:'Số đơn',v25:tcSum(g.don2025,mo),v26:tcSum(g.don2026,mo),f:v=>nfmt(v)+' đơn'}, {lb:'Doanh thu',v25:tcSum(g.thang2025,mo),v26:tcSum(g.thang2026,mo),f:v=>fmtTien(v)} ];
   $('#tc-compare').innerHTML = rows.map(r=>{ const max=Math.max(r.v25,r.v26);
     return '<div style="margin-bottom:16px"><div style="font-size:12.5px;font-weight:700;margin-bottom:6px">'+r.lb+'</div>'+
       '<div class="bar-row" style="grid-template-columns:58px 1fr 88px;margin-bottom:6px"><span class="n" style="font-size:11.5px;color:var(--muted)">2025</span><span class="bar" style="height:14px"><i data-w="'+(r.v25/max*100)+'" style="background:var(--c-slate)"></i></span><span class="v num" style="font-size:12px">'+r.f(r.v25)+'</span></div>'+
@@ -1098,13 +1466,15 @@ function renderDetailCard(id){
   const rev=entryRevenue({id,m,d});
   let stats='<div class="dstat"><div class="l">KPI năm</div><div class="v" style="font-size:13.5px;line-height:1.4">'+esc(m.kpiNam||'—')+'</div></div>';
   if(isMonth()){
+    const moL = soThang()+'T';
+    const tyLeBT = d.tyLeBT!=null ? d.tyLeBT : d.tyLeBT6T;
     if((d.luyKe||0)>0){
-      stats+='<div class="dstat"><div class="l">Lũy kế 6T</div><div class="v big num">'+fmtTien(d.luyKe)+'</div></div>';
-      if(d.dt) stats+='<div class="dstat"><div class="l">Thực hiện T6</div><div class="v num">'+fmtTien(d.dt)+'</div></div>';
+      stats+='<div class="dstat"><div class="l">Lũy kế '+moL+'</div><div class="v big num">'+fmtTien(d.luyKe)+'</div></div>';
+      if(d.dt) stats+='<div class="dstat"><div class="l">Thực hiện T'+soThang()+'</div><div class="v num">'+fmtTien(d.dt)+'</div></div>';
       if(d.phanTramKPI!=null) stats+='<div class="dstat"><div class="l">% KPI năm</div><div class="v num">'+nfmt(d.phanTramKPI,1)+'%</div></div>';
       if(d.cungKy2025!=null){ const p=(d.luyKe/d.cungKy2025-1)*100; stats+='<div class="dstat"><div class="l">So cùng kỳ 2025</div><div class="v num" style="color:'+(p>=0?'#5CD695':'#FF9A93')+'">'+(p>=0?'+':'−')+nfmt(Math.abs(p),1)+'%</div></div>'; }
-      if(d.tyLeBT6T!=null) stats+='<div class="dstat"><div class="l">Tỷ lệ bồi thường</div><div class="v num">'+nfmt(d.tyLeBT6T,2)+'%</div></div>';
-    } else if(!d.danhSach){ stats+='<div class="dstat"><div class="l">Doanh thu 6T</div><div class="v">Chưa phát sinh</div></div>'; }
+      if(tyLeBT!=null) stats+='<div class="dstat"><div class="l">Tỷ lệ bồi thường</div><div class="v num">'+nfmt(tyLeBT,2)+'%</div></div>';
+    } else if(!d.danhSach){ stats+='<div class="dstat"><div class="l">Doanh thu '+moL+'</div><div class="v">Chưa phát sinh</div></div>'; }
   } else {
     if(rev!=null && rev>0) stats+='<div class="dstat"><div class="l">'+(d.dtTuan!=null?'DT tuần':'Lũy kế tháng')+'</div><div class="v big num">'+fmtTien(rev)+'</div></div>';
     if(d.soGD) stats+='<div class="dstat"><div class="l">Giao dịch tuần</div><div class="v num">'+nfmt(d.soGD)+'</div></div>';
@@ -1130,6 +1500,7 @@ function renderDetailCards(){
   $('#detail-cards').innerHTML = entries().map(e=>'<div class="card dcard hoverable reveal">'+renderDetailCard(e.id)+'</div>').join('');
 }
 function renderPlanCards(){
+  const pt=$('#plan-title'); if(pt) pt.textContent='Kế hoạch tiếp theo · sau kỳ '+P().label;
   $('#plan-cards').innerHTML = entries().filter(e=>e.d.keHoach&&e.d.keHoach.length).map(e=>{
     const info=TRANG_THAI[e.d.trangThai]||TRANG_THAI["cho-doi-tac"];
     return '<div class="card hoverable reveal"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
@@ -1180,11 +1551,17 @@ const modal=$('#modal');
 function openModal(id){ if(!P().data[id]) return; $('#modal-body').innerHTML=renderDetailCard(id); modal.classList.add('on'); document.body.style.overflow='hidden'; }
 function closeModal(){ modal.classList.remove('on'); document.body.style.overflow=''; }
 document.addEventListener('click',e=>{ const kc=e.target.closest('.kcard'); if(kc){ openModal(kc.dataset.id); return; } if(e.target.closest('#modal-x')||e.target===$('#modal-bg')) closeModal(); });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); if(document.body.classList.contains('present')) togglePresent(false); } });
+document.addEventListener('keydown',e=>{ if(e.key!=='Escape') return;
+  if(modal.classList.contains('on')){ closeModal(); return; }
+  if(document.body.classList.contains('present')){ togglePresent(false); return; }
+  if(curView!=='home') setView('home');
+});
 
 /* ============ RENDER ALL ============ */
 function renderAll(){
   renderHeaderMeta(); renderHero(); renderKanban(); renderHotspots(); renderTimeline(); renderGantt();
+  buildKpiPie(); renderOwnerCols(); renderRoadmap(); renderPipeline();
+  renderAlerts(); renderModGrid();
   renderDetailCards(); renderPlanCards();
   setTimeout(fireHero, 120); // hero luôn chạy count-up ngay khi mở, không chờ cuộn
   // revenue tab: rebuild only if visible or month (charts lazy via done flag)
@@ -1192,31 +1569,75 @@ function renderAll(){
   renderRevenueTab();
 }
 
-/* ============ MODE SWITCH ============ */
-let mode='ld';
-document.body.classList.add('ld-mode');
-function setMode(m){
-  if(m===mode) return;
-  const main=$('#main'); main.classList.add('fading');
-  setTimeout(()=>{ mode=m;
-    document.body.classList.toggle('ld-mode',m==='ld'); document.body.classList.toggle('cv-mode',m==='cv');
-    document.querySelectorAll('#roleswitch button').forEach(b=>b.classList.toggle('active',b.dataset.role===m));
-    if(m==='cv') setTab(curTab);
-    buildBottomBar(); main.classList.remove('fading'); refreshReveals();
-  },150);
-}
-$('#roleswitch').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) setMode(b.dataset.role); });
-
-/* ============ TABS ============ */
-let curTab='tongquan';
-function setTab(t){ curTab=t;
-  document.querySelectorAll('.cv-section').forEach(s=>s.classList.toggle('tab-active',s.dataset.tab===t));
-  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
-  document.querySelectorAll('#bottombar button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
-  if(t==='doanhthu'){ buildDonut(); buildTcMonthly(); buildWbLine(); }
+/* ============ VIEWS: trang chính ↔ trang chi tiết ============ */
+let curView='home';
+function setView(v){
+  curView=v;
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('active',s.dataset.view===v));
+  const bb=$('#backbar'); bb.hidden = (v==='home');
+  if(v!=='home'){ const m=MODULES.find(x=>x.v===v); $('#bb-title').textContent = m? m.t : ''; }
+  document.querySelectorAll('#bottombar button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+  if(v==='doanhthu'){ buildDonut(); buildTcMonthly(); buildWbLine(); }
   window.scrollTo({top:0,behavior:'auto'}); refreshReveals();
 }
-$('#tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) setTab(b.dataset.tab); });
+$('#main').addEventListener('click',e=>{
+  const t=e.target.closest('.modcard[data-view],.alert-line[data-view],.btn-back-big[data-view]');
+  if(t) setView(t.dataset.view);
+});
+
+/* ============ TRANG CHÍNH: cảnh báo + lưới module ============ */
+function renderAlerts(){
+  const kh = P().khoKhan||[];
+  const gap = kh.filter(h=>h.muc==='gap');
+  let html = gap.slice(0,3).map(h=>
+    '<div class="alert-line" data-view="khokhan"><span class="lvl gap"><span class="pulse"></span>GẤP</span>'+
+    '<span class="tx"><b>'+esc(h.duAn)+'</b> — '+esc(h.kho)+'</span><span class="go">Chi tiết ›</span></div>').join('');
+  const qua = (P().mocThoiGian||[]).filter(m=>m.st==='qua').length;
+  if(qua) html += '<div class="alert-line amber" data-view="lich"><span class="lvl watch"><span class="pulse"></span>MỐC</span>'+
+    '<span class="tx"><b>'+qua+' mốc đã đến hạn</b> — chờ Phòng cập nhật kết quả</span><span class="go">Chi tiết ›</span></div>';
+  $('#alerts').innerHTML = html || '<div class="alert-line amber"><span class="tx">Không có cảnh báo trong kỳ này</span></div>';
+}
+const MODULES = [
+  { v:'duan',     ic:'grid',   t:'Trạng thái 13 dự án', d:'Bảng trạng thái 4 nhóm + thẻ chi tiết từng dự án: kết quả, kế hoạch, KPI.' },
+  { v:'doanhthu', ic:'chart',  t:'Doanh thu & bồi thường', d:'Doanh thu theo dự án, TripCARE theo tháng, tỷ lệ bồi thường wBooking.' },
+  { v:'khokhan',  ic:'alert',  t:'Khó khăn cần hỗ trợ', d:'Vướng mắc cần lãnh đạo cho ý kiến hoặc tác động đối tác ở cấp cao.' },
+  { v:'lich',     ic:'cal',    t:'Lịch go-live & kế hoạch', d:'Mốc quan trọng, Gantt T7–T8 và kế hoạch tiếp theo của từng dự án.' },
+  { v:'roadmap',  ic:'cal',    t:'Roadmap & Pipeline 2027', d:'Product roadmap đến Q1/2027 và danh sách dự án chuẩn bị / pilot.' },
+  { v:'phancong', ic:'people', t:'Phân công 22 đối tác', d:'Ai phụ trách đối tác nào, mức ưu tiên, người hỗ trợ.' }
+];
+function modStat(v){
+  const list = entries();
+  if(v==='duan'){
+    const c = st=>list.filter(e=>e.d.trangThai===st).length;
+    return c('tang-truong')+' tăng trưởng · '+c('sap-golive')+' sắp go-live · '+c('canh-bao')+' cần chú ý';
+  }
+  if(v==='doanhthu'){
+    const tong = list.reduce((s,e)=>s+(e.d.luyKe||0),0);
+    return isMonth() ? 'Lũy kế '+soThang()+'T: '+nfmt(tong,1)+' tỷ / mục tiêu 100 tỷ' : 'Theo báo cáo tuần';
+  }
+  if(v==='khokhan'){
+    const kh=P().khoKhan||[], g=kh.filter(h=>h.muc==='gap').length;
+    return g+' việc GẤP · '+(kh.length-g)+' việc theo dõi';
+  }
+  if(v==='lich'){
+    const qua=(P().mocThoiGian||[]).filter(m=>m.st==='qua').length;
+    return qua ? qua+' mốc chờ cập nhật kết quả' : 'Các mốc trong tầm kiểm soát';
+  }
+  if(v==='roadmap'){
+    const thieu=PIPELINE.filter(p=>!p.ai).length;
+    return ROADMAP.rows.length+' dòng roadmap · '+PIPELINE.length+' dự án pilot ('+thieu+' thiếu nhân sự)';
+  }
+  if(v==='phancong') return 'Hằng · Thư · Tùng · Duy';
+  return '';
+}
+function renderModGrid(){
+  $('#modgrid').innerHTML = MODULES.map((m,i)=>
+    '<div class="modcard" data-view="'+m.v+'" role="button" tabindex="0">'+
+      '<div class="mtop"><span class="mico">'+ICONS[m.ic]+'</span><span class="mtitle">'+esc(m.t)+'</span><span class="mnum">'+('0'+(i+1)).slice(-2)+'</span></div>'+
+      '<div class="mdesc">'+esc(m.d)+'</div>'+
+      '<div class="mfoot"><span class="mstat">'+esc(modStat(m.v))+'</span><span class="mopen">Mở ›</span></div>'+
+    '</div>').join('');
+}
 
 /* ============ BOTTOM BAR ============ */
 const ICONS={
@@ -1229,25 +1650,15 @@ const ICONS={
 };
 function buildBottomBar(){
   const bar=$('#bottombar');
-  if(mode==='ld'){
-    bar.innerHTML='<button data-scroll="#hero" class="active">'+ICONS.home+'Tổng quan</button>'+
-      '<button data-scroll="#kanban">'+ICONS.grid+'Dự án</button>'+
-      '<button data-scroll="#sec-hot">'+ICONS.alert+'Khó khăn</button>'+
-      '<button data-scroll="#sec-tl">'+ICONS.cal+'Lịch</button>';
-  } else {
-    bar.innerHTML='<button data-tab="tongquan">'+ICONS.home+'Tổng quan</button>'+
-      '<button data-tab="doanhthu">'+ICONS.chart+'Doanh thu</button>'+
-      '<button data-tab="duan">'+ICONS.grid+'Dự án</button>'+
-      '<button data-tab="phancong">'+ICONS.people+'Phân công</button>'+
-      '<button data-tab="kehoach">'+ICONS.cal+'Kế hoạch</button>';
-    bar.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.tab===curTab));
-  }
+  bar.innerHTML='<button data-view="home">'+ICONS.home+'Trang chính</button>'+
+    '<button data-view="duan">'+ICONS.grid+'Dự án</button>'+
+    '<button data-view="doanhthu">'+ICONS.chart+'Doanh thu</button>'+
+    '<button data-view="khokhan">'+ICONS.alert+'Khó khăn</button>'+
+    '<button data-view="lich">'+ICONS.cal+'Lịch</button>';
+  bar.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.view===curView));
 }
 buildBottomBar();
-$('#bottombar').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
-  if(b.dataset.tab){ setTab(b.dataset.tab); }
-  else if(b.dataset.scroll){ document.querySelector(b.dataset.scroll).scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'}); document.querySelectorAll('#bottombar button').forEach(x=>x.classList.toggle('active',x===b)); }
-});
+$('#bottombar').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b&&b.dataset.view) setView(b.dataset.view); });
 
 /* ============ PRESENT ============ */
 function togglePresent(on){ document.body.classList.toggle('present',on);
@@ -1280,8 +1691,7 @@ function fallbackReveal(){
   });
 }
 function refreshReveals(){
-  document.querySelectorAll('.reveal:not(.in)').forEach(el=>io.observe(el));
-  document.querySelectorAll('.cv-section.tab-active .reveal:not(.in)').forEach(el=>io.observe(el));
+  document.querySelectorAll('.view.active .reveal:not(.in)').forEach(el=>io.observe(el));
   clearTimeout(window.__rvT); window.__rvT = setTimeout(fallbackReveal, 600);
 }
 
