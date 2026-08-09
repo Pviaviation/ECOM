@@ -282,7 +282,7 @@ body.present .kpi .v{font-size:46px}
 .hotrow .bd .p{font-weight:700; font-size:14px}
 .hotrow .bd .w{font-size:13px; color:var(--muted); margin-top:1px}
 .hotrow .bd .s{font-size:12.5px; margin-top:6px; color:var(--ink); background:var(--card2); border:1px dashed var(--line); border-radius:8px; padding:6px 10px}
-.hotrow .bd .s::before{content:"Cần lãnh đạo hỗ trợ: "; font-weight:700; color:var(--red)}
+.hotrow .bd .s::before{content:"Đề xuất hỗ trợ: "; font-weight:700; color:var(--red)}
 
 /* ============ TIMELINE (Khối D) ============ */
 .tl-scroll{overflow-x:auto; padding-bottom:6px}
@@ -340,6 +340,7 @@ body.present .kpi .v{font-size:46px}
 .orow{display:flex; align-items:center; gap:8px; font-size:12.5px; margin-bottom:7px}
 .orow .sw{width:10px; height:10px; border-radius:3px; flex-shrink:0}
 .orow .n{font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.orow .n .ht{font-weight:500; color:var(--muted)}
 .orow .k{margin-left:auto; color:var(--muted); font-size:12px; white-space:nowrap}
 .kpimap-note{font-size:11.5px; color:var(--muted); margin-top:12px; line-height:1.55}
 
@@ -358,6 +359,9 @@ body.present .kpi .v{font-size:46px}
 .tl-chip{display:inline-block; font-size:10px; font-weight:800; letter-spacing:.4px; padding:2px 8px; border-radius:999px; margin-top:5px}
 .tl-chip.ok{background:rgba(30,158,90,.13); color:var(--c-green)}
 .tl-chip.due{background:rgba(224,152,42,.16); color:var(--c-amber)}
+.tl-chip.late{background:rgba(216,88,78,.14); color:var(--c-redneg)}
+.tl-item.late::before{border-color:var(--c-redneg)}
+.tl-item.late .d{color:var(--c-redneg)}
 
 /* ============ DETAIL CARDS (CV mode + modal) ============ */
 .cards-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px}
@@ -582,7 +586,7 @@ table{font-size:14.5px}
 
     <!-- Khối A2: SƠ ĐỒ KPI — sếp muốn nhìn thấy ngay ở trang chính -->
     <div class="sec" id="sec-kpi">
-      <div class="sec-h"><h2>Sơ đồ doanh thu dự kiến 2026 · theo dự án &amp; người phụ trách</h2><span class="sub">sơ đồ hóa bảng "Tóm tắt các dự án"</span><span class="rule"></span></div>
+      <div class="sec-h"><h2>Sơ đồ doanh thu dự kiến 2026 · theo dự án &amp; người phụ trách</h2><span class="rule"></span></div>
       <div class="card reveal">
         <div class="kpimap">
           <div class="kpimap-pie"><svg id="kpi-pie" viewBox="0 0 300 300" role="img" aria-label="Hình tròn tỷ trọng doanh thu dự kiến theo dự án"></svg></div>
@@ -594,7 +598,7 @@ table{font-size:14.5px}
 
     <!-- Cảnh báo cần chú ý ngay -->
     <div class="sec" id="sec-alerts">
-      <div class="sec-h"><h2>Cần lãnh đạo chú ý</h2><span class="sub">chạm để xem chi tiết</span><span class="rule"></span></div>
+      <div class="sec-h"><h2>Các dự án cần chú ý</h2><span class="sub">chạm để xem chi tiết</span><span class="rule"></span></div>
       <div class="alerts" id="alerts"></div>
     </div>
 
@@ -622,7 +626,7 @@ table{font-size:14.5px}
   <section class="view" data-view="khokhan">
     <!-- Khối C: ĐIỂM NÓNG -->
     <div class="sec" id="sec-hot">
-      <div class="sec-h"><h2>Dự án gặp khó khăn · cần lãnh đạo hỗ trợ</h2><span class="rule"></span></div>
+      <div class="sec-h"><h2>Dự án gặp khó khăn · cần hỗ trợ</h2><span class="rule"></span></div>
       <div class="hot" id="hotspots"></div>
     </div>
   </section>
@@ -705,6 +709,14 @@ table{font-size:14.5px}
         </div>
       </div>
       <div class="sec">
+        <div class="sec-h"><h2 id="revtbl-title">Toàn bộ dự án · doanh thu &amp; tiến độ KPI</h2><span class="sub">sắp theo doanh thu lũy kế</span><span class="rule"></span></div>
+        <div class="tbl-wrap reveal"><table id="rev-table"></table></div>
+      </div>
+      <div class="sec">
+        <div class="sec-h"><h2>Tỷ lệ bồi thường theo dự án</h2><span class="sub">ngưỡng hòa 100% · chỉ dự án có số liệu bồi thường</span><span class="rule"></span></div>
+        <div class="card reveal"><div id="bt-bars"></div></div>
+      </div>
+      <div class="sec">
         <div class="sec-h"><h2>TripCARE — doanh thu theo tháng</h2><span class="sub">nguồn: Google Sheet doanh thu</span><span class="rule"></span></div>
         <div class="card chart-card reveal">
           <div class="legend"><span><i style="background:var(--c-blue)"></i>2026 (T1–T7)</span><span><i style="background:var(--c-slate)"></i>2025 (cùng kỳ)</span></div>
@@ -721,7 +733,7 @@ table{font-size:14.5px}
   <!-- ===== VIEW: PHÂN CÔNG ===== -->
   <section class="view" data-view="phancong">
     <div class="sec">
-      <div class="sec-h"><h2>Bảng phân công 22 đối tác</h2><span class="sub">sắp theo mức ưu tiên</span><span class="rule"></span></div>
+      <div class="sec-h"><h2 id="pc-title">Bảng phân công đối tác</h2><span class="sub">sắp theo mức ưu tiên · nguồn: báo cáo tháng P.TMĐT</span><span class="rule"></span></div>
       <div class="filters" id="pc-filters"></div>
       <div class="tbl-wrap reveal"><table id="pc-table"></table></div>
     </div>
@@ -751,19 +763,20 @@ table{font-size:14.5px}
 
 /* ---------- MASTER: thông tin dự án không đổi theo kỳ ---------- */
 const PROJECTS = {
-  tripcare:{ ten:"TripCARE", doiTac:"VNA", uuTien:5, phuTrach:"Hằng", hoTro:"Duy", kpiNam:"60 tỷ (PVI) / 80 tỷ (VNA)" },
-  spa:{ ten:"SPA GoSafe", doiTac:"SPA", uuTien:5, phuTrach:"Hằng", hoTro:"Thư", kpiNam:"9,6 tỷ/năm (805 tr/tháng, CR 5%)" },
-  bamboocare:{ ten:"BambooCARE", doiTac:"Bamboo Airways", uuTien:3, phuTrach:"Hằng", hoTro:"", kpiNam:"3,5 tỷ (PVI Target 2026)" },
-  wbooking:{ ten:"wBooking (HIO)", doiTac:"wBooking", uuTien:3, phuTrach:"Hằng", hoTro:"", kpiNam:"4 tỷ (PVI) / 16,15 tỷ (wBooking)" },
-  flightdelay:{ ten:"Flight Delay", doiTac:"Igloo / OTA", uuTien:3, phuTrach:"Hằng", hoTro:"", kpiNam:"600 tr – 2 tỷ/năm (attach 1–2%)" },
+  /* kpiSo = KPI PVI dạng số (tỷ VNĐ) để tính % hoàn thành; bỏ trống nếu chưa có KPI chính thức */
+  tripcare:{ ten:"TripCARE", doiTac:"VNA", uuTien:5, phuTrach:"Hằng", hoTro:"", kpiNam:"60 tỷ (PVI) / 80 tỷ (VNA)", kpiSo:60 },
+  spa:{ ten:"SPA GoSafe", doiTac:"SPA", uuTien:5, phuTrach:"Hằng", hoTro:"Thư", kpiNam:"9,6 tỷ/năm (805 tr/tháng, CR 5%)", kpiSo:9.6 },
+  bamboocare:{ ten:"BambooCARE", doiTac:"Bamboo Airways", uuTien:3, phuTrach:"Hằng", hoTro:"", kpiNam:"3,5 tỷ (PVI Target 2026)", kpiSo:3.5 },
+  wbooking:{ ten:"wBooking (HIO)", doiTac:"wBooking", uuTien:3, phuTrach:"Hằng", hoTro:"Duy", kpiNam:"4 tỷ (PVI) / 16,15 tỷ (wBooking)", kpiSo:4 },
+  flightdelay:{ ten:"Flight Delay", doiTac:"Igloo / OTA", uuTien:3, phuTrach:"Hằng", hoTro:"", kpiNam:"600 tr – 2 tỷ/năm (attach 1–2%)", kpiSo:2 },
   "asahi-npuv":{ ten:"Asahi — NPUV", doiTac:"Asahi / Bell24VN / ALCV", uuTien:5, phuTrach:"Thư", hoTro:"Duy", kpiNam:"31 tỷ (kỳ vọng) / 28 tỷ (PVI KPI)" },
   "asahi-apuv":{ ten:"Asahi — APUV", doiTac:"Asahi", uuTien:5, phuTrach:"Thư", hoTro:"Duy", kpiNam:"2 tỷ (PVI KPI) / 862 tr (kỳ vọng)" },
-  asahi:{ ten:"Asahi (NPUV + APUV)", doiTac:"Asahi / Bell24VN / ALCV", uuTien:5, phuTrach:"Thư", hoTro:"Duy", kpiNam:"33 tỷ (NPUV+APUV, PVI KPI 30 tỷ)" },
-  mobifone:{ ten:"MobiFone (Cổng BH)", doiTac:"MobiFone", uuTien:4, phuTrach:"Thư", hoTro:"Duy", kpiNam:"2 tỷ (PVI KPI 2026)" },
-  zalopay:{ ten:"Zalopay (BHRVMH)", doiTac:"Zalopay", uuTien:3, phuTrach:"Thư", hoTro:"Duy", kpiNam:"600 tr/năm" },
-  nnx:{ ten:"NNX (Trợ cấp nằm viện)", doiTac:"Ngôi nhà xanh", uuTien:3, phuTrach:"Thư", hoTro:"", kpiNam:"20 tỷ (kỳ vọng 2026)" },
-  "plus-ew":{ ten:"Plus & EW Honda", doiTac:"Honda Plus", uuTien:4, phuTrach:"Tùng", hoTro:"", kpiNam:"10 tỷ (Plus) / 1 tỷ (EW)", link:"https://pvi-honda-report.netlify.app/" },
-  viettelstore:{ ten:"Viettel Store", doiTac:"Viettel Store", uuTien:3, phuTrach:"Tùng", hoTro:"", kpiNam:"4 tỷ (ADLD) / 1 tỷ (EW)" },
+  asahi:{ ten:"Asahi (NPUV + APUV)", doiTac:"Asahi / Bell24VN / ALCV / iCraft", uuTien:5, phuTrach:"Thư", hoTro:"Duy", kpiNam:"28 tỷ (kế hoạch năm 2026 theo báo cáo tháng)", kpiSo:28 },
+  mobifone:{ ten:"MobiFone (Cổng BH)", doiTac:"MobiFone", uuTien:4, phuTrach:"Thư", hoTro:"Duy", kpiNam:"2 tỷ (PVI KPI 2026)", kpiSo:2 },
+  zalopay:{ ten:"Zalopay (BHRVMH)", doiTac:"Zalopay", uuTien:3, phuTrach:"Thư", hoTro:"Duy", kpiNam:"600 tr/năm", kpiSo:0.6 },
+  nnx:{ ten:"NNX (Trợ cấp nằm viện)", doiTac:"Ngôi nhà xanh", uuTien:3, phuTrach:"Thư", hoTro:"", kpiNam:"10 tỷ (bảng tóm tắt) / 20 tỷ (kỳ vọng 2026) — cần thống nhất", kpiSo:10 },
+  "plus-ew":{ ten:"Plus & EW Honda", doiTac:"Honda Plus", uuTien:4, phuTrach:"Tùng", hoTro:"", kpiNam:"10 tỷ (Plus) / 1 tỷ (EW)", kpiSo:11, link:"https://pvi-honda-report.netlify.app/" },
+  viettelstore:{ ten:"Viettel Store", doiTac:"Viettel Store", uuTien:3, phuTrach:"Tùng", hoTro:"", kpiNam:"4 tỷ (ADLD) / 1 tỷ (EW)", kpiSo:5 },
   sungroup:{ ten:"Sun Group (BH nhúng)", doiTac:"OPES – Sun Group", uuTien:5, phuTrach:"Tùng", hoTro:"Hằng/Thư", kpiNam:"Ước tính DT SG ~325 tỷ/năm" },
   khac:{ ten:"Các dự án khác", doiTac:"A05, 7-Eleven, OPES, Insurtech, Igloo…", uuTien:4, phuTrach:"Tùng", hoTro:"Duy", kpiNam:"—" }
 };
@@ -791,79 +804,98 @@ const PERIODS = [
    CHƯA có báo cáo T7 — tạm giữ số 6T, đã ghi chú từng dự án. */
 {
   id:"2026-07", type:"month", label:"Tháng 07/2026", range:"01–31/07/2026", chot:"31/07/2026", mucTieuNam:100,
-  luuY:"Asahi, MobiFone, Zalopay, NNX, Viettel Store, Sun Group: tạm tính theo số 6T (chưa có báo cáo T7)",
+  luuY:"NNX: tạm tính theo số 6T (báo cáo T7 không có mục riêng) · Zalopay: báo cáo T7 nhắc lại số tuần 08–14/06",
   data:{
     tripcare:{ trangThai:"tang-truong", dt:5.350, luyKe:30.709, phanTramKPI:51.18, soDon:138449, tbNgay:172.52,
-      cungKy2025:32.977, soDon2025:136579,
+      cungKy2025:32.977, soDon2025:136579, boiThuong:0.04475, soVuBT:6, tyLeBT:0.15,
       ghiChu:"T7 đạt 5,35 tỷ (22.077 đơn), TB 172,52 tr/ngày — tháng cao nhất năm; lũy kế 7T 30,71 tỷ / 138.449 đơn (nguồn: Google Sheet)",
-      ketQua:["ĐÃ CHỐT cơ cấu tái với Chubb: kênh digital 50-50, hoa hồng tái 52%; kênh đại lý giữ nguyên tỷ lệ hiện tại","T7/2026: 5,35 tỷ (22.077 đơn) — vượt T3 thành tháng cao nhất năm","T8 đến 05/08: 967,7 tr (4.189 đơn)","Bồi thường 2026: 6 vụ / 44,75 tr (tỷ lệ 0,14%)"],
+      ketQua:["ĐÃ CHỐT cơ cấu tái với Chubb: kênh digital 50-50, hoa hồng tái 52%; kênh đại lý giữ nguyên tỷ lệ hiện tại","T7/2026: 5,35 tỷ (22.077 đơn) — vượt T3 thành tháng cao nhất năm","Họp với VNA về việc bán TripCARE trên kênh đại lý của VNA (21/07)","Phối hợp VNA chạy chương trình tặng voucher giảm giá vé máy bay (23–27/07)","Hoàn thiện thanh toán chi phí Amadeus integration cost cho Chubb","T8 đến 05/08: 967,7 tr (4.189 đơn)","Bồi thường 2026: 6 vụ / 44,75 tr (tỷ lệ 0,15%)"],
       keHoach:["Go-live Phase 2 UI/UX TripCARE (Insider)","Triển khai cơ cấu tái mới với Chubb (digital 50-50, HH tái 52%)","Đẩy truyền thông: voucher phòng chờ, bài Heritage"] },
     spa:{ trangThai:"cho-doi-tac", dt:0, luyKe:0, phanTramKPI:0,
       ghiChu:"LÙI TIẾN ĐỘ (kick-off 1A–SPA–Chubb 05/08): 1A dự trù mobile app go-live T11/2026; website cuối T9 mới lên lịch config (+2–3 tháng) — Chubb đánh giá rủi ro không kịp live website trong 2026 do Amadeus/Chubb freeze hệ thống T12",
       moc:["Cuối T9: 1A lên lịch config website (+2–3 tháng để go-live)","T11/2026: 1A dự trù go-live mobile app","T12/2026: Amadeus/Chubb freeze hệ thống"],
-      ketQua:["Họp kick-off 1A–SPA–Chubb ngày 05/08","Nguyên nhân chậm: 1A chỉ cấp 3 slot Q3 cho SPA; 2 SP chen ngang ưu tiên hơn BH (Premium Eco, Flex Pricer) + các mục đã reserve trước: Flight Status, PTTT địa phương, Qwikcilver","Ban Ancil (SPA) đã gửi mail push team EC/IT, yêu cầu 1A đẩy nhanh tiến độ để go-live website trong 2026"],
-      keHoach:["Họp hàng tuần SPA–PVI–Chubb với 1A để push tiến độ (đã thống nhất)","Bám mục tiêu go-live website trong 2026","Chuẩn bị vận hành cho mobile app go-live T11/2026"] },
+      ketQua:["Họp kick-off 1A–SPA–Chubb ngày 05/08","Nguyên nhân chậm: 1A chỉ cấp 3 slot Q3 cho SPA; 2 SP chen ngang ưu tiên hơn BH (Premium Eco, Flex Pricer) + các mục đã reserve trước: Flight Status, PTTT địa phương, Qwikcilver","Ban Ancil (SPA) đã gửi mail push team EC/IT, yêu cầu 1A đẩy nhanh tiến độ để go-live website trong 2026","SPA–Chubb đang chờ thống nhất Thỏa thuận CRS để trình ký chung cùng Hợp đồng ba bên / Thỏa thuận ISR"],
+      keHoach:["Họp hàng tuần SPA–PVI–Chubb với 1A để push tiến độ (đã thống nhất)","Thống nhất Thỏa thuận CRS, trình ký chung với Hợp đồng ba bên / Thỏa thuận ISR","Rà soát Nghị định 248/2026/NĐ-CP cùng SPA; chuẩn bị hồ sơ theo Phụ lục 05 NĐ 248 ngay từ T8","Bám mục tiêu go-live website trong 2026; chuẩn bị vận hành cho mobile app go-live T11/2026"] },
     bamboocare:{ trangThai:"canh-bao", dt:0.0687, luyKe:0.9956, phanTramKPI:28.4, cungKy2025:2.016,
-      ghiChu:"TẠM NGỪNG kết nối bán BambooCARE từ 10/08/2026 cho đến khi BAV xử lý xong công nợ (CV PVI Thủ Đô 06/08). T7 chỉ đạt 68,7 tr — thấp nhất năm; 7T giảm 50,6% YoY",
-      congNo:{ doiTac:"BAV", quaHan:368203154, kyThuoc:"T3–T6/2026 (quá hạn 12–103 ngày) · tổng công nợ đến hết T7: 413.826.563đ (kỳ T7 45,6 tr hạn 25/08)", trangThai:"Tờ trình 127/TTr-HK&KHDN (06/08) trình TGĐ phương án tạm ngừng kết nối; CV đã gửi BAV — khôi phục khi BAV ổn định kinh doanh & thanh toán đủ công nợ. Song song: xử lý CẤN TRỪ công nợ với vụ bồi thường FLC Sầm Sơn (~22,8 tỷ)" },
-      ketQua:["Trình TGĐ phương án xử lý công nợ (TTr 127/TTr-HK&KHDN ngày 06/08)","Gửi CV thông báo BAV: tạm ngừng kết nối bán từ 10/08/2026","Đã thống nhất với Ban GQKN/Ban TCKT hướng cấn trừ công nợ với vụ BT tài sản FLC Sầm Sơn — bão số 10 Bualoi (29/9/2025), ĐBH PVI Hà Thành lead 40%, tổng dự phòng BT ~22,8 tỷ","Đã tạm ứng BT lần 1: 2 tỷ (cấn trừ vào phí BH kỳ 4 FLC nợ); dự kiến tạm ứng lần 2 ~chục tỷ cuối T8 – đầu T9","BAV đang tái cấu trúc (3 tàu bay); dự kiến khôi phục đường bay HAN–UIH từ 21/08"],
-      keHoach:["Thực hiện tạm ngừng kết nối từ 10/08 (rà soát tuân thủ NĐ 46/2023/NĐ-CP)","20/08: nhận báo cáo + bảng tính từ đơn vị giám định để Ban GQKN rà soát, chốt tạm ứng BT lần 2","Quy trình cấn trừ: B.HK làm TT cấn trừ chi phí BT (Hà Thành cấp đơn) với công nợ BambooCARE (Thủ Đô cấp đơn) → PVI–BAV ký biên bản xác nhận công nợ → ký thỏa thuận 3 bên PVI–BAV–FLC về bù trừ → Ban GQKN làm TT GQKN & đề nghị thanh toán trừ khoản công nợ","Phối hợp PVI Thủ Đô đôn đốc BAV thanh toán dứt điểm; khôi phục kết nối khi BAV trả đủ nợ & ổn định"] },
+      ghiChu:"TẠM NGỪNG kết nối bán BambooCARE từ 10/08/2026 (đã được phê duyệt chủ trương) cho đến khi BAV xử lý xong công nợ. Trọng tâm hiện nay: phương án cấn trừ công nợ với vụ bồi thường FLC. T7 chỉ đạt 68,7 tr — thấp nhất năm; 7T giảm 50,6% YoY",
+      congNo:{ doiTac:"BAV", quaHan:368203154, kyThuoc:"T3–T6/2026 (quá hạn 12–103 ngày) · tổng công nợ đến hết T7: 413.826.563đ (kỳ T7 45,6 tr hạn 25/08)", trangThai:"Đã được phê duyệt chủ trương tạm ngừng kết nối (TTr 127/TTr-HK&KHDN ngày 06/08); CV đã gửi BAV — khôi phục khi BAV ổn định kinh doanh & thanh toán đủ công nợ. Đang xử lý CẤN TRỪ công nợ với vụ bồi thường FLC Sầm Sơn (~22,8 tỷ)" },
+      ketQua:["ĐÃ ĐƯỢC PHÊ DUYỆT chủ trương tạm ngừng kết nối (TTr 127/TTr-HK&KHDN ngày 06/08)","Gửi CV thông báo BAV: tạm ngừng kết nối bán từ 10/08/2026","Đã thống nhất với Ban GQKN/Ban TCKT hướng cấn trừ công nợ với vụ BT tài sản FLC Sầm Sơn — bão số 10 Bualoi (29/9/2025), ĐBH PVI Hà Thành lead 40%, tổng dự phòng BT ~22,8 tỷ","Đã tạm ứng BT lần 1: 2 tỷ (cấn trừ vào phí BH kỳ 4 FLC nợ); dự kiến tạm ứng lần 2 ~chục tỷ cuối T8 – đầu T9","BAV đang tái cấu trúc (3 tàu bay); dự kiến khôi phục đường bay HAN–UIH từ 21/08"],
+      keHoach:["TRÌNH LÃNH ĐẠO phương án cấn trừ công nợ BambooCARE với chi phí bồi thường vụ FLC","Quy trình cấn trừ: B.HK làm TT cấn trừ chi phí BT (Hà Thành cấp đơn) với công nợ BambooCARE (Thủ Đô cấp đơn) → PVI–BAV ký biên bản xác nhận công nợ → ký thỏa thuận 3 bên PVI–BAV–FLC về bù trừ → Ban GQKN làm TT GQKN & đề nghị thanh toán trừ khoản công nợ","20/08: nhận báo cáo + bảng tính từ đơn vị giám định để Ban GQKN rà soát, chốt tạm ứng BT lần 2","Thực hiện tạm ngừng kết nối từ 10/08 (rà soát tuân thủ NĐ 46/2023/NĐ-CP)","Phối hợp PVI Thủ Đô đôn đốc BAV thanh toán dứt điểm; khôi phục kết nối khi BAV trả đủ nợ & ổn định"] },
     wbooking:{ trangThai:"canh-bao", dt:0.2127, luyKe:1.801, boiThuong:1.567, tyLeBT:87.01, cungKy2025:2.706,
       ghiChu:"Lũy kế 7T: DT 1,80 tỷ · BT 1,57 tỷ (87,01%); T7 cải thiện còn 57,6% nhưng T2, T4–T6 đều vượt 100% (nguồn: Google Sheet wBooking)",
       bangThang:[[1,392389785,187500000,3,47.78],[2,112288662,125000000,3,111.32],[3,356553615,112500000,2,31.55],[4,304001027,432000000,2,142.11],[5,242407448,300000000,5,123.76],[6,180525803,287500000,4,159.26],[7,212711759,122500000,3,57.59]],
       ketQua:["T7: DT 212,7 tr · 3 vụ bồi thường (122,5 tr) — tỷ lệ 57,6%, tốt nhất từ T3"],
       keHoach:["Đào tạo 2 sân golf Vinpearl còn lại","Rà soát gói B20 do tỷ lệ bồi thường cao"] },
     flightdelay:{ trangThai:"sap-golive", dt:0, luyKe:0,
-      ghiChu:"Kênh: Vntrip (sắp go-live), Hồng Ngọc Hà, Gotadi, đại lý VNA (chưa có báo cáo T7)",
-      ketQua:["(Chưa có báo cáo T7)"], keHoach:["Hoàn thiện test claim portal Igloo & triển khai OTA"] },
-    "asahi-npuv":{ trangThai:"canh-bao", dt:1.72, luyKe:11.05, tyLeBT:27.8,
-      ghiChu:"Số 6T — chưa có báo cáo T7 · Lũy kế 6T 11,05 tỷ, giảm 26,26% YoY",
-      ketQua:["(Chưa có báo cáo T7)"], keHoach:["Thống nhất lấy lead bệnh viện","Triển khai NPUV2","Landing page thu lead (ALCV)"] },
-    "asahi-apuv":{ trangThai:"canh-bao", dt:0.02634, luyKe:0.15449,
-      ghiChu:"Số 6T — chưa có báo cáo T7 · 6T đạt 154,49 tr (−28,15% YoY); chờ Asahi phản hồi phương án điều chỉnh APUV",
-      ketQua:["(Chưa có báo cáo T7)"], keHoach:["Asahi phản hồi phương án điều chỉnh APUV","Phối hợp Ban CN & Actuary thủ tục điều chỉnh SP"] },
+      ghiChu:"Sẵn sàng go-live với Atadi trong T8/2026 — đã xong test claim portal & ký hợp đồng TPA với Igloo, đã đào tạo sale Atadi. Đang mở rộng kênh OTA: Hồng Ngọc Hà (đang ký HĐ + test UAT), Gotadi, Hồ Phi Long, Bảo Gia Trần",
+      moc:["T8/2026: go-live Flight Delay với Atadi"],
+      ketQua:["Hoàn thiện test hệ thống claim portal với Igloo và ĐÃ KÝ hợp đồng TPA với Igloo","Đã đào tạo cho đội ngũ sale của Atadi","Chào sản phẩm Flight Delay & Bảo hiểm du lịch cho OTA Hồ Phi Long, Gotadi, Bảo Gia Trần","Đang phối hợp Hồng Ngọc Hà hoàn thiện ký kết hợp đồng và test hệ thống UAT"],
+      keHoach:["Chuẩn bị chương trình marketing & ký biên bản nghiệm thu để GO-LIVE với Atadi trong T8/2026","Hoàn tất ký hợp đồng và test UAT với Hồng Ngọc Hà","Bám sát các OTA đã chào sản phẩm: Gotadi, Hồ Phi Long, Bảo Gia Trần"] },
+    asahi:{ trangThai:"canh-bao", dt:2.02, luyKe:12.91, phanTramKPI:46.12,
+      ghiChu:"T7 đạt 2,02 tỷ; lũy kế 7T 12,91 tỷ = 46,12% kế hoạch năm (28 tỷ). Báo cáo T7 gộp chung NPUV + APUV (không tách như kỳ trước)",
+      ketQua:["T7: 2,02 tỷ · lũy kế 7T 12,91 tỷ = 46,12% KH năm (28 tỷ)","Nghiên cứu mở rộng & nâng chất lượng nguồn lead NPUV; xây chính sách nhân sự TSR nâng năng suất bán","Nâng cấp landing page NPUV (Breakfield) + xây landing page thu lead riêng cho ALCV","Xây định hướng mở rộng hợp tác PVI – Asahi – Asahi LivWell","Hoàn thành bản chào phí BH tai nạn cho giải chạy do Asahi tài trợ"],
+      keHoach:["Làm việc Ban CN, Actuary & Asahi thống nhất phương án điều chỉnh An Phúc Ưu Việt (APUV)","Hoàn thiện chương trình khuyến khích bán hàng cho TSR của ALCV","Đánh giá tỷ lệ bồi thường, tiêu chí chọn KH & kiểm soát tổn thất nguồn lead bệnh viện","Hoàn thiện tính toán hiệu quả & phương án miễn phí BH năm thứ 4 của NPUV2","Chi tiết hóa hợp tác toàn diện PVI – Asahi – Asahi LivWell (phương án bán hàng, lộ trình, target, cam kết nguồn lực)"] },
     mobifone:{ trangThai:"cho-doi-tac", luyKe:0.021, phanTramKPI:1.05,
-      ghiChu:"Số 6T — chưa có báo cáo T7 · Lũy kế mới đạt 21 tr = 1,05% KPI; MOU dự kiến ký trong T7, chờ cập nhật",
-      ketQua:["(Chưa có báo cáo T7)"], keHoach:["Ký MOU với MBF","Go-live BH Du lịch quốc tế trên Cổng BH"] },
+      ghiChu:"ĐÃ GO-LIVE BH Du lịch quốc tế trên Cổng bảo hiểm (hoàn thành UAT + fix lỗi). MOU hợp tác chiến lược toàn diện đang hoàn thiện thủ tục ký — doanh thu lũy kế vẫn ở mức 21 tr = 1,05% KPI",
+      ketQua:["Hoàn thành UAT, fix lỗi và GO-LIVE thành công BH Du lịch quốc tế trên Cổng BH","Hoàn thành thiết kế ấn phẩm truyền thông banner/infographic BHDLQT","Làm việc TT MDS tiếp thu ý kiến điều chỉnh MOU hợp tác chiến lược toàn diện","Khảo sát 18 lượt cửa hàng MBF & TGDĐ, hoàn thành báo cáo khảo sát","Phối hợp MBF Quảng Ninh xây bản chào dự án NOSCO & Sát hạch lái xe"],
+      keHoach:["Đẩy truyền thông BHDLQT đa kênh cùng MDS (SMS, Fanpage, Zalo OA)","Thống nhất nội dung & hoàn thiện thủ tục ký MOU hợp tác chiến lược với MobiFone","Bám sát đàm phán dự án Sát hạch lái xe & NOSCO cùng MBF Quảng Ninh","Xây tính năng ghi nhận hoa hồng bảo hiểm trên Cổng BH"] },
     zalopay:{ trangThai:"cho-doi-tac", dt:0.0603, luyKe:0.1382, canQuyetDinh:true,
-      ghiChu:"Số 6T — chưa có báo cáo T7 · Chờ chốt phương án triển khai mới sau khi tờ trình tăng ĐMCP bị từ chối",
-      ketQua:["(Chưa có báo cáo T7)"], keHoach:["Tính hiệu quả phương án mới","TRÌNH LÃNH ĐẠO phương án triển khai mới"] },
+      ghiChu:"Báo cáo T7 nhắc lại số liệu tuần 08–14/06 (12,5 tr · 825 GD · phí TB 15.200đ/đơn) — chưa có số T7 mới. Vẫn chờ chốt phương án triển khai mới",
+      ketQua:["Tuần 08–14/06: 12,5 tr · 825 giao dịch · phí TB ~15.200đ/đơn","ZLP kết thúc KM miễn phí tháng đầu từ 15/06","Hiệu quả chương trình: ~64% user từ chối mua định kỳ tái tục; tỷ lệ tái tục tháng thứ 2 chỉ ~8%","ZLP đề xuất: nâng giá ~40%, giảm 50% cho user, nâng commission ZLP lên 60%"],
+      keHoach:["Tính hiệu quả phương án mới theo định mức chi phí hiện tại","TRÌNH LÃNH ĐẠO phương án triển khai mới"] },
     nnx:{ trangThai:"tang-truong", dt:1.94, luyKe:13.32,
       ghiChu:"Số 6T — chưa có báo cáo T7 · 6T tăng 7,07 lần YoY — ngôi sao tăng trưởng",
       ketQua:["(Chưa có báo cáo T7)"], keHoach:["Duy trì đà tăng, theo dõi chất lượng khai thác"] },
-    "plus-ew":{ trangThai:"tang-truong", dt:0.4525, luyKe:2.087, tbNgay:14.6,
-      ghiChu:"T7 phí 452,5 tr (+35,6% MoM) · 727 app (+25,6%) · 20 HEAD hoạt động (+25%) · Plus 99,5% / EW 0,5% (nguồn: pvi-honda-report.netlify.app, cập nhật 03/08)",
-      ketQua:["T7: phí BH 452,5 tr · incentive 90,5 tr","727 app (Plus 97,2% / EW 2,8%) · 20 HEAD hoạt động"],
-      keHoach:["Đẩy Plus toàn quốc nửa cuối 2026","Nâng cấp website hondaplus.vn","Trọng tâm HEAD ở tỉnh"] },
-    viettelstore:{ trangThai:"sap-golive", dt:0, luyKe:0,
-      ghiChu:"Mốc go-live ADLD & EW trong T7 đã đến hạn — chờ Phòng cập nhật kết quả (chưa có báo cáo T7)",
-      ketQua:["(Chưa có báo cáo T7)"], keHoach:["Cập nhật kết quả go-live ADLD & EW","Kết nối & go-live '1 đổi 1'","Hoàn thiện HĐ nhà tái AIG"] },
-    sungroup:{ trangThai:"sap-golive", dt:0, luyKe:0,
-      ghiChu:"Mốc go-live + MOU OPES trước 31/07 đã đến hạn — chờ Phòng cập nhật kết quả (chưa có báo cáo T7)",
-      ketQua:["(Chưa có báo cáo T7)"], keHoach:["Cập nhật kết quả MOU & go-live","Kết nối với SG"] },
-    khac:{ trangThai:"cho-doi-tac", dt:0, luyKe:0, ghiChu:"6 hướng đang đàm phán / chờ đối tác (chưa có báo cáo T7)",
-      danhSach:[{ten:"A05 — BH Cyber Shield SME",trangThai:"Đợi thông tin từ A05",uuTien:5},{ten:"7-Eleven — TNDS/Tai nạn",trangThai:"Hoàn thiện chứng chỉ đại lý",uuTien:3},{ten:"OPES–O-Car–VPBank — Vật chất xe",trangThai:"Đợi VPBank chấm điểm nhà BH",uuTien:5},{ten:"Insurtech–3GO",trangThai:"Hai bên đang phối hợp",uuTien:5},{ten:"Igloo — BH ung thư CPM",trangThai:"Đang định phí với nhà tái",uuTien:1},{ten:"GTEL / VNPT",trangThai:"Đang trao đổi",uuTien:2}],
-      keHoach:["Bám sát tiến độ phản hồi từng đối tác"] }
+    "plus-ew":{ trangThai:"tang-truong", dt:0.452, luyKe:2.1, soDon:3603, tbNgay:14.6,
+      ghiChu:"T7 đạt 452 tr (+36% so T6); lũy kế 7T: 3.603 đơn / 2,1 tỷ. Incentive T7 90,5 tr · 727 app · 20 HEAD hoạt động (pvi-honda-report.netlify.app 03/08)",
+      ketQua:["T7: 452 tr (+36% MoM) · lũy kế 7T 3.603 đơn / 2,1 tỷ · 727 app · 20 HEAD hoạt động","Đào tạo trực tiếp & trực tuyến cho PVI đơn vị (HCM, An Giang) và các HEAD đã ký hợp đồng","Duyệt phương án website giai đoạn 2; go-live tính năng chỉnh sửa đơn trong ngày trên hondaplus.vn","Trao trả bồi thường tại HEAD Kường Ngân, Minh Thương, Vũ Hoàng Lê cùng TCV & PVI đơn vị","Nâng cấp hệ thống đào tạo trực tuyến daotao.hondaplus.vn cho các HEAD"],
+      keHoach:["Hoàn thiện kết nối API hondaplus.vn ↔ PVI Connect (cấp đơn trực tuyến, hóa đơn live 1-1)","Cùng PVI An Giang ký hợp đồng chuỗi HEAD Kim Điệp","Sản xuất bộ truyền thông riêng cho xe máy điện (standee để bàn, standee gắn gương)","Theo dõi tiến độ bán của các HEAD sau khi đổi chương trình incentive"] },
+    viettelstore:{ trangThai:"canh-bao", dt:0, luyKe:0,
+      ghiChu:"ADLD: đã test xong luồng API mới nhưng VST CHƯA thông báo ngày go-live chính thức — VST vẫn tập trung bán cho MIC tại tất cả cửa hàng. BH '1 đổi 1' đặt mục tiêu go-live T8/2026 để kịp ra mắt iPhone 18",
+      ketQua:["Test xong luồng API mới chương trình ADLD với IT 2 bên — VST chưa chốt ngày go-live lại","Hoàn thiện bộ hợp đồng, phụ lục, API cho chương trình BH '1 đổi 1' mới","Tiếp nhận & kiểm tra nội bộ các dự thảo hợp đồng của nhà tái và TPA cho chương trình '1 đổi 1'"],
+      keHoach:["Thúc đẩy VST go-live chính thức ADLD cùng thời điểm triển khai BH '1 đổi 1' cho các dòng iPhone","Hoàn thiện tài liệu ký kết chương trình '1 đổi 1' cùng VST","Kết nối API & go-live BH '1 đổi 1' trong T8/2026 (cùng Phòng CN&CDS, IT VST, TPA)","Hoàn thiện tài liệu quy trình & đào tạo cho chương trình '1 đổi 1'"] },
+    sungroup:{ trangThai:"cho-doi-tac", dt:0, luyKe:0,
+      ghiChu:"Đã hoàn thiện MOU và NDA với Sun World; đã họp phương án triển khai trong T8/2026, tập trung sản phẩm gắn với Du lịch và Chỉ số thời tiết. Mốc go-live trước 31/07 KHÔNG đạt — đang chờ Sun World phản hồi phương án bán hàng",
+      ketQua:["Hoàn thiện MOU và NDA với Sun World","Tổng hợp thông tin từ Sun, xây bản chào sản phẩm + kế hoạch bán hàng cho Sun World","Tiếp nhận phản hồi khảo sát của SGR, cập nhật giả định doanh thu (dashboard ước tính doanh thu Sungroup)","Họp với SGR về phương án triển khai T8/2026 — trọng tâm SP Du lịch & Chỉ số thời tiết"],
+      keHoach:["Follow-up phản hồi của Sun World về phương án bán hàng"],
+      link:"https://pvi-aviationdivision.github.io/Sungroup_Uoctinh_Doanhthu/" },
+    khac:{ trangThai:"cho-doi-tac", dt:0, luyKe:0, ghiChu:"9 hướng đang triển khai / đàm phán — nổi bật: Insurtech 3GO dự kiến go-live giữa T8; A05 Cyber Shield SME đã có landing page & sự kiện KOL Summit cuối T8",
+      danhSach:[
+        {ten:"Insurtech – 3GO",trangThai:"Đã xong hợp đồng, bộ API, thư chỉ định; test hệ thống — go-live giữa T8/2026",uuTien:5},
+        {ten:"A05 — BH Cyber Shield SME",trangThai:"Landing page đã lên; dự sự kiện An ninh mạng VN 06/08; KOL Summit cuối T8",uuTien:5},
+        {ten:"OPES–O-Car–VPBank — Vật chất xe",trangThai:"Đã chốt phương án tính phí, nhận dự thảo HĐ; OPES chờ VPBank duyệt",uuTien:5},
+        {ten:"Igloo — BH ung thư CPM",trangThai:"Làm việc nhà tái về quyền lợi/biểu phí; họp chốt SP 05/08; chuẩn bị đăng ký BTC",uuTien:1},
+        {ten:"7-Eleven (SSV)",trangThai:"Đang xin giấy phép đại lý; mới 2 người đỗ, thi tiếp 14/08; SSV muốn nhúng landing page PVI vào app",uuTien:3},
+        {ten:"BH TNDS ô tô qua cửa khẩu",trangThai:"Đã họp C08 trao đổi ý tưởng; đang xây đề án",uuTien:2},
+        {ten:"Nura — BH sức khỏe telesales",trangThai:"MỚI: đánh giá SP của MSIG, xây list câu hỏi thu thập thông tin",uuTien:2},
+        {ten:"Ledgertech & PolicyStreet",trangThai:"MỚI: học kinh nghiệm bảo hiểm số/embedded — họp 05/08 (PolicyStreet), 06/08 (Ledgertech)",uuTien:2},
+        {ten:"GTEL / VNPT",trangThai:"Đang trao đổi hợp tác toàn diện",uuTien:2}],
+      keHoach:["Insurtech: kết nối SP TNDS & Tai nạn cá nhân, go-live giữa T8/2026; hoàn thiện tờ trình & ký hợp đồng","A05: tổ chức sự kiện KOL Summit cuối T8 giới thiệu BH Cyber Shield SME","O-Car/VPBank: hoàn thiện tờ trình, ký HĐ đồng bảo hiểm với OPES & kết nối API","7-Eleven: hoàn thiện HĐ đại lý & landing page BH TNDS xe máy + tai nạn con người","Nura: xây kịch bản bán hàng chi tiết cho kênh telesales","Cửa khẩu: hoàn thiện đề án nội bộ để tiếp tục trao đổi với C08"] }
   },
   khoKhan:[
-    { muc:"gap", duAn:"BambooCARE", kho:"TẠM NGỪNG kết nối bán từ 10/08/2026 do công nợ BAV quá hạn 368.203.154đ — đã trình TGĐ (TTr 127) & gửi CV cho BAV; song song xử lý cấn trừ công nợ với vụ BT FLC Sầm Sơn (~22,8 tỷ, tạm ứng lần 2 cuối T8–đầu T9)", hoTro:"Phê duyệt chủ trương tạm ngừng (TTr 127/TTr-HK&KHDN); ủng hộ phương án cấn trừ 3 bên PVI–BAV–FLC để thu hồi dứt điểm công nợ" },
+    { muc:"gap", duAn:"BambooCARE", kho:"Công nợ BAV quá hạn 368.203.154đ — đã được phê duyệt chủ trương tạm ngừng kết nối bán từ 10/08/2026 và gửi CV cho BAV; đang xử lý cấn trừ công nợ với vụ BT FLC Sầm Sơn (~22,8 tỷ, tạm ứng lần 2 cuối T8–đầu T9)", hoTro:"Trình lãnh đạo phê duyệt phương án cấn trừ công nợ BambooCARE với chi phí bồi thường vụ FLC (thỏa thuận 3 bên PVI–BAV–FLC) để thu hồi dứt điểm" },
     { muc:"gap", duAn:"SPA GoSafe", kho:"1A lùi tiến độ: mobile app T11/2026, website rủi ro không kịp 2026 — 1A chỉ cấp 3 slot Q3, bị Premium Eco & Flex Pricer chen ngang (kick-off 05/08)", hoTro:"Tác động 1A/SPA ở cấp cao để giữ mục tiêu go-live website trong 2026; ủng hộ cơ chế họp hàng tuần 4 bên" },
     { muc:"gap", duAn:"Zalopay", kho:"Tờ trình tăng ĐMCP bị Ban KTKH từ chối; ~64% user từ chối tái tục sau khi hết KM miễn phí (chưa có cập nhật T7)", hoTro:"Chốt hướng triển khai mới: PVI chịu chi phí KM tháng đầu / phương án ZLP (nâng giá 40%, giảm 50% cho user, commission 60%)" },
-    { muc:"gap", duAn:"Asahi (NPUV + APUV)", kho:"Cả hai sản phẩm giảm >26% so cùng kỳ (số 6T); NPUV2/APUV2 vẫn chờ Asahi phản hồi", hoTro:"Duyệt phương án lấy lead tại bệnh viện + chủ trương điều chỉnh sản phẩm APUV" },
+    { muc:"gap", duAn:"Asahi (NPUV + APUV)", kho:"Lũy kế 7T mới đạt 12,91 tỷ = 46,12% kế hoạch năm (28 tỷ) — còn 5 tháng phải làm hơn 15 tỷ; phương án điều chỉnh APUV & NPUV2 chưa chốt", hoTro:"Duyệt phương án điều chỉnh An Phúc Ưu Việt, chủ trương lấy lead bệnh viện & miễn phí năm thứ 4 của NPUV2" },
+    { muc:"gap", duAn:"Viettel Store", kho:"VST chưa chốt ngày go-live lại ADLD, vẫn tập trung bán cho MIC tại tất cả cửa hàng — doanh thu 2026 vẫn bằng 0", hoTro:"Tác động lãnh đạo VST để chốt go-live ADLD, kịp cùng chương trình BH '1 đổi 1' T8/2026 (ra mắt iPhone 18)" },
     { muc:"theo-doi", duAn:"wBooking", kho:"Tỷ lệ bồi thường lũy kế 7T 87,01%; T2, T4–T6 vượt 100% — T7 cải thiện còn 57,6% nhưng chưa đủ kéo lại", hoTro:"Cho ý kiến rà soát gói B20 và cơ cấu tái" },
-    { muc:"theo-doi", duAn:"MobiFone", kho:"Mới đạt 1,05% KPI năm (số 6T); MOU dự kiến ký trong T7 chưa có xác nhận", hoTro:"Thu xếp ký MOU cấp lãnh đạo hai bên để mở khóa Cổng BH" }
+    { muc:"theo-doi", duAn:"Sun Group", kho:"Đã hoàn thiện MOU/NDA nhưng mốc go-live trước 31/07 không đạt; đang chờ Sun World phản hồi phương án bán hàng", hoTro:"Tác động Sun World chốt phương án để triển khai trong T8/2026" },
+    { muc:"theo-doi", duAn:"MobiFone", kho:"Đã go-live BH Du lịch quốc tế trên Cổng BH nhưng doanh thu mới 1,05% KPI năm; MOU hợp tác chiến lược vẫn đang hoàn thiện thủ tục ký", hoTro:"Thu xếp ký MOU cấp lãnh đạo hai bên để mở rộng hợp tác qua Cổng BH" }
   ],
-  /* st: "done" = đã hoàn thành · "qua" = đã đến hạn, chờ Phòng cập nhật kết quả */
+  /* st: "done" = đã hoàn thành · "truot" = đã trượt hạn · "qua" = đã đến hạn, chờ Phòng cập nhật */
   mocThoiGian:[
     { ngay:"01/07", duAn:"Viettel Store", moc:"Đổi nhà tái ADLD Allianz → AIG (hiệu lực)", hot:false, st:"done" },
-    { ngay:"Trong T7", duAn:"Viettel Store", moc:"Go-live ADLD & EW + kết nối '1 đổi 1'", hot:false, st:"qua" },
-    { ngay:"Trước 31/07", duAn:"Sun Group", moc:"Go-live SP nhúng + ký MOU với OPES", hot:true, st:"qua" },
-    { ngay:"Trong T7", duAn:"MobiFone", moc:"Ký MOU + go-live BH Du lịch quốc tế (Cổng BH)", hot:false, st:"qua" },
-    { ngay:"06/08", duAn:"SPA", moc:"Production release trên Chubb CRS", hot:true, st:"qua" },
+    { ngay:"Trong T7", duAn:"MobiFone", moc:"Go-live BH Du lịch quốc tế trên Cổng BH (MOU đang hoàn thiện ký)", hot:false, st:"done" },
+    { ngay:"Trong T7", duAn:"Viettel Store", moc:"Go-live ADLD & EW — VST chưa chốt ngày, vẫn ưu tiên bán MIC", hot:true, st:"truot" },
     { ngay:"10/08", duAn:"BambooCARE", moc:"Tạm ngừng kết nối bán trên kênh BAV — đến khi xử lý xong công nợ", hot:true },
+    { ngay:"14/08", duAn:"7-Eleven (SSV)", moc:"Kỳ thi chứng chỉ đại lý cho ứng viên cuối cùng (mới 2 người đỗ)", hot:false },
+    { ngay:"Giữa T8", duAn:"Insurtech – 3GO", moc:"Go-live SP TNDS & Tai nạn cá nhân qua kênh đại lý Insurtech", hot:true },
     { ngay:"20/08", duAn:"BambooCARE", moc:"Giám định gửi báo cáo vụ FLC (Bualoi) — Ban GQKN rà soát, chốt tạm ứng BT lần 2", hot:false },
     { ngay:"21/08", duAn:"BambooCARE", moc:"BAV dự kiến khôi phục đường bay HAN–UIH", hot:false },
     { ngay:"25/08", duAn:"BambooCARE", moc:"Hạn thanh toán công nợ kỳ T7 (45,6 tr)", hot:false },
+    { ngay:"Trong T8", duAn:"Flight Delay", moc:"Go-live với Atadi (đã xong claim portal & HĐ TPA Igloo)", hot:true },
+    { ngay:"Trong T8", duAn:"Viettel Store", moc:"Go-live BH '1 đổi 1' — kịp ra mắt iPhone 18", hot:true },
+    { ngay:"Cuối T8", duAn:"A05", moc:"Sự kiện KOL Summit giới thiệu BH Cyber Shield SME", hot:false },
     { ngay:"Trong T8", duAn:"TripCARE", moc:"Go-live Phase 2 UI/UX (Insider)", hot:false },
     { ngay:"Cuối T9", duAn:"SPA", moc:"1A lên lịch config website (+2–3 tháng để go-live)", hot:true },
     { ngay:"T11/2026", duAn:"SPA", moc:"1A dự trù go-live mobile app", hot:false }
@@ -958,12 +990,12 @@ const GANTT = {
   ticks:[[1,"01/07"],[8,"08/07"],[15,"15/07"],[22,"22/07"],[29,"29/07"],[36,"05/08"]],
   rows:[
     { duAn:"TripCARE", st:"tang-truong", items:[[1,15,"Chốt cơ cấu tái với Chubb"],[15,31,"Go-live Phase 2 UI/UX (Insider)"]] },
-    { duAn:"SPA GoSafe", st:"sap-golive", items:[[1,14,"Hoàn thiện back-end"],[13,24,"UAT với 1A"],[37,37,"Production Chubb CRS (06/08)"]] },
-    { duAn:"Viettel Store", st:"sap-golive", items:[[1,1,"Đổi nhà tái → AIG (01/07)"],[1,20,"Go-live ADLD & EW"],[10,31,"Kết nối '1 đổi 1'"]] },
-    { duAn:"Sun Group", st:"sap-golive", items:[[1,31,"Ký MOU OPES · kết nối · go-live trước 31/07"]] },
-    { duAn:"Flight Delay", st:"sap-golive", items:[[1,14,"Test claim portal Igloo"],[14,31,"Triển khai OTA"]] },
-    { duAn:"MobiFone", st:"cho-doi-tac", items:[[2,2,"Bản test Cổng BH (02/07)"],[5,25,"Ký MOU · go-live BH DLQT"]] },
-    { duAn:"Asahi", st:"canh-bao", items:[[1,10,"Review landing page lead bệnh viện"],[10,31,"Triển khai NPUV2 · thưởng TSR"]] },
+    { duAn:"SPA GoSafe", st:"cho-doi-tac", items:[[1,14,"Hoàn thiện back-end"],[13,24,"UAT với 1A"],[25,41,"Chờ 1A xếp lịch config · thống nhất Thỏa thuận CRS"]] },
+    { duAn:"Viettel Store", st:"canh-bao", items:[[1,1,"Đổi nhà tái → AIG (01/07)"],[1,20,"Test API ADLD xong — VST chưa chốt go-live"],[10,41,"Hoàn thiện HĐ/API '1 đổi 1' → go-live T8"]] },
+    { duAn:"Sun Group", st:"cho-doi-tac", items:[[1,31,"Hoàn thiện MOU & NDA — chờ SGR chốt phương án bán"]] },
+    { duAn:"Flight Delay", st:"sap-golive", items:[[1,14,"Xong test claim portal · ký HĐ TPA Igloo"],[14,31,"Đào tạo sale Atadi · chào OTA"],[32,41,"Marketing & nghiệm thu → go-live Atadi"]] },
+    { duAn:"MobiFone", st:"cho-doi-tac", items:[[2,2,"Bản test Cổng BH (02/07)"],[5,25,"UAT & go-live BH DLQT trên Cổng BH ✓"],[25,41,"Hoàn thiện thủ tục ký MOU"]] },
+    { duAn:"Asahi", st:"canh-bao", items:[[1,10,"Nâng cấp landing page NPUV · landing page lead ALCV"],[10,31,"Mở rộng nguồn lead · chính sách TSR · bản chào giải chạy"]] },
     { duAn:"Zalopay", st:"cho-doi-tac", items:[[1,15,"Trình lãnh đạo phương án mới"]] },
     { duAn:"Plus & EW Honda", st:"tang-truong", items:[[1,31,"Nâng cấp hondaplus.vn GĐ2"],[15,41,"Mở rộng HEAD tỉnh"]] },
     { duAn:"BambooCARE", st:"canh-bao", items:[[1,31,"Thu hồi công nợ BAV"],[41,41,"Tạm ngừng kết nối bán (10/08)"]] },
@@ -1002,16 +1034,16 @@ function renderGantt(){
 const KPI_MAP = [
   { nguoi:"Hằng", mau:["#2E6BE6","#5C8BEC","#84A8F1","#ABC3F6","#CEDCFA"], duAn:[
     { ten:"TripCARE",     kpi:60,   ct:"KPI PVI: 60 tỷ · KPI VNA: 80 tỷ" },
-    { ten:"SPA GoSafe",   kpi:9.6,  ct:"9,6 tỷ/cả năm (CR 5%) · 805 tr/tháng" },
-    { ten:"wBooking",     kpi:4,    ct:"KPI PVI: 4 tỷ · KPI wBooking: 16,15 tỷ (≈5,5 tỷ phí về PVI)" },
+    { ten:"SPA GoSafe",   kpi:9.6,  ht:"Thư", ct:"9,6 tỷ/cả năm (CR 5%) · 805 tr/tháng" },
+    { ten:"wBooking",     kpi:4,    ht:"Duy", ct:"KPI PVI: 4 tỷ · KPI wBooking: 16,15 tỷ (≈5,5 tỷ phí về PVI)" },
     { ten:"BambooCARE",   kpi:3.5,  ct:"KPI PVI: 3,5 tỷ" },
     { ten:"Flight Delay", kpi:2,    ct:"OTA: 600 tr – 2 tỷ/năm (attach rate 1–2%)" }
   ]},
   { nguoi:"Thư", mau:["#1E9E5A","#3FBF7F","#6FD3A0","#A6E4C4"], duAn:[
-    { ten:"Asahi",    kpi:31.86, ct:"NPUV: 31 tỷ · APUV: 862 triệu" },
-    { ten:"MobiFone", kpi:15,    ct:"A08: 15 tỷ/năm · quy mô đối tác: Cổng BH 316 tỷ/năm, MDP 1.900 tỷ/năm" },
+    { ten:"Asahi",    kpi:31.86, ht:"Duy", ct:"NPUV: 31 tỷ · APUV: 862 triệu" },
+    { ten:"MobiFone", kpi:15,    ht:"Duy", ct:"A08: 15 tỷ/năm · quy mô đối tác: Cổng BH 316 tỷ/năm, MDP 1.900 tỷ/năm" },
     { ten:"NNX",      kpi:10,    ct:"NNX: 10 tỷ (nhóm Khác: SPA, NNX, Igloo)" },
-    { ten:"Zalopay",  kpi:0.6,   ct:"600 triệu/năm" }
+    { ten:"Zalopay",  kpi:0.6,   ht:"Duy", ct:"600 triệu/năm" }
   ]},
   { nguoi:"Tùng", mau:["#E0982A","#EBB25C","#F3CC90"], duAn:[
     { ten:"CRTC",          kpi:12.5, ct:"Kỳ vọng 12,5 tỷ/năm" },
@@ -1021,7 +1053,7 @@ const KPI_MAP = [
 ];
 function buildKpiPie(){
   const svg=$('#kpi-pie'); if(!svg || svg.dataset.done) return; svg.dataset.done=1;
-  const flat=[]; KPI_MAP.forEach(g=>g.duAn.forEach((d,i)=>flat.push({ten:d.ten,kpi:d.kpi,ct:d.ct,nguoi:g.nguoi,mau:g.mau[i%g.mau.length]})));
+  const flat=[]; KPI_MAP.forEach(g=>g.duAn.forEach((d,i)=>flat.push({ten:d.ten,kpi:d.kpi,ct:d.ct,ht:d.ht,nguoi:g.nguoi,mau:g.mau[i%g.mau.length]})));
   const tong=flat.reduce((s,d)=>s+d.kpi,0);
   const cx=150,cy=150,R=112,IR=64;
   let a=-Math.PI/2, out='';
@@ -1031,7 +1063,7 @@ function buildKpiPie(){
     const x3=cx+IR*Math.cos(a2), y3=cy+IR*Math.sin(a2), x4=cx+IR*Math.cos(a), y4=cy+IR*Math.sin(a);
     out+='<path d="M'+x1.toFixed(1)+' '+y1.toFixed(1)+' A'+R+' '+R+' 0 '+large+' 1 '+x2.toFixed(1)+' '+y2.toFixed(1)+
       ' L'+x3.toFixed(1)+' '+y3.toFixed(1)+' A'+IR+' '+IR+' 0 '+large+' 0 '+x4.toFixed(1)+' '+y4.toFixed(1)+' Z" fill="'+d.mau+
-      '" stroke="var(--card)" stroke-width="1.5" data-tip="<b>'+esc(d.ten)+'</b> · '+esc(d.nguoi)+'<br>'+esc(d.ct)+'<br>Tỷ trọng: '+nfmt(frac*100,1)+'%"/>';
+      '" stroke="var(--card)" stroke-width="1.5" data-tip="<b>'+esc(d.ten)+'</b><br>Phụ trách: '+esc(d.nguoi)+(d.ht?' · hỗ trợ: '+esc(d.ht):'')+'<br>'+esc(d.ct)+'<br>Tỷ trọng: '+nfmt(frac*100,1)+'%"/>';
     const am=(a+a2)/2, lx=(cx+(R+IR)/2*Math.cos(am)).toFixed(1), ly=(cy+(R+IR)/2*Math.sin(am)).toFixed(1);
     if(frac>0.09)
       out+='<text x="'+lx+'" y="'+ly+'" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff" pointer-events="none"><tspan x="'+lx+'" dy="-2">'+esc(d.ten)+'</tspan><tspan x="'+lx+'" dy="12" class="num">'+nfmt(frac*100,1)+'%</tspan></text>';
@@ -1049,7 +1081,7 @@ function renderOwnerCols(){
     const sum=g.duAn.reduce((s,d)=>s+d.kpi,0);
     return '<div class="owner-col"><div class="oh"><span class="dot" style="background:'+g.mau[0]+'"></span>'+esc(g.nguoi)+
       '<span class="sum num">'+nfmt(sum,1)+' tỷ</span></div>'+
-      g.duAn.map((d,i)=>'<div class="orow" data-tip="<b>'+esc(d.ten)+'</b><br>'+esc(d.ct)+'"><span class="sw" style="background:'+g.mau[i%g.mau.length]+'"></span><span class="n">'+esc(d.ten)+'</span><span class="k num">'+fmtTien(d.kpi)+'</span></div>').join('')+
+      g.duAn.map((d,i)=>'<div class="orow" data-tip="<b>'+esc(d.ten)+'</b><br>Phụ trách: '+esc(g.nguoi)+(d.ht?' · hỗ trợ: '+esc(d.ht):'')+'<br>'+esc(d.ct)+'"><span class="sw" style="background:'+g.mau[i%g.mau.length]+'"></span><span class="n">'+esc(d.ten)+(d.ht?'<span class="ht"> · '+esc(d.ht)+'</span>':'')+'</span><span class="k num">'+fmtTien(d.kpi)+'</span></div>').join('')+
     '</div>';
   }).join('');
 }
@@ -1064,7 +1096,9 @@ const PIPELINE = [
   { ten:"Cyber A05",                  ai:"Tùng" },
   { ten:"Tổ hợp Telco: VNPT · GTEL",  ai:"" },
   { ten:"Asahi Livwell Life",         ai:"Thư" },
-  { ten:"CPM — SP thuốc đích",        ai:"Thư" }
+  { ten:"CPM — SP thuốc đích",        ai:"Thư" },
+  { ten:"Nura — BH sức khỏe telesales", ai:"Thư" },
+  { ten:"Ledgertech · PolicyStreet",  ai:"Tùng" }
 ];
 function renderPipeline(){
   const el=$('#pipeline'); if(!el || el.dataset.done) return; el.dataset.done=1;
@@ -1080,16 +1114,17 @@ const ROADMAP = {
   rows:[
     { duAn:"TripCARE",           st:"tang-truong", items:[[1,1,"Go-live Phase 2 UI/UX (Insider)"],[2,6,"Đẩy kênh đại lý (Chubb) · cao điểm cuối năm · kế hoạch 2027"]] },
     { duAn:"SPA GoSafe",         st:"cho-doi-tac", items:[[1,3,"Họp hàng tuần 4 bên — push 1A đẩy tiến độ"],[2.6,0,"Cuối T9: 1A lên lịch config website"],[4,4,"Go-live mobile app (1A dự trù T11)"],[4,6,"Mục tiêu go-live website trong 2026 (rủi ro trượt do freeze T12)"]] },
-    { duAn:"Sun Group",          st:"sap-golive",  items:[[1,2,"Go-live SP nhúng + ký MOU OPES"],[3,6,"Mở rộng 4 SP theo mùa du lịch"]] },
-    { duAn:"Viettel Store",      st:"sap-golive",  items:[[1,1,"Go-live ADLD & EW"],[2,3,"Kết nối & go-live '1 đổi 1'"],[4,6,"Bán tại chuỗi toàn quốc"]] },
-    { duAn:"MobiFone",           st:"cho-doi-tac", items:[[1,2,"Ký MOU · go-live BH DLQT (Cổng BH)"],[3,6,"Triển khai A08 · mở rộng Cổng BH"]] },
-    { duAn:"Flight Delay",       st:"sap-golive",  items:[[1,2,"Go-live OTA: Vntrip · Gotadi · HNH"],[3,6,"Mở rộng đại lý VNA · tối ưu attach rate"]] },
-    { duAn:"Asahi",              st:"canh-bao",    items:[[1,2,"NPUV2 + lead bệnh viện · điều chỉnh APUV"],[3,6,"Pilot Asahi Livwell Life (Thư)"]] },
+    { duAn:"Sun Group",          st:"cho-doi-tac", items:[[1,2,"Chốt phương án bán với Sun World · triển khai T8"],[3,6,"Mở rộng SP Du lịch & Chỉ số thời tiết"]] },
+    { duAn:"Viettel Store",      st:"canh-bao",    items:[[1,1,"Go-live BH '1 đổi 1' (kịp iPhone 18)"],[1,3,"Thúc VST chốt go-live lại ADLD"],[4,6,"Bán tại chuỗi toàn quốc"]] },
+    { duAn:"MobiFone",           st:"cho-doi-tac", items:[[1,2,"Truyền thông BHDLQT đa kênh · ký MOU chiến lược"],[2,4,"Bám dự án Sát hạch lái xe & NOSCO"],[3,6,"Triển khai A08 · mở rộng Cổng BH"]] },
+    { duAn:"Flight Delay",       st:"sap-golive",  items:[[1,1,"Go-live với Atadi (T8)"],[1,3,"Ký HĐ & UAT Hồng Ngọc Hà · mở OTA Gotadi, Hồ Phi Long, Bảo Gia Trần"],[4,6,"Mở rộng kênh · tối ưu attach rate"]] },
+    { duAn:"Asahi",              st:"canh-bao",    items:[[1,2,"Điều chỉnh APUV · NPUV2 (miễn phí năm 4) · lead bệnh viện"],[2,4,"Chính sách TSR của ALCV"],[3,6,"Hợp tác toàn diện PVI–Asahi–Asahi LivWell"]] },
     { duAn:"Zalopay",            st:"cho-doi-tac", items:[[1,1,"Trình & chốt phương án mới"],[2,5,"Tái triển khai theo phương án được duyệt"]] },
     { duAn:"BambooCARE",         st:"canh-bao",    items:[[1.3,0,"10/08: Tạm ngừng kết nối bán"],[1,3,"Thu đòi công nợ BAV dứt điểm"],[4,6,"Khôi phục kết nối khi BAV trả đủ nợ & ổn định"]] },
     { duAn:"Plus & EW Honda",    st:"tang-truong", items:[[1,3,"Nâng cấp hondaplus.vn · mở rộng HEAD tỉnh"],[4,6,"Đẩy Plus toàn quốc"]] },
-    { duAn:"CPM — SP thuốc đích",st:"cho-doi-tac", items:[[1,3,"Định phí với nhà tái (Igloo)"],[4,6,"Pilot (Thư)"]] },
-    { duAn:"Insurtech · Cyber A05", st:"cho-doi-tac", items:[[1,3,"Kết nối 3GO · chờ thông tin A05"],[4,6,"Pilot (Tùng)"]] },
+    { duAn:"CPM — SP thuốc đích",st:"cho-doi-tac", items:[[1,3,"Chốt SP với nhà tái · đăng ký BTC (Igloo/Beacon)"],[4,6,"Pilot (Thư)"]] },
+    { duAn:"Insurtech · Cyber A05", st:"sap-golive", items:[[1.5,0,"Giữa T8: go-live 3GO"],[1,2,"Ký HĐ Insurtech · KOL Summit A05 cuối T8"],[3,6,"Mở rộng HTX xe công nghệ · bán Cyber SME"]] },
+    { duAn:"7-Eleven · Nura · Cửa khẩu", st:"cho-doi-tac", items:[[1,2,"SSV thi chứng chỉ 14/08 · ký HĐ đại lý"],[2,4,"Nura: kịch bản telesales · đề án C08"],[4,6,"Triển khai bán"]] },
     { duAn:"Pipeline 2027",      st:"cho-doi-tac", items:[[2,4,"Chuẩn bị SUN · VPBank · Lotte · VETC · Telco"],[5,6,"Pilot dự án đủ điều kiện · bổ sung nhân sự"]] }
   ]
 };
@@ -1331,9 +1366,10 @@ function renderHotspots(){
 /* ============ RENDER: TIMELINE (Khối D) ============ */
 function renderTimeline(){
   $('#timeline').innerHTML = P().mocThoiGian.map(m=>{
-    const chip = m.st==='done' ? '<span class="tl-chip ok">✓ Hoàn thành</span>'
-               : m.st==='qua'  ? '<span class="tl-chip due">Đã đến hạn · chờ cập nhật</span>' : '';
-    return '<div class="tl-item'+(m.hot?' hot':'')+(m.st==='done'?' done':'')+'"><div class="d num">'+esc(m.ngay)+'</div><div class="p">'+esc(m.duAn)+'</div><div class="m">'+esc(m.moc)+'</div>'+chip+'</div>';
+    const chip = m.st==='done'  ? '<span class="tl-chip ok">✓ Hoàn thành</span>'
+               : m.st==='truot' ? '<span class="tl-chip late">✕ Trượt hạn</span>'
+               : m.st==='qua'   ? '<span class="tl-chip due">Đã đến hạn · chờ cập nhật</span>' : '';
+    return '<div class="tl-item'+(m.hot?' hot':'')+(m.st==='done'?' done':'')+(m.st==='truot'?' late':'')+'"><div class="d num">'+esc(m.ngay)+'</div><div class="p">'+esc(m.duAn)+'</div><div class="m">'+esc(m.moc)+'</div>'+chip+'</div>';
   }).join('');
 }
 
@@ -1365,6 +1401,64 @@ function renderRevenueTab(){
   buildWbLine();
   buildWbTable();
   buildTcCompare();
+  buildRevTable();
+  buildBtBars();
+}
+
+/* Bảng doanh thu & tiến độ KPI — TẤT CẢ dự án trong kỳ (kể cả chưa phát sinh) */
+function buildRevTable(){
+  const mo=soThang(), moL=mo+'T';
+  const rows=entries().slice().sort((a,b)=>(b.d.luyKe||0)-(a.d.luyKe||0));
+  const tong=rows.reduce((s,e)=>s+(e.d.luyKe||0),0);
+  const t=$('#revtbl-title'); if(t) t.textContent='Toàn bộ '+rows.length+' dự án · doanh thu & tiến độ KPI';
+  $('#rev-table').innerHTML =
+    '<thead><tr><th>Dự án</th><th>Phụ trách</th><th>KPI / kế hoạch năm</th><th class="r">TH T'+mo+'</th><th class="r">Lũy kế '+moL+'</th><th class="r">% KPI</th><th class="r">So cùng kỳ</th><th>Trạng thái</th></tr></thead><tbody>'+
+    rows.map(e=>{
+      const info=TRANG_THAI[e.d.trangThai]||TRANG_THAI['cho-doi-tac'];
+      const pct = e.d.phanTramKPI!=null ? e.d.phanTramKPI
+                : (e.m.kpiSo ? (e.d.luyKe||0)/e.m.kpiSo*100 : null);
+      let yoy='—';
+      if(e.d.cungKy2025!=null && e.d.cungKy2025>0){
+        const p=(e.d.luyKe/e.d.cungKy2025-1)*100;
+        yoy='<b style="color:'+(p>=0?'var(--c-green)':'var(--c-redneg)')+'">'+(p>=0?'+':'−')+nfmt(Math.abs(p),1)+'%</b>';
+      }
+      return '<tr><td><b>'+esc(e.m.ten)+'</b></td>'+
+        '<td>'+esc(e.m.phuTrach||'—')+(e.m.hoTro?' <span style="color:var(--muted)">· '+esc(e.m.hoTro)+'</span>':'')+'</td>'+
+        '<td style="color:var(--muted)">'+esc(e.m.kpiNam||'—')+'</td>'+
+        '<td class="r num">'+(e.d.dt!=null&&e.d.dt>0? fmtTien(e.d.dt):'—')+'</td>'+
+        '<td class="r num">'+((e.d.luyKe||0)>0? '<b>'+fmtTien(e.d.luyKe)+'</b>':'<span style="color:var(--muted)">chưa phát sinh</span>')+'</td>'+
+        '<td class="r num">'+(pct!=null? '<b style="color:'+(pct>=(mo/12*100)?'var(--c-green)':pct>=(mo/12*100)*0.6?'var(--c-amber)':'var(--c-redneg)')+'">'+nfmt(pct,1)+'%</b>':'—')+'</td>'+
+        '<td class="r num">'+yoy+'</td>'+
+        '<td><span class="badge '+info.cls+'" style="margin:0">'+info.nhan+'</span></td></tr>';
+    }).join('')+
+    '<tr style="font-weight:800"><td>TỔNG CỘNG</td><td></td><td style="color:var(--muted)">Mục tiêu '+P().mucTieuNam+' tỷ</td><td class="r"></td>'+
+      '<td class="r num">'+fmtTien(tong)+'</td><td class="r num">'+nfmt(tong/P().mucTieuNam*100,1)+'%</td><td></td><td></td></tr></tbody>'+
+    '<tfoot><tr><td colspan="8" style="font-size:13px;color:var(--muted);font-weight:400;padding:10px 12px">'+
+      'Màu cột % KPI so với tiến độ đều theo thời gian ('+nfmt(mo/12*100,0)+'% sau '+mo+'/12 tháng): '+
+      '<b style="color:var(--c-green)">xanh</b> = đạt tiến độ · <b style="color:var(--c-amber)">vàng</b> = chậm · <b style="color:var(--c-redneg)">đỏ</b> = chậm nhiều.'+
+      (P().luuY? ' <br>Lưu ý: '+esc(P().luuY):'')+'</td></tr></tfoot>';
+}
+
+/* So sánh tỷ lệ bồi thường giữa các dự án có số liệu */
+function buildBtBars(){
+  const el=$('#bt-bars'); if(!el) return;
+  const list=entries().filter(e=>e.d.tyLeBT!=null || e.d.tyLeBT6T!=null)
+    .map(e=>({ten:e.m.ten, v:(e.d.tyLeBT!=null?e.d.tyLeBT:e.d.tyLeBT6T), dt:e.d.luyKe, bt:e.d.boiThuong, vu:e.d.soVuBT}))
+    .sort((a,b)=>b.v-a.v);
+  if(!list.length){ el.closest('.sec').style.display='none'; return; }
+  el.closest('.sec').style.display='';
+  const max=Math.max(120, ...list.map(r=>r.v));
+  el.innerHTML = list.map(r=>{
+    const col = r.v>100?'var(--c-redneg)' : r.v>50?'var(--c-amber)' : 'var(--c-green)';
+    const tip='<b>'+esc(r.ten)+'</b><br>Tỷ lệ bồi thường: '+nfmt(r.v,2)+'%'+
+      (r.dt!=null?'<br>Doanh thu: '+fmtTien(r.dt):'')+(r.bt!=null?'<br>Bồi thường: '+fmtTien(r.bt):'')+
+      (r.vu!=null?'<br>Số vụ: '+r.vu:'');
+    return '<div class="bar-row" data-tip="'+tip.replace(/"/g,'&quot;')+'">'+
+      '<span class="n">'+esc(r.ten)+'</span>'+
+      '<span class="bar" style="position:relative"><i data-w="'+Math.min(100,r.v/max*100)+'" style="background:'+col+'"></i>'+
+        '<span style="position:absolute;left:'+(100/max*100)+'%;top:-2px;bottom:-2px;width:2px;background:var(--c-redneg);opacity:.55"></span></span>'+
+      '<span class="v num" style="color:'+col+'">'+nfmt(r.v,2)+'%</span></div>';
+  }).join('') + '<div style="font-size:12.5px;color:var(--muted);margin-top:10px">Vạch đỏ = ngưỡng hòa 100% (bồi thường bằng doanh thu). Dự án không có vạch màu là chưa phát sinh bồi thường trong kỳ.</div>';
 }
 
 function buildDonut(){
@@ -1517,29 +1611,36 @@ function renderPlanCards(){
 }
 
 /* ============ PHÂN CÔNG (không đổi theo kỳ) ============ */
+/* Cập nhật theo bảng phân công trong Báo cáo tháng 07/2026 (27 đối tác).
+   uuTien = số sao trong báo cáo; 0 = chưa xếp ưu tiên / chưa có nhân sự phụ trách. */
 const PHANCONG = [
-  {stt:1,doiTac:"VNA",sanPham:"TripCARE",uuTien:5,phuTrach:"Hằng",hoTro:"Duy"},
+  {stt:1,doiTac:"VNA",sanPham:"TripCARE",uuTien:5,phuTrach:"Hằng",hoTro:""},
   {stt:2,doiTac:"Asahi – Bell24VN, ALCV, iCraft",sanPham:"NPUV, APUV",uuTien:5,phuTrach:"Thư",hoTro:"Duy"},
   {stt:3,doiTac:"SPA",sanPham:"SPA GoSafe",uuTien:5,phuTrach:"Hằng",hoTro:"Thư"},
   {stt:4,doiTac:"A05",sanPham:"BH Cyber Shield SME",uuTien:5,phuTrach:"Tùng",hoTro:""},
-  {stt:5,doiTac:"OPES – SunGroup",sanPham:"BH Trải nghiệm trọn vẹn, Thời tiết, Cáp treo, Kỳ nghỉ an tâm, Du lịch ngắn hạn",uuTien:5,phuTrach:"Tùng",hoTro:"Hằng, Thư"},
+  {stt:5,doiTac:"OPES – SunGroup",sanPham:"BH Trải nghiệm trọn vẹn, Thời tiết thuận lợi, Tai nạn hành khách cáp treo, Kỳ nghỉ an tâm, Du lịch ngắn hạn",uuTien:5,phuTrach:"Tùng",hoTro:"Hằng, Thư"},
   {stt:6,doiTac:"OPES – O-Car – VP Bank",sanPham:"BH Vật chất xe ô tô",uuTien:5,phuTrach:"Tùng",hoTro:"Duy"},
   {stt:7,doiTac:"Bamboo",sanPham:"BambooCARE",uuTien:3,phuTrach:"Hằng",hoTro:""},
   {stt:8,doiTac:"Igloo",sanPham:"Flight Delay",uuTien:3,phuTrach:"Hằng",hoTro:""},
-  {stt:9,doiTac:"wBooking",sanPham:"HIO",uuTien:3,phuTrach:"Hằng",hoTro:""},
+  {stt:9,doiTac:"wBooking",sanPham:"HIO",uuTien:3,phuTrach:"Hằng",hoTro:"Duy"},
   {stt:10,doiTac:"MobiFone",sanPham:"Cổng bảo hiểm",uuTien:4,phuTrach:"Thư",hoTro:"Duy"},
   {stt:11,doiTac:"Ngôi nhà xanh",sanPham:"BH trợ cấp nằm viện",uuTien:3,phuTrach:"Thư",hoTro:""},
   {stt:12,doiTac:"Zalopay",sanPham:"BH Rơi vỡ màn hình điện thoại",uuTien:3,phuTrach:"Thư",hoTro:"Duy"},
-  {stt:13,doiTac:"GTEL",sanPham:"Hợp tác toàn diện",uuTien:2,phuTrach:"Thư",hoTro:"Tùng"},
-  {stt:14,doiTac:"VNPT",sanPham:"Hợp tác toàn diện",uuTien:2,phuTrach:"Thư",hoTro:""},
-  {stt:15,doiTac:"Igloo",sanPham:"BH ung thư CPM",uuTien:1,phuTrach:"Thư",hoTro:"Duy"},
-  {stt:16,doiTac:"Insurtech – 3GO",sanPham:"TNDS ô tô, Vật chất xe, Tai nạn người ngồi, TNDS vượt mức",uuTien:5,phuTrach:"Tùng",hoTro:"Duy"},
-  {stt:17,doiTac:"Honda Plus",sanPham:"Plus & EW",uuTien:4,phuTrach:"Tùng",hoTro:""},
-  {stt:18,doiTac:"Viettel Store",sanPham:"ADLD, EW, BH 1 đổi 1",uuTien:3,phuTrach:"Tùng",hoTro:""},
-  {stt:19,doiTac:"Seven Eleven",sanPham:"TNDS xe máy, Tai nạn cá nhân",uuTien:3,phuTrach:"Tùng",hoTro:""},
-  {stt:20,doiTac:"TNDS Cửa khẩu",sanPham:"TNDS xe xuất nhập cảnh",uuTien:2,phuTrach:"Tùng",hoTro:""},
-  {stt:21,doiTac:"Igloo",sanPham:"BH chỉ số thời tiết (RWI & GIZ)",uuTien:1,phuTrach:"Tùng",hoTro:""},
-  {stt:22,doiTac:"VTC Game",sanPham:"BH An ninh mạng cá nhân",uuTien:1,phuTrach:"Tùng",hoTro:""}
+  {stt:13,doiTac:"Igloo",sanPham:"BH ung thư CPM",uuTien:2,phuTrach:"Thư",hoTro:"Duy"},
+  {stt:14,doiTac:"Insurtech – 3GO",sanPham:"TNDS ô tô, Vật chất xe, Tai nạn người ngồi, TNDS vượt mức",uuTien:5,phuTrach:"Tùng",hoTro:"Duy"},
+  {stt:15,doiTac:"Honda Plus",sanPham:"Plus & EW",uuTien:4,phuTrach:"Tùng",hoTro:""},
+  {stt:16,doiTac:"Viettel Store",sanPham:"ADLD, EW, BH 1 đổi 1",uuTien:3,phuTrach:"Tùng",hoTro:""},
+  {stt:17,doiTac:"Seven Eleven (hỗ trợ đơn vị)",sanPham:"TNDS xe máy, Tai nạn cá nhân",uuTien:3,phuTrach:"Tùng",hoTro:""},
+  {stt:18,doiTac:"TNDS Cửa khẩu",sanPham:"TNDS xe xuất nhập cảnh qua cửa khẩu",uuTien:2,phuTrach:"Tùng",hoTro:""},
+  {stt:19,doiTac:"Igloo",sanPham:"BH chỉ số thời tiết (RWI & GIZ)",uuTien:1,phuTrach:"Tùng",hoTro:""},
+  {stt:20,doiTac:"VTC Game (hỗ trợ đơn vị)",sanPham:"BH An ninh mạng cá nhân",uuTien:1,phuTrach:"Tùng",hoTro:""},
+  {stt:21,doiTac:"Asahi Livwell Life",sanPham:"Hợp tác bán chéo",uuTien:3,phuTrach:"Thư",hoTro:""},
+  {stt:22,doiTac:"Nura",sanPham:"BH sức khỏe qua kênh telesales",uuTien:3,phuTrach:"Thư",hoTro:""},
+  {stt:23,doiTac:"Lotte Finance",sanPham:"Bảo hiểm khoản vay",uuTien:0,phuTrach:"",hoTro:""},
+  {stt:24,doiTac:"GTEL",sanPham:"Hợp tác toàn diện",uuTien:0,phuTrach:"",hoTro:""},
+  {stt:25,doiTac:"VNPT",sanPham:"Hợp tác toàn diện",uuTien:0,phuTrach:"",hoTro:""},
+  {stt:26,doiTac:"VETC",sanPham:"—",uuTien:0,phuTrach:"",hoTro:""},
+  {stt:27,doiTac:"VPBank",sanPham:"—",uuTien:0,phuTrach:"",hoTro:""}
 ];
 let pcFilter='all';
 const nguoi=['all','Hằng','Thư','Tùng','Duy'];
@@ -1547,7 +1648,7 @@ $('#pc-filters').innerHTML = nguoi.map(n=>'<button class="fchip'+(n==='all'?' ac
 function renderPC(){
   const rows=PHANCONG.filter(r=>pcFilter==='all'||r.phuTrach===pcFilter||(r.hoTro||'').includes(pcFilter)).slice().sort((a,b)=>b.uuTien-a.uuTien||a.stt-b.stt);
   $('#pc-table').innerHTML='<thead><tr><th>#</th><th>Đối tác</th><th>Sản phẩm / Chương trình</th><th>Ưu tiên</th><th>Phụ trách</th><th>Hỗ trợ</th></tr></thead><tbody>'+
-    rows.map(r=>'<tr><td class="num">'+r.stt+'</td><td><b>'+esc(r.doiTac)+'</b></td><td>'+esc(r.sanPham)+'</td><td><span class="stars">'+'★'.repeat(r.uuTien)+'</span></td><td>'+esc(r.phuTrach)+'</td><td>'+esc(r.hoTro||'—')+'</td></tr>').join('')+'</tbody>';
+    rows.map(r=>'<tr><td class="num">'+r.stt+'</td><td><b>'+esc(r.doiTac)+'</b></td><td>'+esc(r.sanPham)+'</td><td>'+(r.uuTien?'<span class="stars">'+'★'.repeat(r.uuTien)+'</span>':'<span style="color:var(--muted)">chưa xếp</span>')+'</td><td>'+(r.phuTrach?esc(r.phuTrach):'<span style="color:var(--c-redneg);font-weight:700">chưa có</span>')+'</td><td>'+esc(r.hoTro||'—')+'</td></tr>').join('')+'</tbody>';
 }
 renderPC();
 $('#pc-filters').addEventListener('click',e=>{ const b=e.target.closest('.fchip'); if(!b) return; pcFilter=b.dataset.f; document.querySelectorAll('#pc-filters .fchip').forEach(x=>x.classList.toggle('active',x===b)); renderPC(); });
@@ -1598,7 +1699,10 @@ function renderAlerts(){
   let html = gap.slice(0,3).map(h=>
     '<div class="alert-line" data-view="khokhan"><span class="lvl gap"><span class="pulse"></span>GẤP</span>'+
     '<span class="tx"><b>'+esc(h.duAn)+'</b> — '+esc(h.kho)+'</span><span class="go">Chi tiết ›</span></div>').join('');
-  const qua = (P().mocThoiGian||[]).filter(m=>m.st==='qua').length;
+  const moc = P().mocThoiGian||[];
+  const dsTruot = moc.filter(m=>m.st==='truot'), truot = dsTruot.length, qua = moc.filter(m=>m.st==='qua').length;
+  if(truot) html += '<div class="alert-line" data-view="lich"><span class="lvl gap"><span class="pulse"></span>TRỄ</span>'+
+    '<span class="tx"><b>'+truot+' mốc đã trượt hạn</b> — '+esc(dsTruot.map(m=>m.duAn).join(', '))+' chưa hoàn thành như kế hoạch</span><span class="go">Chi tiết ›</span></div>';
   if(qua) html += '<div class="alert-line amber" data-view="lich"><span class="lvl watch"><span class="pulse"></span>MỐC</span>'+
     '<span class="tx"><b>'+qua+' mốc đã đến hạn</b> — chờ Phòng cập nhật kết quả</span><span class="go">Chi tiết ›</span></div>';
   $('#alerts').innerHTML = html || '<div class="alert-line amber"><span class="tx">Không có cảnh báo trong kỳ này</span></div>';
@@ -1606,10 +1710,10 @@ function renderAlerts(){
 const MODULES = [
   { v:'duan',     ic:'grid',   t:'Trạng thái 13 dự án', d:'Bảng trạng thái 4 nhóm + thẻ chi tiết từng dự án: kết quả, kế hoạch, KPI.' },
   { v:'doanhthu', ic:'chart',  t:'Doanh thu & bồi thường', d:'Doanh thu theo dự án, TripCARE theo tháng, tỷ lệ bồi thường wBooking.' },
-  { v:'khokhan',  ic:'alert',  t:'Khó khăn cần hỗ trợ', d:'Vướng mắc cần lãnh đạo cho ý kiến hoặc tác động đối tác ở cấp cao.' },
+  { v:'khokhan',  ic:'alert',  t:'Khó khăn cần hỗ trợ', d:'Vướng mắc cần cho ý kiến hoặc tác động đối tác ở cấp cao.' },
   { v:'lich',     ic:'cal',    t:'Lịch go-live & kế hoạch', d:'Mốc quan trọng, Gantt T7–T8 và kế hoạch tiếp theo của từng dự án.' },
   { v:'roadmap',  ic:'cal',    t:'Roadmap & Pipeline 2027', d:'Product roadmap đến Q1/2027 và danh sách dự án chuẩn bị / pilot.' },
-  { v:'phancong', ic:'people', t:'Phân công 22 đối tác', d:'Ai phụ trách đối tác nào, mức ưu tiên, người hỗ trợ.' }
+  { v:'phancong', ic:'people', t:'Phân công đối tác', d:'Ai phụ trách đối tác nào, mức ưu tiên, người hỗ trợ.' }
 ];
 function modStat(v){
   const list = entries();
@@ -1626,14 +1730,16 @@ function modStat(v){
     return g+' việc GẤP · '+(kh.length-g)+' việc theo dõi';
   }
   if(v==='lich'){
-    const qua=(P().mocThoiGian||[]).filter(m=>m.st==='qua').length;
-    return qua ? qua+' mốc chờ cập nhật kết quả' : 'Các mốc trong tầm kiểm soát';
+    const moc=P().mocThoiGian||[], truot=moc.filter(m=>m.st==='truot').length, qua=moc.filter(m=>m.st==='qua').length;
+    const p=[]; if(truot) p.push(truot+' mốc trượt hạn'); if(qua) p.push(qua+' mốc chờ cập nhật');
+    return p.length ? p.join(' · ') : 'Các mốc trong tầm kiểm soát';
   }
   if(v==='roadmap'){
     const thieu=PIPELINE.filter(p=>!p.ai).length;
     return ROADMAP.rows.length+' dòng roadmap · '+PIPELINE.length+' dự án pilot ('+thieu+' thiếu nhân sự)';
   }
-  if(v==='phancong') return 'Hằng · Thư · Tùng · Duy';
+  if(v==='phancong'){ const chua=PHANCONG.filter(r=>!r.phuTrach).length;
+    return PHANCONG.length+' đối tác · '+chua+' chưa có người phụ trách'; }
   return '';
 }
 function renderModGrid(){
