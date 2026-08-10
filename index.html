@@ -343,6 +343,12 @@ body.present .kpi .v{font-size:46px}
 .orow .n .ht{font-weight:500; color:var(--muted)}
 .orow .k{margin-left:auto; color:var(--muted); font-size:12px; white-space:nowrap}
 .kpimap-note{font-size:11.5px; color:var(--muted); margin-top:12px; line-height:1.55}
+/* cả khối sơ đồ là một "thẻ module": chạm để mở bảng phân công đối tác */
+.kpimap-card{cursor:pointer; transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease}
+.kpimap-card:hover{transform:translateY(-3px); box-shadow:var(--shadow-lift); border-color:var(--c-blue)}
+.kpimap-foot{display:flex; align-items:center; gap:10px; flex-wrap:wrap; border-top:1px dashed var(--line); padding-top:11px; margin-top:14px}
+.kpimap-foot .st{font-size:12px; font-weight:700; color:var(--c-blue)}
+.kpimap-foot .op{margin-left:auto; font-size:12.5px; font-weight:700; color:var(--red); white-space:nowrap}
 
 /* ============ PIPELINE 2027 ============ */
 .pipe{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
@@ -584,15 +590,16 @@ table{font-size:14.5px}
       <div class="hero-in" id="hero-in"></div>
     </div>
 
-    <!-- Khối A2: SƠ ĐỒ KPI — sếp muốn nhìn thấy ngay ở trang chính -->
+    <!-- Khối A2: SƠ ĐỒ KPI & PHÂN BỔ NHÂN SỰ — chạm để mở bảng phân công đối tác -->
     <div class="sec" id="sec-kpi">
-      <div class="sec-h"><h2>Sơ đồ doanh thu dự kiến 2026 · theo dự án &amp; người phụ trách</h2><span class="rule"></span></div>
-      <div class="card reveal">
+      <div class="sec-h"><h2>Sơ đồ doanh thu dự kiến 2026 &amp; phân bổ nhân sự</h2><span class="sub">chạm để xem bảng phân công đối tác</span><span class="rule"></span></div>
+      <div class="card kpimap-card reveal" data-view="phancong" role="button" tabindex="0">
         <div class="kpimap">
           <div class="kpimap-pie"><svg id="kpi-pie" viewBox="0 0 300 300" role="img" aria-label="Hình tròn tỷ trọng doanh thu dự kiến theo dự án"></svg></div>
           <div class="owner-cols" id="owner-cols"></div>
         </div>
         <div class="kpimap-note">Tỷ trọng tính theo doanh thu dự kiến / KPI PVI của từng dự án — MobiFone tính theo A08 (15 tỷ/năm); quy mô phía đối tác (Cổng BH 316 tỷ, MDP 1.900 tỷ/năm) xem chú thích khi rê chuột. Nguồn: bảng "Tóm tắt các dự án" P.TMĐT.</div>
+        <div class="kpimap-foot"><span class="st" id="kpimap-stat"></span><span class="op">Mở bảng phân công đối tác ›</span></div>
       </div>
     </div>
 
@@ -1684,8 +1691,14 @@ function setView(v){
   window.scrollTo({top:0,behavior:'auto'}); refreshReveals();
 }
 $('#main').addEventListener('click',e=>{
-  const t=e.target.closest('.modcard[data-view],.alert-line[data-view],.btn-back-big[data-view]');
+  const t=e.target.closest('.modcard[data-view],.alert-line[data-view],.btn-back-big[data-view],.kpimap-card[data-view]');
   if(t) setView(t.dataset.view);
+});
+/* bàn phím: Enter/Space trên các thẻ điều hướng (modcard, khối sơ đồ KPI) */
+$('#main').addEventListener('keydown',e=>{
+  if(e.key!=='Enter' && e.key!==' ') return;
+  const t=e.target.closest('.modcard[data-view],.kpimap-card[data-view]');
+  if(t){ e.preventDefault(); setView(t.dataset.view); }
 });
 
 /* ============ TRANG CHÍNH: cảnh báo + lưới module ============ */
@@ -1706,11 +1719,11 @@ function renderAlerts(){
 const MODULES = [
   { v:'duan',     ic:'grid',   t:'Chi tiết 13 dự án', d:'Bảng trạng thái 4 nhóm + thẻ chi tiết từng dự án: kết quả, kế hoạch, KPI.' },
   { v:'doanhthu', ic:'chart',  t:'Doanh thu & bồi thường', d:'Doanh thu theo dự án, TripCARE theo tháng, tỷ lệ bồi thường wBooking.' },
-  { v:'lich',     ic:'cal',    t:'Timeline 2026 & Product Roadmap 2027', d:'Lịch go-live & mốc quan trọng, Gantt triển khai T7–T8, roadmap đến Q1/2027 và dự án pilot.' },
-  { v:'phancong', ic:'people', t:'Phân công đối tác', d:'Ai phụ trách đối tác nào, mức ưu tiên, người hỗ trợ.' }
+  { v:'lich',     ic:'cal',    t:'Timeline 2026 & Product Roadmap 2027', d:'Lịch go-live & mốc quan trọng, Gantt triển khai T7–T8, roadmap đến Q1/2027 và dự án pilot.' }
 ];
-/* tiêu đề hiển thị trên thanh "Quay lại" — gồm cả view không có thẻ ở lưới module */
-const VIEW_TITLES = { khokhan:'Dự án gặp khó khăn · cần hỗ trợ' };
+/* tiêu đề hiển thị trên thanh "Quay lại" — gồm cả view không có thẻ ở lưới module
+   (phancong mở từ khối "Sơ đồ doanh thu dự kiến 2026 & phân bổ nhân sự" ở trang chính) */
+const VIEW_TITLES = { khokhan:'Dự án gặp khó khăn · cần hỗ trợ', phancong:'Phân công đối tác' };
 function viewTitle(v){ const m=MODULES.find(x=>x.v===v); return m? m.t : (VIEW_TITLES[v]||''); }
 function modStat(v){
   const list = entries();
@@ -1735,6 +1748,7 @@ function modStat(v){
   return '';
 }
 function renderModGrid(){
+  const ks=$('#kpimap-stat'); if(ks) ks.textContent = modStat('phancong');
   $('#modgrid').innerHTML = MODULES.map((m,i)=>
     '<div class="modcard" data-view="'+m.v+'" role="button" tabindex="0">'+
       '<div class="mtop"><span class="mico">'+ICONS[m.ic]+'</span><span class="mtitle">'+esc(m.t)+'</span><span class="mnum">'+('0'+(i+1)).slice(-2)+'</span></div>'+
