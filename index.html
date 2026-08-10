@@ -631,11 +631,11 @@ table{font-size:14.5px}
     </div>
   </section>
 
-  <!-- ===== VIEW: LỊCH & KẾ HOẠCH ===== -->
+  <!-- ===== VIEW: TIMELINE 2026 & PRODUCT ROADMAP 2027 ===== -->
   <section class="view" data-view="lich">
     <!-- Khối D: TIMELINE -->
     <div class="sec" id="sec-tl">
-      <div class="sec-h"><h2>Lịch go-live &amp; mốc quan trọng</h2><span class="sub">cập nhật trạng thái mỗi kỳ báo cáo</span><span class="rule"></span></div>
+      <div class="sec-h"><h2>Timeline 2026 · lịch go-live &amp; mốc quan trọng</h2><span class="sub">cập nhật trạng thái mỗi kỳ báo cáo</span><span class="rule"></span></div>
       <div class="card reveal">
         <div class="tl-scroll"><div class="tl" id="timeline"></div></div>
       </div>
@@ -650,15 +650,6 @@ table{font-size:14.5px}
       </div>
     </div>
 
-    <!-- Kế hoạch tiếp theo của từng dự án -->
-    <div class="sec">
-      <div class="sec-h"><h2 id="plan-title">Kế hoạch tiếp theo</h2><span class="rule"></span></div>
-      <div class="cards-grid" id="plan-cards"></div>
-    </div>
-  </section>
-
-  <!-- ===== VIEW: ROADMAP & PIPELINE 2027 ===== -->
-  <section class="view" data-view="roadmap">
     <!-- Khối D2: PRODUCT ROADMAP T8/2026 → Q1/2027 -->
     <div class="sec" id="sec-roadmap">
       <div class="sec-h"><h2>Product roadmap · T8/2026 → Q1/2027</h2><span class="sub">dự kiến — Phòng cập nhật theo tiến độ thực tế mỗi kỳ</span><span class="rule"></span></div>
@@ -674,6 +665,7 @@ table{font-size:14.5px}
       <div class="pipe" id="pipeline"></div>
     </div>
   </section>
+
 
   <!-- ===== VIEW: DOANH THU ===== -->
   <section class="view" data-view="doanhthu">
@@ -1271,9 +1263,7 @@ function renderHero(){
     eyebrow = 'Doanh thu · lũy kế '+mo+' tháng 2026';
     kpis = [
       { lb:'Lũy kế '+moL+'/2026', id:'k1', val:tongLuyKe, dec:1, unit:'tỷ', sub:list.filter(e=>(e.d.luyKe||0)>0).length+' dự án đã phát sinh', scls:'flat', tip:P().luuY||'' },
-      { lb:'Mục tiêu năm 2026', txt:'100', unit:'+ tỷ', sub:(list.length-1)+'+ dự án đang triển khai', scls:'flat' },
-      { lb:'So cùng kỳ '+moL+'/2025', txt:(yoy>=0?'+':'−')+nfmt(Math.abs(yoy),1)+'%', sub:nfmt(y25,1)+' → '+nfmt(y26,1)+' tỷ', scls:(yoy>=0?'up':'down'), tip:'Chỉ cộng dự án có đủ số liệu cả 2 năm' },
-      { lb:'Số đơn TripCARE '+moL, id:'k4', val:tc.soDon, dec:0, sub:(tc.soDon2025!=null?'+'+nfmt(tc.soDon-tc.soDon2025)+' đơn so '+moL+'/2025':'lũy kế '+mo+' tháng'), scls:'up' }
+      { lb:'Mục tiêu năm 2026', txt:'100', unit:'+ tỷ', sub:(list.length-1)+'+ dự án đang triển khai', scls:'flat' }
     ];
     progLabel = 'Tiến độ mục tiêu 100 tỷ'; progPct = pctMT; progText = nfmt(pctMT,1)+'%';
     barTitle = 'DOANH THU '+moL+' THEO DỰ ÁN — TOP ĐÓNG GÓP';
@@ -1614,16 +1604,7 @@ function renderDetailCard(id){
 function renderDetailCards(){
   $('#detail-cards').innerHTML = entries().map(e=>'<div class="card dcard hoverable reveal">'+renderDetailCard(e.id)+'</div>').join('');
 }
-function renderPlanCards(){
-  const pt=$('#plan-title'); if(pt) pt.textContent='Kế hoạch tiếp theo · sau kỳ '+P().label;
-  $('#plan-cards').innerHTML = entries().filter(e=>e.d.keHoach&&e.d.keHoach.length).map(e=>{
-    const info=TRANG_THAI[e.d.trangThai]||TRANG_THAI["cho-doi-tac"];
-    return '<div class="card hoverable reveal"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
-      '<span class="dot" style="background:'+info.mau+'"></span><b>'+esc(e.m.ten)+'</b>'+
-      '<span class="badge '+info.cls+'" style="margin-left:auto">'+info.nhan+'</span></div>'+
-      '<ul style="margin:0;padding-left:18px;font-size:13px">'+e.d.keHoach.map(x=>'<li style="margin-bottom:4px">'+esc(x)+'</li>').join('')+'</ul></div>';
-  }).join('');
-}
+/* (Bỏ renderPlanCards: kế hoạch tiếp theo đã hiển thị trong thẻ chi tiết từng dự án) */
 
 /* ============ PHÂN CÔNG (không đổi theo kỳ) ============ */
 /* Cập nhật theo bảng phân công trong Báo cáo tháng 07/2026 (27 đối tác).
@@ -1684,7 +1665,7 @@ function renderAll(){
   renderHeaderMeta(); renderHero(); renderKanban(); renderHotspots(); renderTimeline(); renderGantt();
   buildKpiPie(); renderOwnerCols(); renderRoadmap(); renderPipeline();
   renderAlerts(); renderModGrid();
-  renderDetailCards(); renderPlanCards();
+  renderDetailCards();
   setTimeout(fireHero, 120); // hero luôn chạy count-up ngay khi mở, không chờ cuộn
   // revenue tab: rebuild only if visible or month (charts lazy via done flag)
   $('#donut').dataset.done=''; $('#wb-line').dataset.done='';
@@ -1697,7 +1678,7 @@ function setView(v){
   curView=v;
   document.querySelectorAll('.view').forEach(s=>s.classList.toggle('active',s.dataset.view===v));
   const bb=$('#backbar'); bb.hidden = (v==='home');
-  if(v!=='home'){ const m=MODULES.find(x=>x.v===v); $('#bb-title').textContent = m? m.t : ''; }
+  if(v!=='home') $('#bb-title').textContent = viewTitle(v);
   document.querySelectorAll('#bottombar button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
   if(v==='doanhthu'){ buildDonut(); buildTcMonthly(); buildWbLine(); }
   window.scrollTo({top:0,behavior:'auto'}); refreshReveals();
@@ -1723,13 +1704,14 @@ function renderAlerts(){
   $('#alerts').innerHTML = html || '<div class="alert-line amber"><span class="tx">Không có cảnh báo trong kỳ này</span></div>';
 }
 const MODULES = [
-  { v:'duan',     ic:'grid',   t:'Trạng thái 13 dự án', d:'Bảng trạng thái 4 nhóm + thẻ chi tiết từng dự án: kết quả, kế hoạch, KPI.' },
+  { v:'duan',     ic:'grid',   t:'Chi tiết 13 dự án', d:'Bảng trạng thái 4 nhóm + thẻ chi tiết từng dự án: kết quả, kế hoạch, KPI.' },
   { v:'doanhthu', ic:'chart',  t:'Doanh thu & bồi thường', d:'Doanh thu theo dự án, TripCARE theo tháng, tỷ lệ bồi thường wBooking.' },
-  { v:'khokhan',  ic:'alert',  t:'Khó khăn cần hỗ trợ', d:'Vướng mắc cần cho ý kiến hoặc tác động đối tác ở cấp cao.' },
-  { v:'lich',     ic:'cal',    t:'Lịch go-live & kế hoạch', d:'Mốc quan trọng, Gantt T7–T8 và kế hoạch tiếp theo của từng dự án.' },
-  { v:'roadmap',  ic:'cal',    t:'Roadmap & Pipeline 2027', d:'Product roadmap đến Q1/2027 và danh sách dự án chuẩn bị / pilot.' },
+  { v:'lich',     ic:'cal',    t:'Timeline 2026 & Product Roadmap 2027', d:'Lịch go-live & mốc quan trọng, Gantt triển khai T7–T8, roadmap đến Q1/2027 và dự án pilot.' },
   { v:'phancong', ic:'people', t:'Phân công đối tác', d:'Ai phụ trách đối tác nào, mức ưu tiên, người hỗ trợ.' }
 ];
+/* tiêu đề hiển thị trên thanh "Quay lại" — gồm cả view không có thẻ ở lưới module */
+const VIEW_TITLES = { khokhan:'Dự án gặp khó khăn · cần hỗ trợ' };
+function viewTitle(v){ const m=MODULES.find(x=>x.v===v); return m? m.t : (VIEW_TITLES[v]||''); }
 function modStat(v){
   const list = entries();
   if(v==='duan'){
@@ -1745,13 +1727,8 @@ function modStat(v){
     return g+' việc GẤP · '+(kh.length-g)+' việc theo dõi';
   }
   if(v==='lich'){
-    const moc=P().mocThoiGian||[], truot=moc.filter(m=>m.st==='truot').length, qua=moc.filter(m=>m.st==='qua').length;
-    const p=[]; if(truot) p.push(truot+' mốc trượt hạn'); if(qua) p.push(qua+' mốc chờ cập nhật');
-    return p.length ? p.join(' · ') : 'Các mốc trong tầm kiểm soát';
-  }
-  if(v==='roadmap'){
-    const thieu=PIPELINE.filter(p=>!p.ai).length;
-    return ROADMAP.rows.length+' dòng roadmap · '+PIPELINE.length+' dự án pilot ('+thieu+' thiếu nhân sự)';
+    const moc=P().mocThoiGian||[], truot=moc.filter(m=>m.st==='truot').length;
+    return moc.length+' mốc 2026'+(truot? ' ('+truot+' trượt hạn)':'')+' · roadmap '+ROADMAP.rows.length+' dòng đến Q1/2027';
   }
   if(v==='phancong'){ const chua=PHANCONG.filter(r=>!r.phuTrach).length;
     return PHANCONG.length+' đối tác · '+chua+' chưa có người phụ trách'; }
