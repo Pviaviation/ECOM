@@ -1,0 +1,182 @@
+/* =========================================================
+   print.css — Tối ưu in / xuất PDF khổ A4
+   Liên kết với media="print" trong index.html
+   ========================================================= */
+
+@page {
+  size: A4 portrait;
+  margin: 16mm 14mm 18mm;
+}
+
+@media print {
+  :root { --shadow: none; }
+
+  html, body {
+    background: #fff !important;
+    color: #000;
+    font-size: 10.5pt;
+    line-height: 1.5;
+  }
+
+  /* Ẩn các phần điều hướng / trang trí không cần in */
+  .top-fade,
+  .sky-bg,
+  .nav-wrap,
+  .nav__toggle,
+  .hero__bg,
+  .hero__actions,
+  #printBtn { display: none !important; }
+
+  /* HERO -> trở thành trang bìa gọn */
+  .hero {
+    min-height: auto;
+    padding: 0 0 14mm;
+    page-break-after: always;
+    text-align: left;
+    border-bottom: 1.5pt solid #000;
+  }
+  .hero__inner { max-width: 100%; }
+  .hero__eyebrow {
+    background: none; border: 0; padding: 0; color: #000;
+    font-size: 9pt; letter-spacing: 0.04em; margin-bottom: 6mm;
+  }
+  .hero__title { font-size: 30pt; line-height: 1; margin-bottom: 5mm; }
+  .hero__title .ital { color: #000; }
+  .hero__sub { font-size: 11pt; color: #222; max-width: 100%; margin-bottom: 8mm; }
+  .hero__facts {
+    background: none; border: 1pt solid #999;
+    margin-top: 0; max-width: 100%;
+  }
+  .hero__facts li { border-right: 1pt solid #999; padding: 4mm 4mm; }
+  .hero__facts strong { font-size: 12pt; }
+  .hero__note { margin-top: 6mm; color: #444; }
+
+  /* Bố cục tài liệu: 1 cột, ẩn mục lục dính */
+  .doc {
+    display: block;
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+  .toc { display: none !important; }
+  .doc__content { display: block; }
+
+  /* Mỗi phần bắt đầu trang mới, tránh ngắt giữa khối */
+  .block {
+    padding: 0 0 8mm;
+    margin: 0 0 8mm;
+    border-bottom: 0.75pt solid #bbb;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .block__kicker { color: #000; font-weight: 700; }
+  .block__title { font-size: 18pt; margin-bottom: 4mm; }
+  .block__lead { font-size: 10.5pt; color: #222; max-width: 100%; }
+
+  /* Các nhóm dài: cho phép ngắt nhưng giữ item nguyên vẹn */
+  .list--excl, .docs, .defs, .cards, .steps, .flow { break-inside: auto; }
+  .card, .step, .flow__item, .doc-item, .callout,
+  .list--check li, .list--excl li, .defs > div, .note,
+  .claims, .claims__main, .claims__qr, .hotline,
+  .rights__card,
+  .bft tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Sub-headings & quyền-nghĩa vụ */
+  .subhead { font-size: 14pt; margin: 7mm 0 3mm; padding-top: 4mm; border-top: 0.75pt solid #bbb; page-break-after: avoid; break-after: avoid; }
+  .rights__card { border: 0.75pt solid #999 !important; background: #fff !important; box-shadow: none; }
+  .rights__card h4 { color: #000; }
+  .rights__sub { color: #000 !important; }
+
+  /* Cổng bồi thường + QR */
+  .muted-en { color: #444; }
+  .claims { grid-template-columns: 1fr 200px; }
+  .claims__main, .claims__qr {
+    border: 0.75pt solid #999 !important;
+    background: #fff !important;
+    box-shadow: none;
+  }
+  .claims__steps li span, .hotline {
+    background: #f5f5f5 !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .hotline { border: 0.5pt solid #bbb !important; }
+  .claims__steps li span, .hotline strong { color: #000 !important; }
+  .claims__qr-frame { border: 0.5pt solid #999 !important; }
+  .claims__qr-frame img { image-rendering: auto; }
+
+  /* Bảng quyền lợi: viền rõ, in trắng đen */
+  .table-scroll { overflow: visible; border: 1pt solid #000; box-shadow: none; }
+  .bft { min-width: 0; }
+  .bft thead th { background: #eee !important; color: #000; border-bottom: 1pt solid #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .bft tbody td { border-bottom: 0.5pt solid #999; }
+  .bft__total td { background: #f0f0f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* Thẻ/khối: bỏ nền màu nặng, giữ viền */
+  .card, .step, .flow__item, .doc-item, .callout {
+    border: 0.75pt solid #999 !important;
+    background: #fff !important;
+  }
+  .card__num, .flow__n, .card h3, .step h4 { color: #000 !important; }
+  .step__n { background: #000 !important; color: #fff !important; box-shadow: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .doc-item__i { background: #eee !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  .note { background: #f5f5f5 !important; border: 0.5pt solid #bbb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  .fill { color: #000; background: none; border: 0.5pt dashed #666; }
+
+  .list--check li::before, .list--excl li::before, .list--sub li::before { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* Liên hệ: chuyển nền tối sang nền sáng để tiết kiệm mực */
+  .contact {
+    background: #fff !important;
+    color: #000;
+    border: 1pt solid #000;
+    border-radius: 0;
+    padding: 6mm;
+    page-break-inside: avoid;
+  }
+  .contact::before { display: none; }
+  .contact__portholes { display: none !important; }
+  .contact__body { margin-left: 0 !important; }
+  .contact .block__kicker, .contact .block__title { color: #000 !important; }
+  .contact .block__lead { color: #222 !important; }
+  .contact__card { background: #f5f5f5 !important; border: 0.5pt solid #bbb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .contact__card span { color: #555 !important; }
+  .contact__card strong, .contact__card .fill { color: #000 !important; background: none; border-color: #666; }
+
+  /* Reveal: luôn hiện khi in (không để section ẩn opacity:0) */
+  html.reveal-ready .block,
+  html.reveal-ready .block.in-view .card,
+  html.reveal-ready .block.in-view .flow__item,
+  html.reveal-ready .block.in-view .step,
+  html.reveal-ready .block.in-view .doc-item,
+  html.reveal-ready .block.in-view .rights__card {
+    opacity: 1 !important; transform: none !important; animation: none !important; transition: none !important;
+  }
+
+  /* Dividers trang trí giữa section */
+  .block + .block::before { background: #bbb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .block + .block::after { display: none !important; }
+
+  /* Khối hoàn phí 100% */
+  .refund { border: 0.75pt solid #999 !important; box-shadow: none; }
+  .refund__badge { background: #eee !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .refund__pct, .refund__cond strong { color: #000 !important; }
+
+  /* Section Bồi thường + sub-section */
+  .block--claims { background: #fff !important; border: 0.75pt solid #999 !important; border-radius: 0; padding: 6mm 0; }
+  .subsec__n { background: #000 !important; color: #fff !important; box-shadow: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .block--claims .subsec { border-top: 0.5pt solid #ccc !important; }
+
+  /* Card icon */
+  .card__icon { background: #f0f0f0 !important; border: 0.5pt solid #ccc !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* Footer pháp lý */
+  .foot { background: #fff !important; border-top: 1pt solid #000; padding: 6mm 0 0; }
+  .foot__logo span, .foot__logo { color: #000 !important; }
+
+  a { color: #000 !important; text-decoration: none; }
+}
