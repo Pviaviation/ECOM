@@ -1461,12 +1461,6 @@
       white-space: nowrap
     }
 
-    .kpimap-note {
-      font-size: 11.5px;
-      color: var(--muted);
-      margin-top: 12px;
-      line-height: 1.55
-    }
 
     /* cả khối sơ đồ là một "thẻ module": chạm để mở bảng phân công đối tác */
     .kpimap-card {
@@ -1942,22 +1936,53 @@
       font-family: inherit
     }
 
-    .donut-wrap {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      flex-wrap: wrap
+    /* Bảng gọn đặt trong thẻ biểu đồ (TripCARE theo tháng) — không ép min-width để khỏi tràn ngang */
+    .tbl-compact {
+      min-width: 0;
+      font-size: 13px
     }
 
-    .donut-lbl {
-      font-size: 13px;
-      color: var(--muted)
+    .tbl-compact th {
+      padding: 7px 8px;
+      font-size: 10.5px
     }
 
-    .donut-lbl b {
+    .tbl-compact td {
+      padding: 5px 8px;
+      vertical-align: middle
+    }
+
+    /* thanh mini vẽ nền trong ô doanh thu */
+    .cellbar {
+      position: relative;
       display: block;
-      font-size: 22px;
-      color: var(--ink)
+      padding: 2px 0
+    }
+
+    .cellbar i {
+      position: absolute;
+      left: 0;
+      top: 2px;
+      bottom: 2px;
+      border-radius: 3px;
+      background: rgba(46, 107, 230, .18);
+      z-index: 0
+    }
+
+    .cellbar b {
+      position: relative;
+      z-index: 1;
+      font-weight: 700
+    }
+
+    .yoy-up {
+      color: var(--c-green);
+      font-weight: 700
+    }
+
+    .yoy-dn {
+      color: var(--c-redneg);
+      font-weight: 700
     }
 
     /* tooltip */
@@ -2309,10 +2334,6 @@
       font-size: 13px
     }
 
-    .kpimap-note {
-      font-size: 13px
-    }
-
     .pipe-card .t {
       font-size: 15px
     }
@@ -2450,7 +2471,6 @@
             <div class="kpimap-pie"><svg id="kpi-pie" viewBox="0 0 300 300" role="img" aria-label="Hình tròn tỷ trọng doanh thu dự kiến theo dự án"></svg></div>
             <div class="owner-cols" id="owner-cols"></div>
           </div>
-          <div class="kpimap-note">Tỷ trọng tính theo doanh thu dự kiến / KPI PVI của từng dự án — MobiFone tính theo A08 (15 tỷ/năm); quy mô phía đối tác (Cổng BH 316 tỷ, MDP 1.900 tỷ/năm) xem chú thích khi rê chuột. Nguồn: bảng "Tóm tắt các dự án" P.TMĐT.</div>
           <div class="kpimap-foot"><span class="st" id="kpimap-stat"></span><span class="op">Mở bảng phân công đối tác ›</span></div>
         </div>
       </div>
@@ -2536,11 +2556,10 @@
             <div id="rev-bars"></div>
           </div>
           <div class="card chart-card reveal">
-            <h3 id="donut-title">Hoàn thành mục tiêu năm</h3>
-            <div class="cs" id="donut-cs">Lũy kế 6T so với mục tiêu 100 tỷ</div>
-            <div class="donut-wrap">
-              <svg id="donut" width="150" height="150" viewBox="0 0 150 150"></svg>
-              <div class="donut-lbl"><b class="num" id="donut-v">0%</b><span id="donut-lbl-txt">đã thực hiện<br>sau 6/12 tháng</span></div>
+            <h3 id="tcm-title">TripCARE — doanh thu theo tháng</h3>
+            <div class="cs" id="tcm-sub">Nguồn: Google Sheet doanh thu · đơn vị: tỷ VNĐ</div>
+            <div class="tbl-wrap">
+              <table id="tc-table" class="tbl-compact"></table>
             </div>
           </div>
           <div class="card chart-card reveal">
@@ -2553,15 +2572,6 @@
             <h3>wBooking (HIO) — tỷ lệ bồi thường theo tháng</h3>
             <div class="cs" id="wb-cs">Vùng đỏ = vượt 100% (lỗ nghiệp vụ)</div>
             <svg id="wb-line" width="100%" viewBox="0 0 560 260" preserveAspectRatio="xMidYMid meet"></svg>
-          </div>
-          <div class="card chart-card reveal">
-            <h3 id="tc-cmp-title">TripCARE — so sánh cùng kỳ</h3>
-            <div class="cs">Dự án lõi · KPI 60 tỷ (PVI)</div>
-            <div class="legend">
-              <span id="tc-cmp-l25"><i style="background:var(--c-slate)"></i>2025</span>
-              <span id="tc-cmp-l26"><i style="background:var(--c-blue)"></i>2026</span>
-            </div>
-            <div id="tc-compare"></div>
           </div>
         </div>
         <div class="sec">
@@ -2584,18 +2594,7 @@
         </div>
         <div class="sec">
           <div class="sec-h">
-            <h2>TripCARE — doanh thu theo tháng</h2><span class="sub">nguồn: Google Sheet doanh thu</span><span
-              class="rule"></span>
-          </div>
-          <div class="card chart-card reveal">
-            <div class="legend"><span><i style="background:var(--c-blue)"></i>2026 (T1–T7)</span><span><i
-                  style="background:var(--c-slate)"></i>2025 (cùng kỳ)</span></div>
-            <svg id="tc-monthly" width="100%" viewBox="0 0 560 250" preserveAspectRatio="xMidYMid meet"></svg>
-          </div>
-        </div>
-        <div class="sec">
-          <div class="sec-h">
-            <h2>wBooking — bảng 6 tháng</h2><span class="rule"></span>
+            <h2>wBooking (HIO) — bảng doanh thu và bồi thường</h2><span class="rule"></span>
           </div>
           <div class="tbl-wrap reveal">
             <table id="wb-table"></table>
@@ -2689,7 +2688,7 @@
       veBan: [959782256, 734152515, 1068719826, 889056139, 918633072, 844668473, 1011319968],
       keHoach: [800000000, 800000000, 1100000000, 1200000000, 1200000000, 1200000000, 1200000000],
       tyLeHT: [119.97, 91.77, 97.16, 74.09, 76.55, 70.39, 84.28],
-      boiThuong: [33.60, 1.60, 43.30, 20.40, 28.60, 15.00, null]
+      boiThuong: [33.60, 1.60, 43.30, 20.40, 28.60, 15.00, 48.00]
     };
 
     /* ---------- CÁC KỲ BÁO CÁO (mới nhất lên đầu) ---------- */
@@ -2750,7 +2749,7 @@
             keHoach: ["Chuẩn bị chương trình marketing & ký biên bản nghiệm thu để GO-LIVE với Atadi trong T8/2026", "Hoàn tất ký hợp đồng và test UAT với Hồng Ngọc Hà", "Bám sát các OTA đã chào sản phẩm: Gotadi, Hồ Phi Long, Bảo Gia Trần"]
           },
           asahi: {
-            trangThai: "canh-bao", dt: 2.051, luyKe: 13.031, phanTramKPI: 46.12, cungKy2025: 13.03, tyLeBT: 25.26,
+            trangThai: "canh-bao", dt: 2.051, luyKe: 13.031, phanTramKPI: 46.12, cungKy2025: 13.03, tyLeBT: 28.84,
             ghiChu: "T7 đạt 2,05 tỷ (NPUV 2,02 tỷ, APUV 28,8 tr). Lũy kế 7T 13,03 tỷ = 46,12% kế hoạch năm (28 tỷ). Báo cáo T7 gộp chung NPUV + APUV",
             ketQua: ["T7: 2,05 tỷ · lũy kế 7T 13,03 tỷ = 46,12% KH năm (28 tỷ)", "Nghiên cứu mở rộng & nâng chất lượng nguồn lead NPUV; xây chính sách nhân sự TSR nâng năng suất bán", "Nâng cấp landing page NPUV (Breakfield) + xây landing page thu lead riêng cho ALCV", "Xây định hướng mở rộng hợp tác PVI – Asahi – Asahi LivWell", "Hoàn thành bản chào phí BH tai nạn cho giải chạy do Asahi tài trợ"],
             keHoach: ["Làm việc Ban CN, Actuary & Asahi thống nhất phương án điều chỉnh An Phúc Ưu Việt (APUV)", "Hoàn thiện chương trình khuyến khích bán hàng cho TSR của ALCV", "Đánh giá tỷ lệ bồi thường, tiêu chí chọn KH & kiểm soát tổn thất nguồn lead bệnh viện", "Hoàn thiện tính toán hiệu quả & phương án miễn phí BH năm thứ 4 của NPUV2", "Chi tiết hóa hợp tác toàn diện PVI – Asahi – Asahi LivWell (phương án bán hàng, lộ trình, target, cam kết nguồn lực)"]
@@ -3224,7 +3223,6 @@
         document.querySelectorAll('.reveal').forEach(el => el.classList.remove('in'));
         $('#hero').classList.remove('in'); $('#hero')._fired = false;
         if (document.querySelector('#npuv-line')) document.querySelector('#npuv-line').dataset.done = '';
-        document.querySelector('#donut').dataset.done = '';
         document.querySelector('#wb-line').dataset.done = '';
         refreshReveals();
         io.observe($('#hero'));
@@ -3393,13 +3391,11 @@
         '<span class="bar"><i data-w="' + (r.val / max * 100) + '"></i></span>' +
         '<span class="v num">' + fmtTien(r.val) + '</span></div>').join('');
 
-      // donut, NPUV line and others
-      buildDonut();
+      // NPUV line and others
       buildNpuvLine();
-      buildTcMonthly();
+      buildTcTable();
       buildWbLine();
       buildWbTable();
-      buildTcCompare();
       buildRevTable();
       buildBtBars();
       buildNpuvTable();
@@ -3461,28 +3457,6 @@
       }).join('') + '<div style="font-size:12.5px;color:var(--muted);margin-top:10px">Vạch đỏ = ngưỡng hòa 100% (bồi thường bằng doanh thu). Dự án không có vạch màu là chưa phát sinh bồi thường trong kỳ.</div>';
     }
 
-    /* Donut "Hoàn thành mục tiêu năm" — tháng: % của 100 tỷ · tuần: TripCARE % KPI năm */
-    function buildDonut() {
-      const svg = $('#donut'); if (!svg || svg.dataset.done) return; svg.dataset.done = 1;
-      let pct, label, centerLbl;
-      if (isMonth()) {
-        const tongLuyKe = entries().reduce((s, e) => s + (e.d.luyKe || 0), 0), mo = soThang();
-        pct = tongLuyKe / P().mucTieuNam * 100; label = 'của 100 tỷ'; centerLbl = 'đã thực hiện<br>sau ' + mo + '/12 tháng';
-        $('#donut-title').textContent = 'Hoàn thành mục tiêu năm'; $('#donut-cs').textContent = 'Lũy kế ' + mo + 'T so với mục tiêu 100 tỷ';
-      } else {
-        const tc = P().data.tripcare; pct = tc.dtLuyKeThang / 60 * 100; label = 'của 60 tỷ'; centerLbl = 'TripCARE<br>KPI năm';
-        $('#donut-title').textContent = 'TripCARE — tiến độ KPI năm'; $('#donut-cs').textContent = 'Lũy kế tháng đến ' + P().chot + ' so với KPI 60 tỷ';
-      }
-      const R = 58, C = 2 * Math.PI * R, pc = Math.min(100, pct);
-      svg.innerHTML =
-        '<circle cx="75" cy="75" r="' + R + '" fill="none" stroke="var(--chip)" stroke-width="16"/>' +
-        '<circle id="donut-arc" cx="75" cy="75" r="' + R + '" fill="none" stroke="var(--c-blue)" stroke-width="16" stroke-linecap="round" stroke-dasharray="' + C + '" stroke-dashoffset="' + C + '" transform="rotate(-90 75 75)" style="transition:stroke-dashoffset 1.4s cubic-bezier(.25,.8,.25,1)"/>' +
-        '<text x="75" y="70" text-anchor="middle" font-size="24" font-weight="800" fill="var(--ink)" class="num">' + nfmt(pct, 1) + '%</text>' +
-        '<text x="75" y="90" text-anchor="middle" font-size="11" fill="var(--muted)">' + label + '</text>';
-      $('#donut-v').textContent = nfmt(pct, 1) + '%'; $('#donut-lbl-txt').innerHTML = centerLbl;
-      requestAnimationFrame(() => requestAnimationFrame(() => { $('#donut-arc').style.strokeDashoffset = C * (1 - pc / 100); }));
-    }
-
     function buildNpuvLine() {
       const svg = $('#npuv-line'); if (!svg || svg.dataset.done) return; svg.dataset.done = 1;
       const W = 560, H = 260, L = 46, R = 14, T = 16, B = 32, pw = W - L - R, ph = H - T - B, ymax = 50;
@@ -3504,29 +3478,36 @@
       if (path && !reduceMotion) { const len = path.getTotalLength(); path.style.strokeDasharray = len; path.style.strokeDashoffset = len; path.style.transition = 'stroke-dashoffset 1.6s cubic-bezier(.4,0,.2,1)'; requestAnimationFrame(() => requestAnimationFrame(() => { path.style.strokeDashoffset = 0; })); }
     }
 
-    /* TripCARE — biểu đồ doanh thu theo tháng (từ Google Sheet) */
-    function buildTcMonthly() {
-      const svg = $('#tc-monthly'); if (!svg) return;
-      const g = TRIPCARE_GS, W = 560, H = 250, L = 40, R = 14, T = 14, B = 30, pw = W - L - R, ph = H - T - B;
-      const series26 = g.thang2026.slice(), months = series26.map((_, i) => 'T' + (i + 1));
-      const ymax = 6.5;
-      const x = i => L + i * (pw / (months.length - 1)), y = v => T + (1 - v / ymax) * ph;
-      let s = '';
-      [0, 2, 4, 6].forEach(v => { s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="var(--grid)" stroke-width="1"/>'; s += '<text x="' + (L - 6) + '" y="' + (y(v) + 4) + '" text-anchor="end" font-size="10" fill="var(--muted)" class="num">' + v + '</text>'; });
-      // 2025 comparison line
-      const p25 = g.thang2025.slice(0, 6).map((v, i) => [x(i), y(v)]);
-      const d25 = p25.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
-      s += '<path d="' + d25 + '" fill="none" stroke="var(--c-slate)" stroke-width="2" stroke-dasharray="5 4" stroke-linejoin="round"/>';
-      p25.forEach(p => s += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="3" fill="var(--c-slate)"/>');
-      // 2026 bars
-      const bw = Math.min(30, pw / months.length * 0.5);
-      series26.forEach((v, i) => {
-        const bx = x(i) - bw / 2, by = y(v), bh = y(0) - by;
-        s += '<rect x="' + bx + '" y="' + by + '" width="' + bw + '" height="' + bh + '" rx="4" fill="var(--c-blue)" data-tip="<b>' + months[i] + '/2026</b><br>' + nfmt(v, 2) + ' tỷ<br>2025: ' + nfmt(g.thang2025[i], 2) + ' tỷ"/>';
-        s += '<text x="' + x(i) + '" y="' + (by - 6) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink)" class="num">' + nfmt(v, 1) + '</text>';
-        s += '<text x="' + x(i) + '" y="' + (H - 9) + '" text-anchor="middle" font-size="10.5" fill="var(--muted)">' + months[i] + '</text>';
-      });
-      svg.innerHTML = s;
+    /* TripCARE — bảng doanh thu theo tháng (gọn, thay biểu đồ cột để tiết kiệm chỗ).
+       Mỗi dòng 1 tháng: số đơn · doanh thu 2026 (có thanh nền so sánh) · 2025 · chênh lệch. */
+    function buildTcTable() {
+      const tbl = $('#tc-table'); if (!tbl) return;
+      const g = TRIPCARE_GS, n = g.thang2026.length;
+      const max = Math.max.apply(null, g.thang2026);
+      const s26 = tcSum(g.thang2026, n), s25 = tcSum(g.thang2025, n), d26 = tcSum(g.don2026, n);
+      const sub = $('#tcm-sub');
+      if (sub) sub.textContent = 'Nguồn: Google Sheet doanh thu · đơn vị: tỷ VNĐ · T1–T' + n + '/2026';
+      const yoyCell = (v26, v25) => {
+        if (v25 == null || !v25) return '<td class="r">—</td>';
+        const p = (v26 / v25 - 1) * 100;
+        return '<td class="r num ' + (p >= 0 ? 'yoy-up' : 'yoy-dn') + '">' + (p >= 0 ? '+' : '−') + nfmt(Math.abs(p), 1) + '%</td>';
+      };
+      tbl.innerHTML =
+        '<thead><tr><th>Tháng</th><th class="r">Số đơn</th><th class="r">DT 2026</th><th class="r">DT 2025</th><th class="r">± YoY</th></tr></thead><tbody>' +
+        g.thang2026.map((v, i) => {
+          const v25 = g.thang2025[i];
+          return '<tr data-tip="<b>T' + (i + 1) + '/2026</b><br>' + nfmt(v, 3) + ' tỷ · ' + nfmt(g.don2026[i]) + ' đơn<br>Cùng kỳ 2025: ' + nfmt(v25, 3) + ' tỷ · ' + nfmt(g.don2025[i]) + ' đơn">' +
+            '<td class="num">T' + (i + 1) + '</td>' +
+            '<td class="r num">' + nfmt(g.don2026[i]) + '</td>' +
+            '<td class="r"><span class="cellbar"><i style="width:' + (v / max * 100).toFixed(1) + '%"></i><b class="num">' + nfmt(v, 2) + '</b></span></td>' +
+            '<td class="r num" style="color:var(--muted)">' + nfmt(v25, 2) + '</td>' +
+            yoyCell(v, v25) + '</tr>';
+        }).join('') +
+        '<tr style="font-weight:800"><td>Lũy kế ' + n + 'T</td><td class="r num">' + nfmt(d26) + '</td>' +
+        '<td class="r num">' + nfmt(s26, 2) + '</td><td class="r num" style="color:var(--muted)">' + nfmt(s25, 2) + '</td>' +
+        yoyCell(s26, s25) + '</tr></tbody>' +
+        '<tfoot><tr><td colspan="5" style="font-size:12px;color:var(--muted);font-weight:400;padding:8px 10px">' +
+        'T8/2026 đến 05/08: ' + nfmt(g.t8_2026_partial, 3) + ' tỷ · cả năm 2025: ' + nfmt(g.caNam2025, 2) + ' tỷ. ' + esc(g.nguon) + '</td></tr></tfoot>';
     }
 
     function buildWbLine() {
@@ -3572,38 +3553,28 @@
         '<tr style="font-weight:700"><td>Tổng ' + wb.bangThang.length + 'T</td><td class="r num">' + nfmt(sDT) + '</td><td class="r num">' + nfmt(sBT) + '</td><td class="r num">' + sVu + '</td><td class="r"><span class="pill-bt ' + (sTyLe > 100 ? 'bad' : 'ok') + ' num">' + nfmt(sTyLe, 2) + '%</span></td></tr></tbody>';
     }
 
+    /* Asahi NPUV — bảng theo tháng giống wBooking: mỗi dòng 1 tháng, cột Tổng NPUV & tỷ lệ bồi thường.
+       Lưu ý: NPUV_GS.boiThuong là TỶ LỆ bồi thường (%), không phải số tiền. */
     function buildNpuvTable() {
       const tbl = $('#npuv-table'); if (!tbl) return;
       const n = NPUV_GS;
-      const monthsHtml = n.thang.map(t => '<th class="r" style="min-width:90px; background:#AED59F; color:#000">Tháng ' + t + '</th>').join('');
-      const tongNPUVHtml = n.tongNPUV.map(v => '<td class="r num">' + nfmt(v) + '</td>').join('');
-      const veBanHtml = n.veBan.map(v => '<td class="r num">' + nfmt(v) + '</td>').join('');
-      const keHoachHtml = n.keHoach.map(v => '<td class="r num">' + nfmt(v) + '</td>').join('');
-      const tyLeHTHtml = n.tyLeHT.map(v => '<td class="r num" style="font-weight:700; background:rgba(92, 139, 236, 0.15)">' + nfmt(v, 2) + '%</td>').join('');
-      const boiThuongHtml = n.boiThuong.map(v => '<td class="r num" style="font-weight:700">' + (v != null ? nfmt(v, 2) + '%' : '') + '</td>').join('');
-
+      const sDT = n.tongNPUV.reduce((s, v) => s + v, 0);
+      // bình quân gia quyền theo doanh thu, chỉ tính tháng đã có số bồi thường
+      let wDT = 0, wBT = 0;
+      n.boiThuong.forEach((v, i) => { if (v != null) { wDT += n.tongNPUV[i]; wBT += n.tongNPUV[i] * v; } });
+      const tbTyLe = wDT ? wBT / wDT : 0;
       tbl.innerHTML =
-        '<thead><tr><th style="min-width:110px; background:#AED59F; color:#000">Dự án</th><th style="min-width:130px; background:#AED59F; color:#000"></th>' + monthsHtml + '</tr></thead><tbody>' +
-        '<tr><td rowspan="5" style="font-weight:700; text-align:center; vertical-align:middle; border-right: 1px solid var(--line)">Asahi - NPUV</td><td>Tổng NPUV</td>' + tongNPUVHtml + '</tr>' +
-        '<tr><td>Về Ban 50%</td>' + veBanHtml + '</tr>' +
-        '<tr><td>Kế hoạch về Ban</td>' + keHoachHtml + '</tr>' +
-        '<tr><td style="font-weight:700; background:rgba(92, 139, 236, 0.15)">Tỷ lệ hoàn thành</td>' + tyLeHTHtml + '</tr>' +
-        '<tr><td style="font-weight:700">Bồi thường NPUV</td>' + boiThuongHtml + '</tr>' +
-        '</tbody>';
-    }
-
-    function buildTcCompare() {
-      const g = TRIPCARE_GS, mo = Math.min(isMonth() ? soThang() : g.thang2026.length, g.thang2026.length), moL = mo + 'T';
-      const t = $('#tc-cmp-title'); if (t) t.textContent = 'TripCARE — ' + moL + '/2025 vs ' + moL + '/2026';
-      const l25 = $('#tc-cmp-l25'), l26 = $('#tc-cmp-l26');
-      if (l25) l25.lastChild.textContent = moL + '/2025'; if (l26) l26.lastChild.textContent = moL + '/2026';
-      const rows = [{ lb: 'Số đơn', v25: tcSum(g.don2025, mo), v26: tcSum(g.don2026, mo), f: v => nfmt(v) + ' đơn' }, { lb: 'Doanh thu', v25: tcSum(g.thang2025, mo), v26: tcSum(g.thang2026, mo), f: v => fmtTien(v) }];
-      $('#tc-compare').innerHTML = rows.map(r => {
-        const max = Math.max(r.v25, r.v26);
-        return '<div style="margin-bottom:16px"><div style="font-size:12.5px;font-weight:700;margin-bottom:6px">' + r.lb + '</div>' +
-          '<div class="bar-row" style="grid-template-columns:58px 1fr 88px;margin-bottom:6px"><span class="n" style="font-size:11.5px;color:var(--muted)">2025</span><span class="bar" style="height:14px"><i data-w="' + (r.v25 / max * 100) + '" style="background:var(--c-slate)"></i></span><span class="v num" style="font-size:12px">' + r.f(r.v25) + '</span></div>' +
-          '<div class="bar-row" style="grid-template-columns:58px 1fr 88px"><span class="n" style="font-size:11.5px;color:var(--muted)">2026</span><span class="bar" style="height:14px"><i data-w="' + (r.v26 / max * 100) + '"></i></span><span class="v num" style="font-size:12px">' + r.f(r.v26) + '</span></div></div>';
-      }).join('');
+        '<thead><tr><th>Tháng</th><th class="r">Tổng NPUV (đ)</th><th class="r">Tỷ lệ bồi thường</th></tr></thead><tbody>' +
+        n.thang.map((t, i) => {
+          const bt = n.boiThuong[i];
+          return '<tr><td class="num">T' + t + '/2026</td>' +
+            '<td class="r num">' + nfmt(n.tongNPUV[i]) + '</td>' +
+            '<td class="r">' + (bt != null
+              ? '<span class="pill-bt ' + (bt > 100 ? 'bad' : 'ok') + ' num">' + nfmt(bt, 2) + '%</span>'
+              : '<span style="color:var(--muted)">chưa có</span>') + '</td></tr>';
+        }).join('') +
+        '<tr style="font-weight:700"><td>Tổng ' + n.thang.length + 'T</td><td class="r num">' + nfmt(sDT) + '</td>' +
+        '<td class="r"><span class="pill-bt ' + (tbTyLe > 100 ? 'bad' : 'ok') + ' num">' + nfmt(tbTyLe, 2) + '%</span></td></tr></tbody>';
     }
 
     /* ============ RENDER: DETAIL CARDS + MODAL ============ */
@@ -3710,7 +3681,7 @@
       renderDetailCards();
       setTimeout(fireHero, 120); // hero luôn chạy count-up ngay khi mở, không chờ cuộn
       // revenue tab: rebuild only if visible or month (charts lazy via done flag)
-      $('#donut').dataset.done = ''; $('#wb-line').dataset.done = '';
+      $('#wb-line').dataset.done = '';
       renderRevenueTab();
     }
 
@@ -3722,7 +3693,7 @@
       const bb = $('#backbar'); bb.hidden = (v === 'home');
       if (v !== 'home') $('#bb-title').textContent = viewTitle(v);
       document.querySelectorAll('#bottombar button').forEach(b => b.classList.toggle('active', b.dataset.view === v));
-      if (v === 'doanhthu') { buildDonut(); buildTcMonthly(); buildWbLine(); buildNpuvLine(); }
+      if (v === 'doanhthu') { buildTcTable(); buildWbLine(); buildNpuvLine(); }
       window.scrollTo({ top: 0, behavior: 'auto' }); refreshReveals();
     }
     $('#main').addEventListener('click', e => {
