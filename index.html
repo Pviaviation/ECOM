@@ -2671,16 +2671,95 @@
 
     /* TripCARE — doanh thu theo tháng (tỷ VNĐ) trích Google Sheet, cho biểu đồ xu hướng.
        So cùng kỳ tính động theo số tháng của kỳ báo cáo (slice mảng). */
-    const TRIPCARE_GS = {
-      nguon: "Google Sheet doanh thu TripCARE · cập nhật 08/08/2026",
-      thang2026: [4.918, 3.453, 5.042, 3.464, 3.698, 4.784, 5.350],     // T1–T7/2026
-      thang2025: [3.495, 3.875, 4.586, 4.259, 5.161, 5.682, 5.919, 4.951, 4.035, 4.450, 4.372, 4.902], // T1–T12/2025
-      don2026: [24461, 17306, 23312, 16028, 16050, 19215, 22077],       // số đơn T1–T7/2026
-      don2025: [15967, 16682, 19067, 17726, 21150, 22450, 23537, 20575, 17797, 19745, 20718, 23472],
-      t8_2026_partial: 0.968,   // đến 05/08: 967,7 tr / 4.189 đơn
-      caNam2025: 55.686
+    /* ===== AUTO-DATA:START — do GitHub Action ghi tự động từ Google Sheet, ĐỪNG SỬA TAY ===== */
+    const AUTO_DATA = {
+      capNhat: "16/08/2026 16:50",
+      capNhatNgay: "16/08/2026",
+      tripcare: {
+        thang2026: [4.918, 3.453, 5.042, 3.464, 3.698, 4.784, 5.35, 2.21],
+        don2026: [24461, 17306, 23312, 16028, 16050, 19215, 22077, 9609],
+        tb2026: [158.62, 123.29, 162.57, 115.44, 119.29, 159.46, 172.52, 170.03],
+        thang2025: [3.495, 3.875, 4.586, 4.259, 5.161, 5.682, 5.919, 4.951, 4.035, 4.45, 4.372, 4.902],
+        don2025: [15967, 16682, 19067, 17726, 21150, 22450, 23537, 20575, 17797, 19745, 20718, 23472],
+        thangDangChay: 8, soNgayDaCo: 13, denNgay: "13/08/2026",
+        cungKyPhi2025: 2.266, cungKyDon2025: 10092,   // cùng kỳ 2025 tính đúng số ngày đã có
+        soVuBT: 6, boiThuong: 0.045, caNam2025: 55.686, kpiNam: 60
+      },
+      wbooking: {
+        /* [tháng, doanh thu (đ), bồi thường (đ), số vụ, tỷ lệ BT (%)] */
+        thang2026: [
+          [1, 392389785, 187500000, 3, 47.78],
+          [2, 112288662, 125000000, 3, 111.32],
+          [3, 356553615, 112500000, 2, 31.55],
+          [4, 304001027, 432000000, 2, 142.1],
+          [5, 242407448, 300000000, 5, 123.76],
+          [6, 180525803, 287500000, 4, 159.26],
+          [7, 212711759, 122500000, 3, 57.59],
+        ]
+      }
     };
+    /* ===== AUTO-DATA:END ===== */
+
+    /* TripCARE_GS = lớp bọc quanh AUTO_DATA để phần render bên dưới không phải đổi tên trường */
+    const TRIPCARE_GS = (function () {
+      const t = AUTO_DATA.tripcare;
+      return {
+        nguon: "Google Sheet doanh thu TripCARE · tự cập nhật " + AUTO_DATA.capNhat,
+        thang2026: t.thang2026, thang2025: t.thang2025,
+        don2026: t.don2026, don2025: t.don2025,
+        thangDangChay: t.thangDangChay, denNgay: t.denNgay,
+        t8_13ngay_2025: t.cungKyPhi2025,      // cùng kỳ năm trước, tính đúng số ngày đã có
+        caNam2025: t.caNam2025
+      };
+    })();
     function tcSum(arr, mo) { return arr.slice(0, mo).reduce((s, v) => s + v, 0); }
+
+    /* Nạp số từ AUTO_DATA vào KỲ MỚI NHẤT: chỉ ghi đè CON SỐ của TripCARE & wBooking,
+       không đụng tới kết quả / kế hoạch / khó khăn (những phần nhập tay).
+       Các kỳ đã chốt (T7, T6…) giữ nguyên số đã báo cáo — không viết lại lịch sử
+       kể cả khi Google Sheet sau này chỉnh sửa số của tháng cũ. */
+    function applyLiveData() {
+      if (typeof AUTO_DATA === 'undefined') return;
+      const t = AUTO_DATA.tripcare, w = AUTO_DATA.wbooking, r3 = v => Math.round(v * 1000) / 1000;
+      [PERIODS[0]].forEach(p => {
+        if (!p || p.type !== 'month') return;
+        const mo = parseInt(p.id.split('-')[1], 10);
+        if (!mo) return;
+        const dangChay = t.thangDangChay === mo;
+
+        const tc = p.data.tripcare;
+        if (tc && t.thang2026.length >= mo) {
+          tc.dt = t.thang2026[mo - 1];
+          tc.luyKe = r3(tcSum(t.thang2026, mo));
+          tc.soDon = tcSum(t.don2026, mo);
+          tc.tbNgay = t.tb2026[mo - 1];
+          tc.phanTramKPI = Math.round(tc.luyKe / t.kpiNam * 10000) / 100;
+          tc.cungKy2025 = r3(dangChay ? tcSum(t.thang2025, mo - 1) + t.cungKyPhi2025 : tcSum(t.thang2025, mo));
+          tc.soDon2025 = dangChay ? tcSum(t.don2025, mo - 1) + t.cungKyDon2025 : tcSum(t.don2025, mo);
+          tc.boiThuong = t.boiThuong; tc.soVuBT = t.soVuBT;
+          tc.tyLeBT = tc.luyKe ? Math.round(t.boiThuong / tc.luyKe * 10000) / 100 : 0;
+        }
+
+        const wb = p.data.wbooking;
+        if (wb && w && w.thang2026) {
+          const rows = w.thang2026.filter(x => x[0] <= mo);
+          if (rows.length) {
+            wb.bangThang = rows;
+            const sDT = rows.reduce((s, x) => s + x[1], 0), sBT = rows.reduce((s, x) => s + x[2], 0);
+            wb.luyKe = r3(sDT / 1e9); wb.boiThuong = r3(sBT / 1e9);
+            wb.tyLeBT = Math.round(sBT / sDT * 10000) / 100;
+            const cur = rows.find(x => x[0] === mo);
+            if (cur) wb.dt = Math.round(cur[1] / 1e6) / 1000; else delete wb.dt;
+          }
+        }
+      });
+      /* kỳ mới nhất nếu đúng tháng hiện tại thì lấy luôn ngày chạy Action làm ngày chốt số */
+      const p0 = PERIODS[0], now = new Date();
+      if (p0 && p0.type === 'month' && parseInt(p0.id.split('-')[1], 10) === now.getMonth() + 1
+        && parseInt(p0.id.split('-')[0], 10) === now.getFullYear() && AUTO_DATA.capNhatNgay) {
+        p0.chot = AUTO_DATA.capNhatNgay;
+      }
+    }
 
     const NPUV_GS = {
       thang: [1, 2, 3, 4, 5, 6, 7],
@@ -2693,6 +2772,141 @@
 
     /* ---------- CÁC KỲ BÁO CÁO (mới nhất lên đầu) ---------- */
     const PERIODS = [
+
+      /* ===== KỲ THÁNG 08/2026 (đang chạy — số liệu đến 13/08/2026) =====
+         Nguồn doanh thu: TripCARE Google Sheet (tab TỔNG HỢP TRIPCARE + T8.2026, có số đến 13/08) ·
+         wBooking Google Sheet (tab TỔNG HỢP BH HIO — dòng Tháng 8 CHƯA có số liệu).
+         Các dự án còn lại chưa có báo cáo tháng 8 → giữ lũy kế 7T, đã ghi chú từng dự án.
+         Nội dung tháng 8 dưới đây được tách ra từ kỳ T7 (các việc phát sinh từ 01/08 trở đi). */
+      {
+        id: "2026-08", type: "month", label: "Tháng 08/2026", range: "01–31/08/2026", chot: "16/08/2026", mucTieuNam: 100,
+        luuY: "Kỳ đang chạy — cập nhật đến hết 16/08/2026. Doanh thu TripCARE trên Google Sheet mới nhập đến 13/08 (14–16/08 chưa lên số) · wBooking chưa cập nhật T8 · các dự án khác giữ lũy kế 7T (chưa có báo cáo tháng 8)",
+        data: {
+          tripcare: {
+            trangThai: "tang-truong", dt: 2.210, luyKe: 32.919, phanTramKPI: 54.87, soDon: 148058, tbNgay: 170.03,
+            cungKy2025: 35.243, soDon2025: 146671, boiThuong: 0.04475, soVuBT: 6, tyLeBT: 0.14,
+            ghiChu: "Số liệu đến 13/08/2026 (13 ngày): 2,21 tỷ / 9.609 đơn · TB 170,0 tr/ngày. Lũy kế 8T 32,92 tỷ = 54,9% KPI 60 tỷ. So cùng kỳ đã quy về CÙNG SỐ NGÀY: 7T/2025 + 13 ngày đầu T8/2025 = 35,24 tỷ / 146.671 đơn",
+            ketQua: ["T8 đến 13/08: 2,21 tỷ · 9.609 đơn · TB 170,0 tr/ngày (13 ngày đầu T8/2025: 2,27 tỷ · 10.092 đơn → phí −2,5%, đơn −4,8%)", "Lũy kế 8T: 32,92 tỷ / 148.058 đơn = 54,9% KPI năm; số đơn nhỉnh hơn cùng kỳ +0,9%", "Bồi thường 2026: 6 vụ / 44,75 tr — tỷ lệ 0,14%, chưa phát sinh vụ mới trong T8"],
+            keHoach: ["Go-live Phase 2 UI/UX TripCARE (Insider)", "Triển khai cơ cấu tái mới với Chubb (digital 50-50, HH tái 52%)", "Đẩy bán qua kênh đại lý VNA; truyền thông voucher phòng chờ"]
+          },
+          spa: {
+            trangThai: "cho-doi-tac", dt: 0, luyKe: 0, phanTramKPI: 0,
+            ghiChu: "LÙI TIẾN ĐỘ sau kick-off 1A–SPA–Chubb ngày 05/08: 1A dự trù mobile app go-live T11/2026; website cuối T9 mới lên lịch config (+2–3 tháng) — Chubb đánh giá rủi ro không kịp live website trong 2026 do Amadeus/Chubb freeze hệ thống T12",
+            moc: ["Cuối T9: 1A lên lịch config website (+2–3 tháng để go-live)", "T11/2026: 1A dự trù go-live mobile app", "T12/2026: Amadeus/Chubb freeze hệ thống"],
+            ketQua: ["Họp kick-off 1A–SPA–Chubb ngày 05/08", "Nguyên nhân chậm: 1A chỉ cấp 3 slot Q3 cho SPA; 2 SP chen ngang ưu tiên hơn BH (Premium Eco, Flex Pricer) + các mục đã reserve trước: Flight Status, PTTT địa phương, Qwikcilver", "Ban Ancil (SPA) đã gửi mail push team EC/IT, yêu cầu 1A đẩy nhanh tiến độ để go-live website trong 2026", "Đã thống nhất cơ chế họp hàng tuần 4 bên PVI–SPA–Chubb–1A để bám tiến độ"],
+            keHoach: ["Họp hàng tuần SPA–PVI–Chubb với 1A để push tiến độ", "Yêu cầu Chubb hoàn thiện: Quy tắc bảo hiểm · Dự thảo Hợp đồng tái bảo hiểm · Dự thảo Phụ lục 3 bên với Redion (Europ Assistance) · Dự thảo Phụ lục Outsourcing agreement", "Đôn đốc SPA–Chubb thống nhất Thỏa thuận CRS để SPA trình ký chung với Hợp đồng ba bên (PVI đã ký) / Thỏa thuận ISR", "Rà soát Nghị định 248/2026/NĐ-CP cùng SPA; chuẩn bị hồ sơ theo Phụ lục 05 NĐ 248 ngay trong T8", "Bám mục tiêu go-live website trong 2026; chuẩn bị vận hành cho mobile app go-live T11/2026"]
+          },
+          bamboocare: {
+            trangThai: "canh-bao", luyKe: 0.9956, phanTramKPI: 28.4,
+            ghiChu: "ĐÃ TẠM NGỪNG kết nối bán từ 10/08/2026 (phê duyệt tại TTr 127/TTr-HK&KHDN ngày 06/08) cho đến khi BAV xử lý xong công nợ — doanh thu T8 dừng phát sinh. Trọng tâm hiện nay: phương án cấn trừ công nợ với vụ bồi thường FLC Sầm Sơn (~22,8 tỷ)",
+            congNo: { doiTac: "BAV", quaHan: 368203154, kyThuoc: "T3–T6/2026 (quá hạn 12–103 ngày) · tổng công nợ đến hết T7: 413.826.563đ (kỳ T7 45,6 tr hạn 25/08)", trangThai: "Đã tạm ngừng kết nối từ 10/08; CV đã gửi BAV — khôi phục khi BAV ổn định kinh doanh & thanh toán đủ công nợ. Đang xử lý CẤN TRỪ công nợ với vụ bồi thường FLC Sầm Sơn (~22,8 tỷ)" },
+            ketQua: ["ĐƯỢC PHÊ DUYỆT chủ trương tạm ngừng kết nối (TTr 127/TTr-HK&KHDN ngày 06/08)", "Gửi CV thông báo BAV và THỰC HIỆN tạm ngừng kết nối bán từ 10/08/2026", "Đã thống nhất với Ban GQKN/Ban TCKT hướng cấn trừ công nợ với vụ BT tài sản FLC Sầm Sơn — bão số 10 Bualoi (29/9/2025), ĐBH PVI Hà Thành lead 40%, tổng dự phòng BT ~22,8 tỷ", "Đã tạm ứng BT lần 1: 2 tỷ (cấn trừ vào phí BH kỳ 4 FLC nợ); dự kiến tạm ứng lần 2 ~chục tỷ cuối T8 – đầu T9", "BAV đang tái cấu trúc (3 tàu bay); dự kiến khôi phục đường bay HAN–UIH từ 21/08"],
+            keHoach: ["TRÌNH LÃNH ĐẠO phương án cấn trừ công nợ BambooCARE với chi phí bồi thường vụ FLC", "Quy trình cấn trừ: B.HK làm TT cấn trừ chi phí BT (Hà Thành cấp đơn) với công nợ BambooCARE (Thủ Đô cấp đơn) → PVI–BAV ký biên bản xác nhận công nợ → ký thỏa thuận 3 bên PVI–BAV–FLC về bù trừ → Ban GQKN làm TT GQKN & đề nghị thanh toán trừ khoản công nợ", "20/08: nhận báo cáo + bảng tính từ đơn vị giám định để Ban GQKN rà soát, chốt tạm ứng BT lần 2", "25/08: đôn đốc BAV thanh toán công nợ kỳ T7 (45,6 tr)", "Phối hợp PVI Thủ Đô thu hồi dứt điểm; khôi phục kết nối khi BAV trả đủ nợ & ổn định"]
+          },
+          wbooking: {
+            trangThai: "canh-bao", luyKe: 1.801, boiThuong: 1.567, tyLeBT: 87.01,
+            ghiChu: "CHƯA CÓ SỐ LIỆU T8 trên Google Sheet (dòng Tháng 8 còn trống, danh sách bồi thường mới đến 11/07) — bảng dưới là lũy kế 7T: DT 1,80 tỷ · BT 1,57 tỷ (87,01%)",
+            bangThang: [[1, 392389785, 187500000, 3, 47.78], [2, 112288662, 125000000, 3, 111.32], [3, 356553615, 112500000, 2, 31.55], [4, 304001027, 432000000, 2, 142.11], [5, 242407448, 300000000, 5, 123.76], [6, 180525803, 287500000, 4, 159.26], [7, 212711759, 122500000, 3, 57.59]],
+            ketQua: ["(Chưa có số liệu doanh thu/bồi thường T8 — chờ wBooking cập nhật Google Sheet)", "Bán chính thức gói B20 tại 5 sân Vinpearl dự kiến trong T8 (đã đào tạo 08/07)"],
+            keHoach: ["Đôn đốc wBooking cập nhật doanh thu – bồi thường T8", "Chốt thời điểm bán chính thức gói B20 tại hệ thống Vinpearl", "Đưa gói BH golf vào hệ thống đại lý PVI", "Chuẩn bị Cổng thông tin số quốc gia (Hiệp hội Golf VN): T9 ra mắt beta"]
+          },
+          flightdelay: {
+            trangThai: "sap-golive", dt: 0, luyKe: 0,
+            ghiChu: "Đã sẵn sàng go-live với Atadi trong T8/2026 (xong test claim portal, ký HĐ TPA với Igloo, đào tạo sale Atadi) — chờ ký biên bản nghiệm thu & chốt ngày go-live chính thức",
+            moc: ["T8/2026: go-live Flight Delay với Atadi"],
+            ketQua: ["(Chưa có cập nhật mới trong T8 — chờ xác nhận ngày go-live với Atadi)"],
+            keHoach: ["Chuẩn bị chương trình marketing & ký biên bản nghiệm thu để GO-LIVE với Atadi trong T8/2026", "Hoàn tất ký hợp đồng và test UAT với Hồng Ngọc Hà", "Bám sát các OTA đã chào sản phẩm: Gotadi, Hồ Phi Long, Bảo Gia Trần"]
+          },
+          asahi: {
+            trangThai: "canh-bao", luyKe: 13.031, phanTramKPI: 46.12, tyLeBT: 28.84,
+            ghiChu: "Số 7T — chưa có báo cáo T8. Lũy kế 7T 13,03 tỷ = 46,12% kế hoạch năm (28 tỷ); tỷ lệ bồi thường NPUV lũy kế 28,84% (T7 tăng vọt lên 48%)",
+            ketQua: ["(Chưa có báo cáo T8)"],
+            keHoach: ["Làm việc Ban CN, Actuary & Asahi thống nhất phương án điều chỉnh An Phúc Ưu Việt (APUV)", "Kiểm soát tỷ lệ bồi thường NPUV sau khi T7 vọt lên 48%", "Chi tiết hóa hợp tác toàn diện PVI – Asahi – Asahi LivWell"]
+          },
+          mobifone: {
+            trangThai: "cho-doi-tac", luyKe: 0.0246, phanTramKPI: 1.2,
+            ghiChu: "Số 7T — chưa có báo cáo T8. Đã go-live BH Du lịch quốc tế trên Cổng BH nhưng lũy kế mới 24,6 tr = 1,2% KPI năm",
+            ketQua: ["(Chưa có báo cáo T8)"],
+            keHoach: ["Đẩy truyền thông BHDLQT đa kênh cùng MDS (SMS, Fanpage, Zalo OA)", "Hoàn thiện thủ tục ký MOU hợp tác chiến lược với MobiFone"]
+          },
+          zalopay: {
+            trangThai: "cho-doi-tac", luyKe: 0.1491, canQuyetDinh: true,
+            ghiChu: "Số 7T — chưa có báo cáo T8. Vẫn chờ chốt phương án triển khai mới",
+            ketQua: ["(Chưa có báo cáo T8)"],
+            keHoach: ["TRÌNH LÃNH ĐẠO phương án triển khai mới"]
+          },
+          nnx: {
+            trangThai: "tang-truong", luyKe: 15.493,
+            ghiChu: "Số 7T — chưa có báo cáo T8. Lũy kế 7T 15,49 tỷ, giữ đà tăng mạnh so cùng kỳ",
+            ketQua: ["(Chưa có báo cáo T8)"], keHoach: ["Duy trì đà tăng, theo dõi chất lượng khai thác"]
+          },
+          "plus-ew": {
+            trangThai: "tang-truong", luyKe: 2.1, soDon: 3603,
+            ghiChu: "Số 7T — chưa có báo cáo T8 (nguồn pvi-honda-report.netlify.app cập nhật 03/08)",
+            ketQua: ["(Chưa có báo cáo T8)"],
+            keHoach: ["Hoàn thiện kết nối API hondaplus.vn ↔ PVI Connect", "Mở rộng HEAD ở tỉnh"]
+          },
+          viettelstore: {
+            trangThai: "canh-bao", dt: 0, luyKe: 0,
+            ghiChu: "Chưa phát sinh doanh thu 2026. Mục tiêu go-live BH '1 đổi 1' trong T8/2026 để kịp ra mắt iPhone 18; ADLD vẫn chờ VST chốt ngày go-live lại",
+            ketQua: ["(Chưa có cập nhật mới trong T8)"],
+            keHoach: ["Kết nối API & go-live BH '1 đổi 1' trong T8/2026 (cùng Phòng CN&CDS, IT VST, TPA)", "Thúc đẩy VST chốt ngày go-live chính thức ADLD"]
+          },
+          sungroup: {
+            trangThai: "cho-doi-tac", dt: 0, luyKe: 0,
+            ghiChu: "Đã xong MOU & NDA với Sun World; đang chờ SGR phản hồi phương án bán hàng để triển khai trong T8/2026",
+            ketQua: ["(Chưa có cập nhật mới trong T8)"],
+            keHoach: ["Follow-up phản hồi của Sun World về phương án bán hàng"],
+            link: "https://pvi-aviationdivision.github.io/Sungroup_Uoctinh_Doanhthu/"
+          },
+          khac: {
+            trangThai: "cho-doi-tac", dt: 0, luyKe: 0,
+            ghiChu: "Các mốc tháng 8: Insurtech 3GO go-live giữa T8 · A05 dự sự kiện An ninh mạng VN 06/08 và KOL Summit cuối T8 · 7-Eleven thi chứng chỉ đại lý 14/08 · họp học kinh nghiệm PolicyStreet 05/08, Ledgertech 06/08 · Igloo họp chốt SP ung thư CPM 05/08",
+            danhSach: [
+              { ten: "Insurtech – 3GO", trangThai: "Xong hợp đồng, bộ API, thư chỉ định; go-live SP TNDS & Tai nạn cá nhân giữa T8/2026", uuTien: 5 },
+              { ten: "A05 — BH Cyber Shield SME", trangThai: "Dự sự kiện An ninh mạng VN 06/08; chuẩn bị KOL Summit cuối T8", uuTien: 5 },
+              { ten: "OPES–O-Car–VPBank — Vật chất xe", trangThai: "Đã chốt phương án tính phí, nhận dự thảo HĐ; OPES chờ VPBank duyệt", uuTien: 5 },
+              { ten: "Igloo — BH ung thư CPM", trangThai: "Họp chốt sản phẩm 05/08; chuẩn bị đăng ký Bộ Tài chính", uuTien: 1 },
+              { ten: "7-Eleven (SSV)", trangThai: "Kỳ thi chứng chỉ đại lý cho ứng viên cuối 14/08; SSV muốn nhúng landing page PVI vào app", uuTien: 3 },
+              { ten: "BH TNDS ô tô qua cửa khẩu", trangThai: "Đang xây đề án nội bộ sau khi họp C08", uuTien: 2 },
+              { ten: "Nura — BH sức khỏe telesales", trangThai: "Xây kịch bản bán hàng cho kênh telesales", uuTien: 2 },
+              { ten: "Ledgertech & PolicyStreet", trangThai: "Đã họp học kinh nghiệm bảo hiểm số/embedded: PolicyStreet 05/08, Ledgertech 06/08", uuTien: 2 },
+              { ten: "GTEL / VNPT", trangThai: "Đang trao đổi hợp tác toàn diện", uuTien: 2 }
+            ],
+            keHoach: ["Insurtech: hoàn tất go-live giữa T8/2026, ký hợp đồng", "A05: tổ chức KOL Summit cuối T8 giới thiệu BH Cyber Shield SME", "O-Car/VPBank: hoàn thiện tờ trình, ký HĐ đồng bảo hiểm với OPES & kết nối API", "7-Eleven: hoàn thiện chứng chỉ đại lý sau kỳ thi 14/08, dựng landing page"]
+          }
+        },
+        khoKhan: [
+          { muc: "gap", duAn: "BambooCARE", kho: "Đã tạm ngừng kết nối bán từ 10/08 — doanh thu dừng hẳn; công nợ BAV quá hạn 368.203.154đ chưa thu được, phương án cấn trừ với vụ BT FLC Sầm Sơn (~22,8 tỷ) chưa được phê duyệt", hoTro: "Trình lãnh đạo phê duyệt phương án cấn trừ công nợ BambooCARE với chi phí bồi thường vụ FLC (thỏa thuận 3 bên PVI–BAV–FLC) để thu hồi dứt điểm" },
+          { muc: "gap", duAn: "SPA GoSafe", kho: "Sau kick-off 05/08, 1A lùi tiến độ: mobile app T11/2026, website rủi ro không kịp 2026 (1A chỉ cấp 3 slot Q3, bị Premium Eco & Flex Pricer chen ngang)", hoTro: "Tác động 1A/SPA ở cấp cao để giữ mục tiêu go-live website trong 2026; ủng hộ cơ chế họp hàng tuần 4 bên" },
+          { muc: "gap", duAn: "Viettel Store", kho: "Còn nửa tháng để kịp mốc go-live BH '1 đổi 1' trong T8 (ra mắt iPhone 18); ADLD vẫn chưa có ngày go-live lại, doanh thu 2026 bằng 0", hoTro: "Tác động lãnh đạo VST chốt go-live ADLD và '1 đổi 1' ngay trong T8/2026" },
+          { muc: "theo-doi", duAn: "wBooking", kho: "Chưa cập nhật số liệu T8; tỷ lệ bồi thường lũy kế 7T vẫn ở mức 87,01% và thị trường golf suy giảm", hoTro: "Cho ý kiến rà soát gói B20 & cơ cấu tái; ủng hộ đưa BH golf vào hệ thống đại lý PVI" },
+          { muc: "theo-doi", duAn: "Sun Group", kho: "Mốc go-live 31/07 đã trượt, sang T8 vẫn chờ Sun World phản hồi phương án bán hàng", hoTro: "Tác động Sun World chốt phương án để triển khai ngay trong T8/2026" },
+          { muc: "theo-doi", duAn: "Asahi", kho: "Tỷ lệ bồi thường NPUV T7 vọt lên 48% (lũy kế 28,84%); lũy kế 7T mới đạt 46,12% kế hoạch năm — còn 5 tháng phải làm gần 15 tỷ", hoTro: "Duyệt phương án điều chỉnh APUV & kiểm soát tổn thất nguồn lead bệnh viện" }
+        ],
+        /* st: "done" = đã hoàn thành · "truot" = đã trượt hạn · "qua" = đã đến hạn, chờ cập nhật */
+        mocThoiGian: [
+          { ngay: "05/08", duAn: "SPA", moc: "Kick-off 1A–SPA–Chubb — 1A thông báo lùi tiến độ", hot: true, st: "done" },
+          { ngay: "06/08", duAn: "BambooCARE", moc: "Phê duyệt chủ trương tạm ngừng kết nối (TTr 127/TTr-HK&KHDN)", hot: false, st: "done" },
+          { ngay: "06/08", duAn: "A05", moc: "Dự sự kiện An ninh mạng Việt Nam", hot: false, st: "done" },
+          { ngay: "10/08", duAn: "BambooCARE", moc: "Tạm ngừng kết nối bán trên kênh BAV — đến khi xử lý xong công nợ", hot: true, st: "done" },
+          { ngay: "14/08", duAn: "7-Eleven (SSV)", moc: "Kỳ thi chứng chỉ đại lý cho ứng viên cuối cùng", hot: false },
+          { ngay: "Giữa T8", duAn: "Insurtech – 3GO", moc: "Go-live SP TNDS & Tai nạn cá nhân qua kênh đại lý Insurtech", hot: true },
+          { ngay: "20/08", duAn: "BambooCARE", moc: "Giám định gửi báo cáo vụ FLC (Bualoi) — Ban GQKN chốt tạm ứng BT lần 2", hot: false },
+          { ngay: "21/08", duAn: "BambooCARE", moc: "BAV dự kiến khôi phục đường bay HAN–UIH", hot: false },
+          { ngay: "25/08", duAn: "BambooCARE", moc: "Hạn thanh toán công nợ kỳ T7 (45,6 tr)", hot: true },
+          { ngay: "Trong T8", duAn: "Flight Delay", moc: "Go-live với Atadi (đã xong claim portal & HĐ TPA Igloo)", hot: true },
+          { ngay: "Trong T8", duAn: "Viettel Store", moc: "Go-live BH '1 đổi 1' — kịp ra mắt iPhone 18", hot: true },
+          { ngay: "Trong T8", duAn: "TripCARE", moc: "Go-live Phase 2 UI/UX (Insider)", hot: false },
+          { ngay: "Trong T8", duAn: "wBooking", moc: "Bán chính thức gói B20 tại hệ thống Vinpearl (5 sân đã đào tạo)", hot: false },
+          { ngay: "Cuối T8", duAn: "A05", moc: "Sự kiện KOL Summit giới thiệu BH Cyber Shield SME", hot: false },
+          { ngay: "Cuối T8 – đầu T9", duAn: "BambooCARE", moc: "Tạm ứng bồi thường lần 2 vụ FLC (~chục tỷ) để cấn trừ công nợ", hot: true },
+          { ngay: "Cuối T9", duAn: "SPA", moc: "1A lên lịch config website (+2–3 tháng để go-live)", hot: true },
+          { ngay: "T9/2026", duAn: "wBooking", moc: "Cổng thông tin số quốc gia (Hiệp hội Golf VN) ra mắt beta", hot: false },
+          { ngay: "T11/2026", duAn: "SPA", moc: "1A dự trù go-live mobile app", hot: false },
+          { ngay: "T12/2026", duAn: "wBooking", moc: "Triển khai Cổng thông tin số quốc gia toàn quốc", hot: false }
+        ]
+      },
 
       /* ===== KỲ THÁNG 07/2026 =====
          Nguồn: TripCARE Google Sheet (08/08) · wBooking Google Sheet (08/08) ·
@@ -2707,22 +2921,22 @@
             trangThai: "tang-truong", dt: 5.350, luyKe: 30.709, phanTramKPI: 51.18, soDon: 138449, tbNgay: 172.52,
             cungKy2025: 32.977, soDon2025: 136579, boiThuong: 0.04475, soVuBT: 6,
             ghiChu: "T7 đạt 5,35 tỷ (22.077 đơn), TB 172,52 tr/ngày — tháng cao nhất năm; lũy kế 7T 30,71 tỷ / 138.449 đơn (nguồn: Google Sheet)",
-            ketQua: ["ĐÃ CHỐT cơ cấu tái với Chubb: kênh digital 50-50, hoa hồng tái 52%; kênh đại lý giữ nguyên tỷ lệ hiện tại", "T7/2026: 5,35 tỷ (22.077 đơn) — vượt T3 thành tháng cao nhất năm", "Họp với VNA về việc bán TripCARE trên kênh đại lý của VNA (21/07)", "Phối hợp VNA chạy chương trình tặng voucher giảm giá vé máy bay (23–27/07)", "Hoàn thiện thanh toán chi phí Amadeus integration cost cho Chubb", "T8 đến 05/08: 967,7 tr (4.189 đơn)", "Bồi thường 2026: 6 vụ / 44,75 tr (tỷ lệ 0,15%)"],
+            ketQua: ["ĐÃ CHỐT cơ cấu tái với Chubb: kênh digital 50-50, hoa hồng tái 52%; kênh đại lý giữ nguyên tỷ lệ hiện tại", "T7/2026: 5,35 tỷ (22.077 đơn) — vượt T3 thành tháng cao nhất năm", "Họp với VNA về việc bán TripCARE trên kênh đại lý của VNA (21/07)", "Phối hợp VNA chạy chương trình tặng voucher giảm giá vé máy bay (23–27/07)", "Hoàn thiện thanh toán chi phí Amadeus integration cost cho Chubb", "Bồi thường lũy kế 2026: 6 vụ / 44,75 tr (tỷ lệ 0,15%)"],
             keHoach: ["Go-live Phase 2 UI/UX TripCARE (Insider)", "Triển khai cơ cấu tái mới với Chubb (digital 50-50, HH tái 52%)", "Đẩy truyền thông: voucher phòng chờ, bài Heritage"]
           },
           spa: {
             trangThai: "cho-doi-tac", dt: 0, luyKe: 0, phanTramKPI: 0,
-            ghiChu: "LÙI TIẾN ĐỘ (kick-off 1A–SPA–Chubb 05/08): 1A dự trù mobile app go-live T11/2026; website cuối T9 mới lên lịch config (+2–3 tháng) — Chubb đánh giá rủi ro không kịp live website trong 2026 do Amadeus/Chubb freeze hệ thống T12",
-            moc: ["Cuối T9: 1A lên lịch config website (+2–3 tháng để go-live)", "T11/2026: 1A dự trù go-live mobile app", "T12/2026: Amadeus/Chubb freeze hệ thống"],
-            ketQua: ["Họp kick-off 1A–SPA–Chubb ngày 05/08", "Nguyên nhân chậm: 1A chỉ cấp 3 slot Q3 cho SPA; 2 SP chen ngang ưu tiên hơn BH (Premium Eco, Flex Pricer) + các mục đã reserve trước: Flight Status, PTTT địa phương, Qwikcilver", "Ban Ancil (SPA) đã gửi mail push team EC/IT, yêu cầu 1A đẩy nhanh tiến độ để go-live website trong 2026", "PVI đã ký Hợp đồng ba bên và gửi sang SPA", "SPA đang cần thống nhất Thỏa thuận CRS với Chubb để trình ký chung cùng Hợp đồng ba bên / Thỏa thuận ISR (CRS và ISR là thỏa thuận SPA ký riêng với Chubb)"],
-            keHoach: ["Họp hàng tuần SPA–PVI–Chubb với 1A để push tiến độ (đã thống nhất)", "Yêu cầu Chubb hoàn thiện: Quy tắc bảo hiểm · Dự thảo Hợp đồng tái bảo hiểm · Dự thảo Phụ lục 3 bên với Redion (Europ Assistance) · Dự thảo Phụ lục Outsourcing agreement", "Đôn đốc SPA–Chubb thống nhất Thỏa thuận CRS để SPA trình ký chung với Hợp đồng ba bên (PVI đã ký) / Thỏa thuận ISR", "Rà soát Nghị định 248/2026/NĐ-CP cùng SPA; chuẩn bị hồ sơ theo Phụ lục 05 NĐ 248 ngay từ T8", "Bám mục tiêu go-live website trong 2026; chuẩn bị vận hành cho mobile app go-live T11/2026"]
+            ghiChu: "Chưa phát sinh doanh thu. PVI đã ký Hợp đồng ba bên và gửi sang SPA; đang chờ SPA–Chubb thống nhất Thỏa thuận CRS để trình ký chung. Đã hẹn kick-off với 1A đầu T8 để chốt lịch triển khai",
+            moc: ["Đầu T8: kick-off 1A–SPA–Chubb để chốt lịch triển khai"],
+            ketQua: ["PVI đã ký Hợp đồng ba bên và gửi sang SPA", "SPA đang cần thống nhất Thỏa thuận CRS với Chubb để trình ký chung cùng Hợp đồng ba bên / Thỏa thuận ISR (CRS và ISR là thỏa thuận SPA ký riêng với Chubb)"],
+            keHoach: ["Họp kick-off với 1A để chốt lịch config & go-live", "Yêu cầu Chubb hoàn thiện: Quy tắc bảo hiểm · Dự thảo Hợp đồng tái bảo hiểm · Dự thảo Phụ lục 3 bên với Redion (Europ Assistance) · Dự thảo Phụ lục Outsourcing agreement", "Đôn đốc SPA–Chubb thống nhất Thỏa thuận CRS để SPA trình ký chung với Hợp đồng ba bên (PVI đã ký) / Thỏa thuận ISR", "Rà soát Nghị định 248/2026/NĐ-CP cùng SPA; chuẩn bị hồ sơ theo Phụ lục 05 NĐ 248"]
           },
           bamboocare: {
             trangThai: "canh-bao", dt: 0.0687, luyKe: 0.9956, phanTramKPI: 28.4, cungKy2025: 2.016,
-            ghiChu: "TẠM NGỪNG kết nối bán BambooCARE từ 10/08/2026 (đã được phê duyệt chủ trương) cho đến khi BAV xử lý xong công nợ. Trọng tâm hiện nay: phương án cấn trừ công nợ với vụ bồi thường FLC. T7 chỉ đạt 68,7 tr — thấp nhất năm; 7T giảm 50,6% YoY",
-            congNo: { doiTac: "BAV", quaHan: 368203154, kyThuoc: "T3–T6/2026 (quá hạn 12–103 ngày) · tổng công nợ đến hết T7: 413.826.563đ (kỳ T7 45,6 tr hạn 25/08)", trangThai: "Đã được phê duyệt chủ trương tạm ngừng kết nối (TTr 127/TTr-HK&KHDN ngày 06/08); CV đã gửi BAV — khôi phục khi BAV ổn định kinh doanh & thanh toán đủ công nợ. Đang xử lý CẤN TRỪ công nợ với vụ bồi thường FLC Sầm Sơn (~22,8 tỷ)" },
-            ketQua: ["ĐÃ ĐƯỢC PHÊ DUYỆT chủ trương tạm ngừng kết nối (TTr 127/TTr-HK&KHDN ngày 06/08)", "Gửi CV thông báo BAV: tạm ngừng kết nối bán từ 10/08/2026", "Đã thống nhất với Ban GQKN/Ban TCKT hướng cấn trừ công nợ với vụ BT tài sản FLC Sầm Sơn — bão số 10 Bualoi (29/9/2025), ĐBH PVI Hà Thành lead 40%, tổng dự phòng BT ~22,8 tỷ", "Đã tạm ứng BT lần 1: 2 tỷ (cấn trừ vào phí BH kỳ 4 FLC nợ); dự kiến tạm ứng lần 2 ~chục tỷ cuối T8 – đầu T9", "BAV đang tái cấu trúc (3 tàu bay); dự kiến khôi phục đường bay HAN–UIH từ 21/08"],
-            keHoach: ["TRÌNH LÃNH ĐẠO phương án cấn trừ công nợ BambooCARE với chi phí bồi thường vụ FLC", "Quy trình cấn trừ: B.HK làm TT cấn trừ chi phí BT (Hà Thành cấp đơn) với công nợ BambooCARE (Thủ Đô cấp đơn) → PVI–BAV ký biên bản xác nhận công nợ → ký thỏa thuận 3 bên PVI–BAV–FLC về bù trừ → Ban GQKN làm TT GQKN & đề nghị thanh toán trừ khoản công nợ", "20/08: nhận báo cáo + bảng tính từ đơn vị giám định để Ban GQKN rà soát, chốt tạm ứng BT lần 2", "Thực hiện tạm ngừng kết nối từ 10/08 (rà soát tuân thủ NĐ 46/2023/NĐ-CP)", "Phối hợp PVI Thủ Đô đôn đốc BAV thanh toán dứt điểm; khôi phục kết nối khi BAV trả đủ nợ & ổn định"]
+            ghiChu: "T7 chỉ đạt 68,7 tr — thấp nhất năm; 7T giảm 50,6% YoY. Công nợ BAV quá hạn 368.203.154đ chưa thu được — Phòng đã đề xuất chủ trương tạm ngừng kết nối bán và hướng cấn trừ công nợ với vụ bồi thường FLC",
+            congNo: { doiTac: "BAV", quaHan: 368203154, kyThuoc: "T3–T6/2026 (quá hạn 12–103 ngày) · tổng công nợ đến hết T7: 413.826.563đ (kỳ T7 45,6 tr hạn 25/08)", trangThai: "PVI đã gửi mail & Công văn đôn đốc nhưng chưa thu được; đang trình chủ trương tạm ngừng kết nối bán và phương án cấn trừ với vụ bồi thường FLC Sầm Sơn (~22,8 tỷ)" },
+            ketQua: ["T7 đạt 68,7 tr — tháng thấp nhất năm; lũy kế 7T 995,6 tr (−50,6% YoY)", "Đôn đốc BAV thanh toán công nợ quá hạn T3–T6/2026 (368.203.154đ) — chưa thu được", "Làm việc với Ban GQKN/Ban TCKT về hướng cấn trừ công nợ với vụ BT tài sản FLC Sầm Sơn — bão số 10 Bualoi (29/9/2025), ĐBH PVI Hà Thành lead 40%, tổng dự phòng BT ~22,8 tỷ", "BAV đang tái cấu trúc, thu hẹp còn 3 tàu bay"],
+            keHoach: ["TRÌNH LÃNH ĐẠO chủ trương tạm ngừng kết nối bán trên kênh BAV cho đến khi thu hồi xong công nợ", "TRÌNH LÃNH ĐẠO phương án cấn trừ công nợ BambooCARE với chi phí bồi thường vụ FLC", "Quy trình cấn trừ: B.HK làm TT cấn trừ chi phí BT (Hà Thành cấp đơn) với công nợ BambooCARE (Thủ Đô cấp đơn) → PVI–BAV ký biên bản xác nhận công nợ → ký thỏa thuận 3 bên PVI–BAV–FLC về bù trừ → Ban GQKN làm TT GQKN & đề nghị thanh toán trừ khoản công nợ", "Phối hợp PVI Thủ Đô đôn đốc BAV thanh toán dứt điểm"]
           },
           wbooking: {
             trangThai: "canh-bao", dt: 0.2127, luyKe: 1.801, boiThuong: 1.567, tyLeBT: 87.01, cungKy2025: 2.706,
@@ -2795,13 +3009,13 @@
             ghiChu: "9 hướng đang triển khai / đàm phán — nổi bật: Insurtech 3GO dự kiến go-live giữa T8; A05 Cyber Shield SME đã có landing page & sự kiện KOL Summit cuối T8",
             danhSach: [
               { ten: "Insurtech – 3GO", trangThai: "Đã xong hợp đồng, bộ API, thư chỉ định; test hệ thống — go-live giữa T8/2026", uuTien: 5 },
-              { ten: "A05 — BH Cyber Shield SME", trangThai: "Landing page đã lên; dự sự kiện An ninh mạng VN 06/08; KOL Summit cuối T8", uuTien: 5 },
+              { ten: "A05 — BH Cyber Shield SME", trangThai: "Landing page đã lên; đăng ký dự sự kiện An ninh mạng VN và chuẩn bị KOL Summit trong T8", uuTien: 5 },
               { ten: "OPES–O-Car–VPBank — Vật chất xe", trangThai: "Đã chốt phương án tính phí, nhận dự thảo HĐ; OPES chờ VPBank duyệt", uuTien: 5 },
-              { ten: "Igloo — BH ung thư CPM", trangThai: "Làm việc nhà tái về quyền lợi/biểu phí; họp chốt SP 05/08; chuẩn bị đăng ký BTC", uuTien: 1 },
-              { ten: "7-Eleven (SSV)", trangThai: "Đang xin giấy phép đại lý; mới 2 người đỗ, thi tiếp 14/08; SSV muốn nhúng landing page PVI vào app", uuTien: 3 },
+              { ten: "Igloo — BH ung thư CPM", trangThai: "Làm việc nhà tái về quyền lợi/biểu phí; hẹn họp chốt sản phẩm đầu T8; chuẩn bị đăng ký BTC", uuTien: 1 },
+              { ten: "7-Eleven (SSV)", trangThai: "Đang xin giấy phép đại lý; mới 2 người đỗ, còn kỳ thi trong T8; SSV muốn nhúng landing page PVI vào app", uuTien: 3 },
               { ten: "BH TNDS ô tô qua cửa khẩu", trangThai: "Đã họp C08 trao đổi ý tưởng; đang xây đề án", uuTien: 2 },
               { ten: "Nura — BH sức khỏe telesales", trangThai: "MỚI: đánh giá SP của MSIG, xây list câu hỏi thu thập thông tin", uuTien: 2 },
-              { ten: "Ledgertech & PolicyStreet", trangThai: "MỚI: học kinh nghiệm bảo hiểm số/embedded — họp 05/08 (PolicyStreet), 06/08 (Ledgertech)", uuTien: 2 },
+              { ten: "Ledgertech & PolicyStreet", trangThai: "MỚI: kết nối để học kinh nghiệm bảo hiểm số/embedded — đã hẹn lịch họp đầu T8", uuTien: 2 },
               { ten: "GTEL / VNPT", trangThai: "Đang trao đổi hợp tác toàn diện", uuTien: 2 }
             ],
             keHoach: [
@@ -2815,8 +3029,8 @@
           }
         },
         khoKhan: [
-          { muc: "gap", duAn: "BambooCARE", kho: "Công nợ BAV quá hạn 368.203.154đ — đã được phê duyệt chủ trương tạm ngừng kết nối bán từ 10/08/2026 và gửi CV cho BAV; đang xử lý cấn trừ công nợ với vụ BT FLC Sầm Sơn (~22,8 tỷ, tạm ứng lần 2 cuối T8–đầu T9)", hoTro: "Trình lãnh đạo phê duyệt phương án cấn trừ công nợ BambooCARE với chi phí bồi thường vụ FLC (thỏa thuận 3 bên PVI–BAV–FLC) để thu hồi dứt điểm" },
-          { muc: "gap", duAn: "SPA GoSafe", kho: "1A lùi tiến độ: mobile app T11/2026, website rủi ro không kịp 2026 — 1A chỉ cấp 3 slot Q3, bị Premium Eco & Flex Pricer chen ngang (kick-off 05/08)", hoTro: "Tác động 1A/SPA ở cấp cao để giữ mục tiêu go-live website trong 2026; ủng hộ cơ chế họp hàng tuần 4 bên" },
+          { muc: "gap", duAn: "BambooCARE", kho: "Công nợ BAV quá hạn 368.203.154đ (T3–T6/2026) đã gửi mail & công văn nhưng chưa thu được; doanh thu T7 rơi về 68,7 tr — thấp nhất năm", hoTro: "Phê duyệt chủ trương tạm ngừng kết nối bán trên kênh BAV và phương án cấn trừ công nợ với chi phí bồi thường vụ FLC Sầm Sơn" },
+          { muc: "gap", duAn: "SPA GoSafe", kho: "Chưa chốt được lịch go-live: PVI đã ký Hợp đồng ba bên nhưng SPA–Chubb chưa thống nhất Thỏa thuận CRS; chờ kick-off với 1A đầu T8", hoTro: "Tác động 1A/SPA ở cấp cao để giữ mục tiêu go-live website trong 2026" },
           { muc: "gap", duAn: "Viettel Store", kho: "VST chưa chốt ngày go-live lại ADLD, vẫn tập trung bán cho MIC tại tất cả cửa hàng — doanh thu 2026 vẫn bằng 0", hoTro: "Tác động lãnh đạo VST để chốt go-live ADLD, kịp cùng chương trình BH '1 đổi 1' T8/2026 (ra mắt iPhone 18)" },
           { muc: "theo-doi", duAn: "wBooking", kho: "Tỷ lệ bồi thường lũy kế 7T 87,01% (T2, T4–T6 vượt 100%); thị trường golf suy giảm mạnh — booking giảm 38–42%, DT wBooking 6T chỉ bằng 64,91% cùng kỳ", hoTro: "Theo dõi tình hình bồi thường của dự án; Đẩy mạnh gói B20 cho hệ thống sân Vinpearl; wBooking tập trung triển khai dự án trên Cổng Thông tin số quốc gia đến hết Quý I/2027" },
           { muc: "theo-doi", duAn: "Sun Group", kho: "Đã hoàn thiện MOU/NDA nhưng mốc go-live trước 31/07 không đạt; đang chờ Sun World phản hồi phương án bán hàng", hoTro: "Tác động Sun World chốt phương án để triển khai trong T8/2026" },
@@ -2825,23 +3039,21 @@
         /* st: "done" = đã hoàn thành · "truot" = đã trượt hạn · "qua" = đã đến hạn, chờ Phòng cập nhật */
         mocThoiGian: [
           { ngay: "01/07", duAn: "Viettel Store", moc: "Đổi nhà tái ADLD Allianz → AIG (hiệu lực)", hot: false, st: "done" },
+          { ngay: "08/07", duAn: "wBooking", moc: "Đào tạo 5 sân golf Vinpearl (Hải Phòng, Nha Trang, Củ Chi, Nam Hội An, Phú Quốc)", hot: false, st: "done" },
+          { ngay: "16/07", duAn: "wBooking", moc: "Họp đánh giá kết quả kinh doanh & kế hoạch đẩy bán 2026–27", hot: false, st: "done" },
+          { ngay: "21/07", duAn: "TripCARE", moc: "Họp VNA về bán TripCARE trên kênh đại lý", hot: false, st: "done" },
+          { ngay: "23–27/07", duAn: "TripCARE", moc: "Chương trình tặng voucher giảm giá vé máy bay cùng VNA", hot: false, st: "done" },
           { ngay: "Trong T7", duAn: "MobiFone", moc: "Go-live BH Du lịch quốc tế trên Cổng BH (MOU đang hoàn thiện ký)", hot: false, st: "done" },
           { ngay: "Trong T7", duAn: "Viettel Store", moc: "Go-live ADLD & EW — VST chưa chốt ngày, vẫn ưu tiên bán MIC", hot: true, st: "truot" },
-          { ngay: "10/08", duAn: "BambooCARE", moc: "Tạm ngừng kết nối bán trên kênh BAV — đến khi xử lý xong công nợ", hot: true },
-          { ngay: "14/08", duAn: "7-Eleven (SSV)", moc: "Kỳ thi chứng chỉ đại lý cho ứng viên cuối cùng (mới 2 người đỗ)", hot: false },
-          { ngay: "Giữa T8", duAn: "Insurtech – 3GO", moc: "Go-live SP TNDS & Tai nạn cá nhân qua kênh đại lý Insurtech", hot: true },
-          { ngay: "20/08", duAn: "BambooCARE", moc: "Giám định gửi báo cáo vụ FLC (Bualoi) — Ban GQKN rà soát, chốt tạm ứng BT lần 2", hot: false },
-          { ngay: "21/08", duAn: "BambooCARE", moc: "BAV dự kiến khôi phục đường bay HAN–UIH", hot: false },
-          { ngay: "25/08", duAn: "BambooCARE", moc: "Hạn thanh toán công nợ kỳ T7 (45,6 tr)", hot: false },
+          { ngay: "Trước 31/07", duAn: "Sun Group", moc: "Go-live SP nhúng — không đạt, chờ SGR chốt phương án bán", hot: true, st: "truot" },
+          /* Các mốc dưới đây là KẾ HOẠCH nêu trong báo cáo T7; diễn biến thực tế xem kỳ Tháng 08/2026 */
           { ngay: "Trong T8", duAn: "Flight Delay", moc: "Go-live với Atadi (đã xong claim portal & HĐ TPA Igloo)", hot: true },
           { ngay: "Trong T8", duAn: "Viettel Store", moc: "Go-live BH '1 đổi 1' — kịp ra mắt iPhone 18", hot: true },
-          { ngay: "Cuối T8", duAn: "A05", moc: "Sự kiện KOL Summit giới thiệu BH Cyber Shield SME", hot: false },
+          { ngay: "Trong T8", duAn: "Insurtech – 3GO", moc: "Go-live SP TNDS & Tai nạn cá nhân qua kênh đại lý Insurtech", hot: true },
           { ngay: "Trong T8", duAn: "TripCARE", moc: "Go-live Phase 2 UI/UX (Insider)", hot: false },
-          { ngay: "T8/2026", duAn: "wBooking", moc: "Bán chính thức gói B20 tại hệ thống Vinpearl (5 sân đã đào tạo)", hot: false },
+          { ngay: "Trong T8", duAn: "wBooking", moc: "Bán chính thức gói B20 tại hệ thống Vinpearl (5 sân đã đào tạo)", hot: false },
           { ngay: "T9/2026", duAn: "wBooking", moc: "Cổng thông tin số quốc gia (Hiệp hội Golf VN) ra mắt beta", hot: false },
-          { ngay: "T12/2026", duAn: "wBooking", moc: "Triển khai Cổng thông tin số quốc gia toàn quốc", hot: false },
-          { ngay: "Cuối T9", duAn: "SPA", moc: "1A lên lịch config website (+2–3 tháng để go-live)", hot: true },
-          { ngay: "T11/2026", duAn: "SPA", moc: "1A dự trù go-live mobile app", hot: false }
+          { ngay: "T12/2026", duAn: "wBooking", moc: "Triển khai Cổng thông tin số quốc gia toàn quốc", hot: false }
         ]
       },
 
@@ -2881,28 +3093,28 @@
             ketQua: ["Ban hành Quy tắc BH, cập nhật mã SP trên PIAS", "Xong test luồng Vntrip–PVI; đang test claim portal Igloo"], keHoach: ["Hoàn thiện test claim portal Igloo & triển khai OTA"]
           },
           "asahi-npuv": {
-            trangThai: "canh-bao", dt: 2.023, luyKe: 12.853, tyLeBT6T: 27.8, phanTramKPI: 45.9,
-            ghiChu: "T7 đạt 2,02 tỷ (tăng 0,36% so với T7/2025). Lũy kế 7T đạt 12,85 tỷ.",
+            trangThai: "canh-bao", dt: 1.72, luyKe: 11.05, tyLeBT6T: 27.8, giamT6: 17.58, giam6T: 26.26,
+            ghiChu: "T6 giảm 17,58% YoY; lũy kế 6T giảm 26,26% YoY",
             ketQua: ["Xây phương án lấy lead NPUV tại bệnh viện", "Chuyển giao Bell HN → Bell HCM; ký thỏa thuận 3 bên Asahi+ALCV"], keHoach: ["Thống nhất lấy lead bệnh viện", "Triển khai NPUV2", "Landing page thu lead (ALCV)"]
           },
           "asahi-apuv": {
-            trangThai: "canh-bao", dt: 0.0288, luyKe: 0.1786, phanTramKPI: 8.9,
-            ghiChu: "T7 đạt 28,8 triệu (giảm 31,33% so với T7/2025). Lũy kế 7T đạt 178,6 triệu.",
+            trangThai: "canh-bao", dt: 0.02634, luyKe: 0.15449, giamT6: 32.5, giam6T: 28.15,
+            ghiChu: "T6 đạt 26,34 tr (−32,5% YoY); 6T đạt 154,49 tr (−28,15% YoY)",
             ketQua: ["Đề xuất Asahi phương án điều chỉnh sản phẩm APUV"], keHoach: ["Asahi phản hồi phương án điều chỉnh APUV", "Phối hợp Ban CN & Actuary thủ tục điều chỉnh SP"]
           },
           mobifone: {
-            trangThai: "cho-doi-tac", dt: 0.0028, luyKe: 0.0246, phanTramKPI: 1.2,
-            ghiChu: "T7 đạt 2,8 triệu. Lũy kế 7T đạt 24,6 triệu.",
+            trangThai: "cho-doi-tac", luyKe: 0.021, phanTramKPI: 1.05,
+            ghiChu: "Lũy kế 6T mới đạt 21 tr = 1,05% KPI",
             ketQua: ["Xây MOU hợp tác chiến lược, đã gửi CV cho MBF", "Kết nối API BH Du lịch quốc tế lên Cổng BH"], keHoach: ["Ký MOU với MBF", "Go-live BH Du lịch quốc tế trên Cổng BH"]
           },
           zalopay: {
-            trangThai: "cho-doi-tac", dt: 0.0109, luyKe: 0.1491, canQuyetDinh: true,
-            ghiChu: "T7 đạt 10,9 triệu. Lũy kế 7T đạt 149,1 triệu.",
+            trangThai: "cho-doi-tac", dt: 0.0603, luyKe: 0.1382, canQuyetDinh: true,
+            ghiChu: "ZLP kết thúc KM miễn phí tháng đầu từ 15/06. Tờ trình tăng ĐMCP bị Ban KTKH từ chối",
             ketQua: ["Tuần 08–14/6: 12,5 tr / 825 GD; ~64% user từ chối tái tục", "ZLP đề xuất: nâng giá ~40%; giảm 50% cho user; commission ZLP 60%"], keHoach: ["Tính hiệu quả phương án mới", "TRÌNH LÃNH ĐẠO phương án triển khai mới"]
           },
           nnx: {
-            trangThai: "tang-truong", dt: 2.175, luyKe: 15.493, cungKy2025: 2.7,
-            ghiChu: "7T tăng 5,7 lần YoY (cùng kỳ 2,7 tỷ); T7 tăng 2,66 lần YoY (cùng kỳ 816,6 tr). Cả năm 2025: 10,4 tỷ",
+            trangThai: "tang-truong", dt: 1.94, luyKe: 13.32, cungKy2025: 1.88,
+            ghiChu: "6T tăng 7,07 lần YoY — ngôi sao tăng trưởng (cả năm 2025: 10,4 tỷ)",
             ketQua: ["Duy trì tốc độ tăng trưởng cao"], keHoach: ["Duy trì đà tăng, theo dõi chất lượng khai thác"]
           },
           "plus-ew": {
@@ -2921,27 +3133,16 @@
             ketQua: ["4 SP: Trải nghiệm trọn vẹn, Thời tiết, Kỳ nghỉ an tâm, E-Sim & Du lịch ngắn hạn"], keHoach: ["Ký MOU & thỏa thuận với OPES", "Kết nối với SG", "Go-live trước 31/07"]
           },
           khac: {
-            trangThai: "cho-doi-tac", dt: 0, luyKe: 0,
-            ghiChu: "9 hướng đang triển khai / đàm phán — nổi bật: Insurtech 3GO dự kiến go-live giữa T8; A05 Cyber Shield SME đã có landing page & sự kiện KOL Summit cuối T8",
+            trangThai: "cho-doi-tac", dt: 0, luyKe: 0, ghiChu: "6 hướng đang đàm phán / chờ đối tác",
             danhSach: [
-              { ten: "Insurtech – 3GO", trangThai: "Đã xong hợp đồng, bộ API, thư chỉ định; test hệ thống — go-live giữa T8/2026", uuTien: 5 },
-              { ten: "A05 — BH Cyber Shield SME", trangThai: "Landing page đã lên; dự sự kiện An ninh mạng VN 06/08; KOL Summit cuối T8", uuTien: 5 },
-              { ten: "OPES–O-Car–VPBank — Vật chất xe", trangThai: "Đã chốt phương án tính phí, nhận dự thảo HĐ; OPES chờ VPBank duyệt", uuTien: 5 },
-              { ten: "Igloo — BH ung thư CPM", trangThai: "Làm việc nhà tái về quyền lợi/biểu phí; họp chốt SP 05/08; chuẩn bị đăng ký BTC", uuTien: 1 },
-              { ten: "7-Eleven (SSV)", trangThai: "Đang xin giấy phép đại lý; mới 2 người đỗ, thi tiếp 14/08; SSV muốn nhúng landing page PVI vào app", uuTien: 3 },
-              { ten: "BH TNDS ô tô qua cửa khẩu", trangThai: "Đã họp C08 trao đổi ý tưởng; đang xây đề án", uuTien: 2 },
-              { ten: "Nura — BH sức khỏe telesales", trangThai: "MỚI: đánh giá SP của MSIG, xây list câu hỏi thu thập thông tin", uuTien: 2 },
-              { ten: "Ledgertech & PolicyStreet", trangThai: "MỚI: học kinh nghiệm bảo hiểm số/embedded — họp 05/08 (PolicyStreet), 06/08 (Ledgertech)", uuTien: 2 },
-              { ten: "GTEL / VNPT", trangThai: "Đang trao đổi hợp tác toàn diện", uuTien: 2 }
+              { ten: "A05 — BH Cyber Shield SME", trangThai: "Đợi thông tin từ A05", uuTien: 5 },
+              { ten: "7-Eleven — TNDS/Tai nạn", trangThai: "Hoàn thiện chứng chỉ đại lý", uuTien: 3 },
+              { ten: "OPES–O-Car–VPBank — Vật chất xe", trangThai: "Đợi VPBank chấm điểm nhà BH", uuTien: 5 },
+              { ten: "Insurtech–3GO", trangThai: "Hai bên đang phối hợp", uuTien: 5 },
+              { ten: "Igloo — BH ung thư CPM", trangThai: "Đang định phí với nhà tái", uuTien: 1 },
+              { ten: "GTEL / VNPT", trangThai: "Đang trao đổi", uuTien: 2 }
             ],
-            keHoach: [
-              "Insurtech: kết nối SP TNDS & Tai nạn cá nhân, go-live giữa T8/2026; hoàn thiện tờ trình & ký hợp đồng",
-              "A05: tổ chức sự kiện KOL Summit cuối T8 giới thiệu BH Cyber Shield SME",
-              "O-Car/VPBank: hoàn thiện tờ trình, ký HĐ đồng bảo hiểm với OPES & kết nối API",
-              "7-Eleven: hoàn thiện HĐ đại lý & landing page BH TNDS xe máy + tai nạn con người",
-              "Nura: xây kịch bản bán hàng chi tiết cho kênh telesales",
-              "Cửa khẩu: hoàn thiện đề án nội bộ để tiếp tục trao đổi với C08"
-            ]
+            keHoach: ["Bám sát tiến độ phản hồi từng đối tác"]
           }
         },
         khoKhan: [
@@ -2973,22 +3174,24 @@
       "cho-doi-tac": { nhan: "Chờ đối tác", mau: "var(--c-slate)", cls: "b-slate" }
     };
 
-    /* ---------- GANTT kế hoạch T7–T8 (ngày 1–31 = T7; 32–41 = 01–10/08) ---------- */
+    /* ---------- GANTT kế hoạch T7–T8 (ngày 1–31 = T7; 32–62 = 01–31/08) ---------- */
     const GANTT = {
-      days: 41,
-      ticks: [[1, "01/07"], [8, "08/07"], [15, "15/07"], [22, "22/07"], [29, "29/07"], [36, "05/08"]],
+      days: 62,
+      ticks: [[1, "01/07"], [8, "08/07"], [15, "15/07"], [22, "22/07"], [29, "29/07"], [36, "05/08"], [43, "12/08"], [50, "19/08"], [57, "26/08"]],
       rows: [
-        { duAn: "TripCARE", st: "tang-truong", items: [[1, 15, "Chốt cơ cấu tái với Chubb"], [15, 31, "Go-live Phase 2 UI/UX (Insider)"]] },
-        { duAn: "SPA GoSafe", st: "cho-doi-tac", items: [[1, 14, "Hoàn thiện back-end"], [13, 24, "UAT với 1A"], [25, 41, "Chờ 1A xếp lịch config · SPA–Chubb chốt Thỏa thuận CRS"]] },
-        { duAn: "Viettel Store", st: "canh-bao", items: [[1, 1, "Đổi nhà tái → AIG (01/07)"], [1, 20, "Test API ADLD xong — VST chưa chốt go-live"], [10, 41, "Hoàn thiện HĐ/API '1 đổi 1' → go-live T8"]] },
-        { duAn: "Sun Group", st: "cho-doi-tac", items: [[1, 31, "Hoàn thiện MOU & NDA — chờ SGR chốt phương án bán"]] },
-        { duAn: "Flight Delay", st: "sap-golive", items: [[1, 14, "Xong test claim portal · ký HĐ TPA Igloo"], [14, 31, "Đào tạo sale Atadi · chào OTA"], [32, 41, "Marketing & nghiệm thu → go-live Atadi"]] },
-        { duAn: "MobiFone", st: "cho-doi-tac", items: [[2, 2, "Bản test Cổng BH (02/07)"], [5, 25, "UAT & go-live BH DLQT trên Cổng BH ✓"], [25, 41, "Hoàn thiện thủ tục ký MOU"]] },
-        { duAn: "Asahi", st: "canh-bao", items: [[1, 10, "Nâng cấp landing page NPUV · landing page lead ALCV"], [10, 31, "Mở rộng nguồn lead · chính sách TSR · bản chào giải chạy"]] },
-        { duAn: "Zalopay", st: "cho-doi-tac", items: [[1, 15, "Trình lãnh đạo phương án mới"]] },
-        { duAn: "Plus & EW Honda", st: "tang-truong", items: [[1, 31, "Nâng cấp hondaplus.vn GĐ2"], [15, 41, "Mở rộng HEAD tỉnh"]] },
-        { duAn: "BambooCARE", st: "canh-bao", items: [[1, 31, "Thu hồi công nợ BAV"], [41, 41, "Tạm ngừng kết nối bán (10/08)"]] },
-        { duAn: "wBooking", st: "canh-bao", items: [[8, 8, "Đào tạo 5 sân Vinpearl (08/07)"], [16, 16, "Họp wBooking (16/07)"], [10, 41, "Rà soát gói B20 · chuẩn bị bán tại Vinpearl từ T8"]] }
+        { duAn: "TripCARE", st: "tang-truong", items: [[1, 15, "Chốt cơ cấu tái với Chubb"], [15, 40, "Go-live Phase 2 UI/UX (Insider)"], [40, 62, "Triển khai cơ cấu tái mới · đẩy kênh đại lý VNA"]] },
+        { duAn: "SPA GoSafe", st: "cho-doi-tac", items: [[1, 14, "Hoàn thiện back-end"], [13, 24, "UAT với 1A"], [36, 36, "Kick-off 1A–SPA–Chubb (05/08)"], [36, 62, "Họp hàng tuần 4 bên — chờ 1A xếp lịch config"]] },
+        { duAn: "Viettel Store", st: "canh-bao", items: [[1, 1, "Đổi nhà tái → AIG (01/07)"], [1, 20, "Test API ADLD xong — VST chưa chốt go-live"], [10, 62, "Hoàn thiện HĐ/API '1 đổi 1' → go-live trong T8"]] },
+        { duAn: "Sun Group", st: "cho-doi-tac", items: [[1, 31, "Hoàn thiện MOU & NDA"], [32, 62, "Chờ SGR chốt phương án bán để triển khai T8"]] },
+        { duAn: "Flight Delay", st: "sap-golive", items: [[1, 14, "Xong test claim portal · ký HĐ TPA Igloo"], [14, 31, "Đào tạo sale Atadi · chào OTA"], [32, 62, "Marketing & nghiệm thu → go-live Atadi"]] },
+        { duAn: "MobiFone", st: "cho-doi-tac", items: [[2, 2, "Bản test Cổng BH (02/07)"], [5, 25, "UAT & go-live BH DLQT trên Cổng BH ✓"], [25, 62, "Truyền thông BHDLQT · hoàn thiện thủ tục ký MOU"]] },
+        { duAn: "Asahi", st: "canh-bao", items: [[1, 10, "Nâng cấp landing page NPUV · landing page lead ALCV"], [10, 31, "Mở rộng nguồn lead · chính sách TSR"], [32, 62, "Điều chỉnh APUV · kiểm soát bồi thường NPUV (T7 48%)"]] },
+        { duAn: "Zalopay", st: "cho-doi-tac", items: [[1, 15, "Trình lãnh đạo phương án mới"], [32, 62, "Chờ chốt phương án triển khai"]] },
+        { duAn: "Plus & EW Honda", st: "tang-truong", items: [[1, 31, "Nâng cấp hondaplus.vn GĐ2"], [15, 62, "Mở rộng HEAD tỉnh · kết nối API PVI Connect"]] },
+        { duAn: "BambooCARE", st: "canh-bao", items: [[1, 36, "Thu hồi công nợ BAV · trình chủ trương"], [41, 41, "Tạm ngừng kết nối bán (10/08)"], [41, 62, "Xử lý cấn trừ công nợ với vụ BT FLC"], [51, 51, "Giám định gửi báo cáo FLC (20/08)"], [56, 56, "Hạn thanh toán công nợ T7 (25/08)"]] },
+        { duAn: "wBooking", st: "canh-bao", items: [[8, 8, "Đào tạo 5 sân Vinpearl (08/07)"], [16, 16, "Họp wBooking (16/07)"], [10, 62, "Rà soát gói B20 · bán chính thức tại Vinpearl trong T8"]] },
+        { duAn: "Insurtech · A05", st: "sap-golive", items: [[37, 37, "A05 dự sự kiện ANM Việt Nam (06/08)"], [45, 45, "Go-live 3GO (giữa T8)"], [55, 62, "KOL Summit A05 cuối T8"]] },
+        { duAn: "7-Eleven (SSV)", st: "cho-doi-tac", items: [[45, 45, "Thi chứng chỉ đại lý (14/08)"], [45, 62, "Hoàn thiện HĐ đại lý & landing page"]] }
       ]
     };
     function ganttDayLbl(d) { return d <= 31 ? ('0' + d).slice(-2) + '/07' : ('0' + (d - 31)).slice(-2) + '/08'; }
@@ -2997,7 +3200,7 @@
       if (n.getFullYear() !== 2026) return null;
       const m = n.getMonth() + 1;
       if (m === 7) return n.getDate();
-      if (m === 8 && n.getDate() <= 10) return 31 + n.getDate();
+      if (m === 8) return 31 + n.getDate();
       return null;
     }
     function renderGantt() {
@@ -3482,11 +3685,18 @@
        Mỗi dòng 1 tháng: số đơn · doanh thu 2026 (có thanh nền so sánh) · 2025 · chênh lệch. */
     function buildTcTable() {
       const tbl = $('#tc-table'); if (!tbl) return;
-      const g = TRIPCARE_GS, n = g.thang2026.length;
-      const max = Math.max.apply(null, g.thang2026);
-      const s26 = tcSum(g.thang2026, n), s25 = tcSum(g.thang2025, n), d26 = tcSum(g.don2026, n);
+      const g = TRIPCARE_GS;
+      /* chỉ hiển thị số tháng thuộc kỳ báo cáo đang xem (kỳ T7 không thấy dòng T8) */
+      const n = isMonth() ? Math.min(soThang(), g.thang2026.length) : g.thang2026.length;
+      const dangChay = g.thangDangChay && n >= g.thangDangChay;   // tháng cuối chưa trọn kỳ
+      const rows26 = g.thang2026.slice(0, n);
+      const max = Math.max.apply(null, rows26);
+      const s26 = tcSum(g.thang2026, n), d26 = tcSum(g.don2026, n);
+      /* cùng kỳ: nếu tháng cuối chưa trọn kỳ thì lấy 2025 theo ĐÚNG SỐ NGÀY đã có */
+      const s25 = tcSum(g.thang2025, dangChay ? n - 1 : n) + (dangChay ? g.t8_13ngay_2025 : 0);
       const sub = $('#tcm-sub');
-      if (sub) sub.textContent = 'Nguồn: Google Sheet doanh thu · đơn vị: tỷ VNĐ · T1–T' + n + '/2026';
+      if (sub) sub.textContent = 'Nguồn: Google Sheet doanh thu · đơn vị: tỷ VNĐ · T1–T' + n + '/2026' +
+        (dangChay ? ' (T' + n + ' mới đến ' + g.denNgay + ')' : '');
       const yoyCell = (v26, v25) => {
         if (v25 == null || !v25) return '<td class="r">—</td>';
         const p = (v26 / v25 - 1) * 100;
@@ -3494,10 +3704,11 @@
       };
       tbl.innerHTML =
         '<thead><tr><th>Tháng</th><th class="r">Số đơn</th><th class="r">DT 2026</th><th class="r">DT 2025</th><th class="r">± YoY</th></tr></thead><tbody>' +
-        g.thang2026.map((v, i) => {
-          const v25 = g.thang2025[i];
-          return '<tr data-tip="<b>T' + (i + 1) + '/2026</b><br>' + nfmt(v, 3) + ' tỷ · ' + nfmt(g.don2026[i]) + ' đơn<br>Cùng kỳ 2025: ' + nfmt(v25, 3) + ' tỷ · ' + nfmt(g.don2025[i]) + ' đơn">' +
-            '<td class="num">T' + (i + 1) + '</td>' +
+        rows26.map((v, i) => {
+          const cuoi = dangChay && i === n - 1;          // dòng tháng chưa trọn kỳ
+          const v25 = cuoi ? g.t8_13ngay_2025 : g.thang2025[i];
+          return '<tr data-tip="<b>T' + (i + 1) + '/2026</b>' + (cuoi ? ' (đến ' + g.denNgay + ')' : '') + '<br>' + nfmt(v, 3) + ' tỷ · ' + nfmt(g.don2026[i]) + ' đơn<br>Cùng kỳ 2025' + (cuoi ? ' (cùng số ngày)' : '') + ': ' + nfmt(v25, 3) + ' tỷ">' +
+            '<td class="num">T' + (i + 1) + (cuoi ? ' <span style="color:var(--muted);font-weight:400">(đến ' + g.denNgay.slice(0, 5) + ')</span>' : '') + '</td>' +
             '<td class="r num">' + nfmt(g.don2026[i]) + '</td>' +
             '<td class="r"><span class="cellbar"><i style="width:' + (v / max * 100).toFixed(1) + '%"></i><b class="num">' + nfmt(v, 2) + '</b></span></td>' +
             '<td class="r num" style="color:var(--muted)">' + nfmt(v25, 2) + '</td>' +
@@ -3507,7 +3718,8 @@
         '<td class="r num">' + nfmt(s26, 2) + '</td><td class="r num" style="color:var(--muted)">' + nfmt(s25, 2) + '</td>' +
         yoyCell(s26, s25) + '</tr></tbody>' +
         '<tfoot><tr><td colspan="5" style="font-size:12px;color:var(--muted);font-weight:400;padding:8px 10px">' +
-        'T8/2026 đến 05/08: ' + nfmt(g.t8_2026_partial, 3) + ' tỷ · cả năm 2025: ' + nfmt(g.caNam2025, 2) + ' tỷ. ' + esc(g.nguon) + '</td></tr></tfoot>';
+        (dangChay ? 'T' + n + ' mới có số đến ' + g.denNgay + ' — cột DT 2025 của tháng này và dòng lũy kế đã quy về cùng số ngày để so sánh. ' : '') +
+        'Cả năm 2025: ' + nfmt(g.caNam2025, 2) + ' tỷ. ' + esc(g.nguon) + '</td></tr></tfoot>';
     }
 
     function buildWbLine() {
@@ -3838,6 +4050,7 @@
     document.addEventListener('pointerdown', e => { if (!e.target.closest('[data-tip]')) tip.classList.remove('on'); });
 
     /* ============ INIT ============ */
+    applyLiveData();
     buildPeriodSelector();
     renderAll();
     io.observe($('#hero'));
