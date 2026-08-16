@@ -26,6 +26,11 @@ jobs:
           python-version: "3.12"
 
       - name: Lấy số từ Google Sheet và ghi vào index.html
+        env:
+          # ID file "Nhập liệu báo cáo tháng" cả Phòng cùng điền.
+          # Khai báo ở Settings → Secrets and variables → Actions → Variables → New variable
+          # với tên NHAP_LIEU_SHEET_ID. Chưa khai báo thì chỉ cập nhật số doanh thu.
+          NHAP_LIEU_SHEET_ID: ${{ vars.NHAP_LIEU_SHEET_ID }}
         run: python tools/update_data.py index.html
 
       - name: Commit nếu số liệu có thay đổi
