@@ -1,12 +1,12 @@
 name: Cập nhật số liệu từ Google Sheet
 
-# Chạy 4 lần/ngày giờ Việt Nam: 8h · 10h · 14h · 16h
-# (GitHub dùng giờ UTC nên trừ 7 tiếng; đặt phút 07 thay vì 00 vì đúng đầu giờ
-#  hàng loạt workflow của cả thế giới cùng chạy, GitHub hay đẩy lịch trễ)
-# Ngoài 4 khung này, bấm tay bất cứ lúc nào ở tab Actions → "Run workflow".
+# Chạy MỖI GIỜ trong giờ hành chính: 8h07 → 18h07 giờ Việt Nam, thứ 2 đến thứ 6.
+# GitHub dùng giờ UTC nên trừ 7 tiếng: 1h–11h UTC. Phút 07 thay vì 00 vì đúng đầu giờ
+# hàng loạt workflow của cả thế giới cùng chạy, GitHub hay đẩy lịch trễ.
+# Ngoài khung này (buổi tối, cuối tuần) bấm tay bất cứ lúc nào: Actions → "Run workflow".
 on:
   schedule:
-    - cron: "7 1,3,7,9 * * *"
+    - cron: "7 1-11 * * 1-5"
   workflow_dispatch:
 
 permissions:
