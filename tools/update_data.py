@@ -161,6 +161,14 @@ def gom_tripcare():
         raise SystemExit("Sheet TripCARE chưa có số liệu %d" % NAM)
     thang_cuoi = co_so[-1] + 1
 
+    # CHỐT AN TOÀN: doanh thu TripCARE một tháng luôn nằm trong khoảng vài tỷ.
+    # Ra ngoài khoảng này gần như chắc chắn là sheet đang được sửa dở -> không ghi gì.
+    for i in co_so:
+        ty = nam_nay[i]["phi"] / 1e9
+        if not (0.3 <= ty <= 15):
+            raise SystemExit("DỪNG: TripCARE tháng %d đọc được %.3f tỷ — ngoài khoảng hợp lý "
+                             "(0,3–15 tỷ), nhiều khả năng sheet đang sửa dở." % (i + 1, ty))
+
     # tháng cuối đã trọn tháng chưa? -> đếm số ngày có số trên tab ngày
     ngay_nam_nay = doc_tab_ngay(TRIPCARE_ID, thang_cuoi, NAM)
     so_ngay_da_co = max(ngay_nam_nay) if ngay_nam_nay else 0
@@ -238,11 +246,24 @@ def gom_wbooking():
             if re.match(r"\s*(Năm|TỔNG)", str(nhan or "")):
                 break
             continue
-        dt = so_nguyen(lay_o(hang, 10))
-        if not dt:
-            continue                       # tháng chưa có số -> bỏ qua
+        dt = so_nguyen(lay_o(hang, 10)) or 0
         bt = so_nguyen(lay_o(hang, 11)) or 0
-        hang_thang.append([thang, dt, bt, so_vu.get(thang, 0), round(bt / dt * 100, 2)])
+        if not dt and not bt:
+            continue                       # tháng chưa có gì -> bỏ qua
+        # Tháng đã có bồi thường nhưng chưa ghi nhận doanh thu -> tỷ lệ để trống, không chia cho 0
+        ty_le = round(bt / dt * 100, 2) if dt else None
+        # CHỐT AN TOÀN: sheet đang được gõ dở có thể trả về số rác (đã từng đọc phải
+        # 257.728đ cho tháng 7 giữa lúc nhân viên sửa ô) -> thà không cập nhật còn hơn
+        # đẩy số sai lên dashboard của lãnh đạo.
+        if dt and bt and ty_le > 1000:
+            raise SystemExit("DỪNG: wBooking tháng %d có tỷ lệ bồi thường %.0f%% "
+                             "(DT %d đ / BT %d đ) — số bất thường, nhiều khả năng sheet "
+                             "đang sửa dở. Không ghi gì cả, lần chạy sau sẽ lấy lại."
+                             % (thang, ty_le, dt, bt))
+        if dt and dt < 1_000_000:
+            raise SystemExit("DỪNG: wBooking tháng %d chỉ có %d đ doanh thu — số bất thường, "
+                             "nhiều khả năng sheet đang sửa dở." % (thang, dt))
+        hang_thang.append([thang, dt, bt, so_vu.get(thang, 0), ty_le])
     hang_thang.sort(key=lambda x: x[0])
     return {"thang2026": hang_thang}
 
@@ -275,16 +296,16 @@ def cac_dong(o):
     return y
 
 
-def doc_file_nhap_lieu():
+def doc_file_nhap_lieu(duong_dan_html=None):
     """Đọc file nhập liệu chung -> dict kỳ báo cáo, hoặc None nếu chưa cấu hình / chưa có nội dung."""
     if not NHAP_LIEU_ID:
-        return None
+        return "BO_QUA"
     try:
         tab_ky = tai_tab(NHAP_LIEU_ID, "KỲ BÁO CÁO")
         tab_du_an = tai_tab(NHAP_LIEU_ID, "DỰ ÁN")
     except Exception as loi:
-        print("   ! Không đọc được file nhập liệu (%s) — bỏ qua, giữ nguyên kỳ đang có." % loi)
-        return None
+        print("   ! Không đọc được file nhập liệu (%s) — giữ nguyên dữ liệu lần trước." % loi)
+        return "BO_QUA"
 
     thong_tin = {str(lay_o(h, 0)).strip(): str(lay_o(h, 1)).strip() for h in tab_ky if lay_o(h, 0)}
     ma_ky = thong_tin.get("Mã kỳ", "")
@@ -341,6 +362,26 @@ def doc_file_nhap_lieu():
     except Exception:
         pass
 
+    # CHỐT AN TOÀN: một kỳ HOÀN TOÀN MỚI chỉ được tạo khi sheet đã có nội dung thật.
+    # Nếu mới chỉ chọn vài ô trạng thái, dashboard sẽ có thêm một kỳ rỗng đứng đầu
+    # và lãnh đạo mở lên thấy trang trắng -> thà bỏ qua, chờ Phòng điền xong.
+    co_noi_dung = any(
+        any(k in m for k in ("luyKe", "dt", "ghiChu", "ketQua", "keHoach"))
+        for m in du_an.values()
+    ) or kho_khan or moc
+    ky_da_ton_tai = True
+    if duong_dan_html:
+        html_hien_tai = duong_dan_html.read_text(encoding="utf-8")
+        # phải bỏ khối NHAP_LIEU của lần chạy trước ra, nếu không nó tự nhìn thấy chính nó
+        d, c = html_hien_tai.find(KY_BAT_DAU), html_hien_tai.find(KY_KET_THUC)
+        if d >= 0 and c >= 0:
+            html_hien_tai = html_hien_tai[:d] + html_hien_tai[c:]
+        ky_da_ton_tai = ('id: "%s"' % ma_ky) in html_hien_tai
+    if not ky_da_ton_tai and not co_noi_dung:
+        print("   ! Kỳ %s chưa có trong dashboard và file nhập liệu mới chỉ có trạng thái, "
+              "chưa có số liệu/nội dung — bỏ qua để không tạo kỳ rỗng." % ma_ky)
+        return None
+
     return {
         "id": ma_ky,
         "label": thong_tin.get("Nhãn hiển thị") or "Tháng %s/%s" % (ma_ky[5:], ma_ky[:4]),
@@ -355,48 +396,47 @@ def doc_file_nhap_lieu():
 
 
 def dung_khoi_ky(ky):
-    """Sinh object kỳ báo cáo (JS) từ dữ liệu file nhập liệu."""
+    """Sinh hằng NHAP_LIEU (JS) từ file nhập liệu.
+
+    KHÔNG sinh nguyên một kỳ báo cáo nữa. Trang web sẽ tự GỘP dữ liệu này vào kỳ
+    trùng "Mã kỳ" (giữ nguyên phần đã soạn tay ở những ô Phòng để trống), hoặc tạo
+    kỳ mới nếu mã kỳ chưa tồn tại. Nhờ vậy file nhập liệu dùng được cho mọi tháng.
+    """
     if not ky:
-        return "%s — chưa có kỳ nào từ file nhập liệu ===== */\n      /* %s" % (KY_BAT_DAU, KY_KET_THUC)
+        return ("%s — chưa có dữ liệu từ file nhập liệu ===== */\n"
+                "    const NHAP_LIEU = null;\n"
+                "    /* %s" % (KY_BAT_DAU, KY_KET_THUC))
     d = []
     d.append("%s — do Action sinh từ file nhập liệu của Phòng, ĐỪNG SỬA TAY ===== */" % KY_BAT_DAU)
-    d.append("      {")
-    d.append('        id: %s, type: "month", label: %s, range: %s, chot: %s, mucTieuNam: %s,'
+    d.append("    const NHAP_LIEU = {")
+    d.append("      id: %s, label: %s, range: %s, chot: %s, mucTieuNam: %s,"
              % (gon(ky["id"]), gon(ky["label"]), gon(ky["range"]), gon(ky["chot"]), gon(ky["mucTieuNam"])))
     if ky["luuY"]:
-        d.append("        luuY: %s," % gon(ky["luuY"]))
-    d.append("        data: {")
+        d.append("      luuY: %s," % gon(ky["luuY"]))
+    d.append("      data: {")
     for ma, m in ky["data"].items():
         phan = []
         for khoa in ("trangThai", "dt", "luyKe", "phanTramKPI", "cungKy2025"):
             if khoa in m:
                 phan.append("%s: %s" % (khoa, gon(m[khoa])))
-        d.append("          %s: {" % (gon(ma) if "-" in ma else ma))
-        if phan:
-            d.append("            %s," % ", ".join(phan))
-        if "ghiChu" in m:
-            d.append("            ghiChu: %s," % gon(m["ghiChu"]))
-        for khoa in ("ketQua", "keHoach"):
+        for khoa in ("ghiChu", "ketQua", "keHoach"):
             if khoa in m:
-                d.append("            %s: %s," % (khoa, gon(m[khoa])))
-        d[-1] = d[-1].rstrip(",")
-        d.append("          },")
-    d[-1] = d[-1].rstrip(",")
-    d.append("        },")
-    d.append("        khoKhan: [")
+                phan.append("%s: %s" % (khoa, gon(m[khoa])))
+        d.append("        %s: { %s }," % (gon(ma) if "-" in ma else ma, ", ".join(phan)))
+    d.append("      },")
+    d.append("      khoKhan: [")
     for k in ky["khoKhan"]:
-        d.append("          { muc: %s, duAn: %s, kho: %s, hoTro: %s },"
+        d.append("        { muc: %s, duAn: %s, kho: %s, hoTro: %s },"
                  % (gon(k["muc"]), gon(k["duAn"]), gon(k["kho"]), gon(k["hoTro"])))
-    d.append("        ],")
-    d.append("        mocThoiGian: [")
+    d.append("      ],")
+    d.append("      mocThoiGian: [")
     for m in ky["mocThoiGian"]:
         st = ", st: %s" % gon(m["st"]) if "st" in m else ""
-        d.append("          { ngay: %s, duAn: %s, moc: %s, hot: %s%s },"
+        d.append("        { ngay: %s, duAn: %s, moc: %s, hot: %s%s },"
                  % (gon(m["ngay"]), gon(m["duAn"]), gon(m["moc"]), "true" if m["hot"] else "false", st))
-        d[-1] = d[-1]
-    d.append("        ]")
-    d.append("      },")
-    d.append("      /* %s" % KY_KET_THUC)
+    d.append("      ]")
+    d.append("    };")
+    d.append("    /* %s" % KY_KET_THUC)
     return "\n".join(d)
 
 
@@ -453,8 +493,8 @@ def main():
 
     print("Đang đọc file nhập liệu của Phòng…" if NHAP_LIEU_ID
           else "Chưa cấu hình NHAP_LIEU_SHEET_ID — bỏ qua phần nhập liệu.")
-    ky = doc_file_nhap_lieu()
-    if ky:
+    ky = doc_file_nhap_lieu(duong_dan)
+    if ky and ky != "BO_QUA":
         print("   kỳ %s · %d dự án · %d khó khăn · %d mốc"
               % (ky["id"], len(ky["data"]), len(ky["khoKhan"]), len(ky["mocThoiGian"])))
 
@@ -467,7 +507,8 @@ def main():
         return noi_dung[:dau] + khoi_moi + noi_dung[cuoi + len(dong):]
 
     moi = thay(html, BAT_DAU, KET_THUC, dung_khoi_js(tripcare, wbooking, datetime.now(VN_TZ)))
-    if ky:
+    if ky != "BO_QUA":
+        # ky = None -> ghi khoi rong, xoa du lieu cu (vd Phong da xoa het noi dung sheet)
         moi = thay(moi, KY_BAT_DAU, KY_KET_THUC, dung_khoi_ky(ky))
 
     if moi == html:

@@ -2806,7 +2806,7 @@
        So cùng kỳ tính động theo số tháng của kỳ báo cáo (slice mảng). */
     /* ===== AUTO-DATA:START — do GitHub Action ghi tự động từ Google Sheet, ĐỪNG SỬA TAY ===== */
     const AUTO_DATA = {
-      capNhat: "17/08/2026 10:57",
+      capNhat: "17/08/2026 11:15",
       capNhatNgay: "17/08/2026",
       tripcare: {
         thang2026: [4.918, 3.453, 5.042, 3.464, 3.698, 4.784, 5.35, 2.645],
@@ -2828,6 +2828,7 @@
           [5, 242407448, 300000000, 5, 123.76],
           [6, 180525803, 237500000, 4, 131.56],
           [7, 85379299, 197500000, 3, 231.32],
+          [8, 0, 42500000, 0, null],
         ]
       }
     };
@@ -2846,6 +2847,29 @@
       };
     })();
     function tcSum(arr, mo) { return arr.slice(0, mo).reduce((s, v) => s + v, 0); }
+
+    /* Gộp dữ liệu từ file nhập liệu của Phòng vào kỳ báo cáo TRÙNG MÃ KỲ.
+       - Ô nào trong sheet để trống thì GIỮ NGUYÊN nội dung đã soạn tay, không xoá.
+       - Mã kỳ chưa có trong dashboard thì tạo kỳ mới.
+       Nhờ vậy cùng một file nhập liệu dùng được cho tháng 8, tháng 7… tuỳ "Mã kỳ". */
+    function applyNhapLieu() {
+      if (typeof NHAP_LIEU === 'undefined' || !NHAP_LIEU || !NHAP_LIEU.id) return;
+      const n = NHAP_LIEU;
+      let p = PERIODS.find(x => x.id === n.id);
+      if (!p) {
+        p = { id: n.id, type: "month", label: n.label || n.id, range: n.range || "", chot: n.chot || "", mucTieuNam: n.mucTieuNam || 100, data: {}, khoKhan: [], mocThoiGian: [] };
+        PERIODS.push(p);
+        PERIODS.sort((a, b) => (a.id < b.id ? 1 : a.id > b.id ? -1 : 0));   // mới nhất lên đầu
+        activePeriodId = PERIODS[0].id;
+      }
+      ['label', 'range', 'chot', 'luuY'].forEach(k => { if (n[k]) p[k] = n[k]; });
+      if (n.mucTieuNam) p.mucTieuNam = n.mucTieuNam;
+      Object.keys(n.data || {}).forEach(ma => {
+        p.data[ma] = Object.assign(p.data[ma] || {}, n.data[ma]);
+      });
+      if (n.khoKhan && n.khoKhan.length) p.khoKhan = n.khoKhan;
+      if (n.mocThoiGian && n.mocThoiGian.length) p.mocThoiGian = n.mocThoiGian;
+    }
 
     /* Nạp số từ AUTO_DATA vào KỲ MỚI NHẤT: chỉ ghi đè CON SỐ của TripCARE & wBooking,
        không đụng tới kết quả / kế hoạch / khó khăn (những phần nhập tay).
@@ -2890,7 +2914,17 @@
             wb.luyKe = r3(sDT / 1e9); wb.boiThuong = r3(sBT / 1e9);
             wb.tyLeBT = Math.round(sBT / sDT * 10000) / 100;
             const cur = rows.find(x => x[0] === mo);
-            if (cur) wb.dt = Math.round(cur[1] / 1e6) / 1000; else delete wb.dt;
+            if (cur && cur[1]) wb.dt = Math.round(cur[1] / 1e6) / 1000; else delete wb.dt;
+            /* ô xám wBooking cũng tự sinh để không lệch với bảng khi sheet được sửa */
+            const vuot = rows.filter(x => x[4] != null && x[4] > 100).length;
+            const g = ['Lũy kế ' + rows.length + 'T: doanh thu ' + nfmt(wb.luyKe, 2) + ' tỷ · bồi thường '
+              + nfmt(wb.boiThuong, 2) + ' tỷ = ' + nfmt(wb.tyLeBT, 2) + '%'];
+            if (cur && !cur[1] && cur[2])
+              g.push('T' + mo + ' chưa ghi nhận doanh thu nhưng đã phát sinh ' + nfmt(cur[2] / 1e6, 1) + ' tr bồi thường');
+            else if (!cur)
+              g.push('Chưa có số liệu T' + mo + ' trên Google Sheet');
+            if (vuot) g.push(vuot + '/' + rows.length + ' tháng vượt ngưỡng hoà 100% — rủi ro lỗ nghiệp vụ');
+            wb.ghiChu = g;
           }
         }
       });
@@ -2913,9 +2947,6 @@
 
     /* ---------- CÁC KỲ BÁO CÁO (mới nhất lên đầu) ---------- */
     const PERIODS = [
-
-      /* ===== KY-TU-NHAP:START — chưa có kỳ nào từ file nhập liệu ===== */
-      /* ===== KY-TU-NHAP:END ===== */
 
       /* ===== KỲ THÁNG 08/2026 (đang chạy — số liệu đến 13/08/2026) =====
          Nguồn doanh thu: TripCARE Google Sheet (tab TỔNG HỢP TRIPCARE + T8.2026, có số đến 13/08) ·
@@ -2981,11 +3012,6 @@
           },
           wbooking: {
             trangThai: "canh-bao", luyKe: 1.801, boiThuong: 1.567, tyLeBT: 87.01,
-            ghiChu: [
-              "Chưa có số liệu T8",
-              "Lũy kế 7T: doanh thu 1,80 tỷ · bồi thường 1,57 tỷ = 87,01%",
-              "4/7 tháng vượt ngưỡng hoà 100% — rủi ro lỗ nghiệp vụ"
-            ],
             bangThang: [[1, 392389785, 187500000, 3, 47.78], [2, 112288662, 125000000, 3, 111.32], [3, 356553615, 112500000, 2, 31.55], [4, 304001027, 432000000, 2, 142.11], [5, 242407448, 300000000, 5, 123.76], [6, 180525803, 287500000, 4, 159.26], [7, 212711759, 122500000, 3, 57.59]],
             ketQua: [
               "Gửi Công văn từ chối bồi thường vụ đơn BH nhầm tên khách hàng Khôi Nguyên",
@@ -3093,7 +3119,7 @@
           { muc: "gap", duAn: "BambooCARE", kho: "Đã tạm ngừng kết nối bán từ 10/08 — doanh thu dừng hẳn; công nợ phí bảo hiểm đến hết 13/08 còn 238.331.881đ (đã cấn trừ hoa hồng, dịch vụ), phương án cấn trừ với vụ BT FLC Sầm Sơn (~22,8 tỷ) chưa được phê duyệt", hoTro: "Trình lãnh đạo phê duyệt phương án cấn trừ công nợ BambooCARE với chi phí bồi thường vụ FLC (thỏa thuận 3 bên PVI–BAV–FLC) để thu hồi dứt điểm" },
           { muc: "gap", duAn: "SPA GoSafe", kho: "Sau kick-off 05/08, 1A lùi tiến độ: mobile app T11/2026, website rủi ro không kịp 2026 (1A chỉ cấp 3 slot Q3, bị Premium Eco & Flex Pricer chen ngang)", hoTro: "Tác động 1A/SPA ở cấp cao để giữ mục tiêu go-live website trong 2026; ủng hộ cơ chế họp hàng tuần 4 bên" },
           { muc: "gap", duAn: "Viettel Store", kho: "Còn nửa tháng để kịp mốc go-live BH '1 đổi 1' trong T8 (ra mắt iPhone 18); ADLD vẫn chưa có ngày go-live lại, doanh thu 2026 bằng 0", hoTro: "Tác động lãnh đạo VST chốt go-live ADLD và '1 đổi 1' ngay trong T8/2026" },
-          { muc: "theo-doi", duAn: "wBooking", kho: "Chưa cập nhật số liệu T8; tỷ lệ bồi thường lũy kế 7T vẫn ở mức 87,01% và thị trường golf suy giảm", hoTro: "Tiếp tục theo dõi số liệu bồi thường" },
+          { muc: "theo-doi", duAn: "wBooking", kho: "Tỷ lệ bồi thường lũy kế vẫn ở mức cao, nhiều tháng vượt ngưỡng hoà 100%; thị trường golf suy giảm — xem bảng doanh thu & bồi thường", hoTro: "Tiếp tục theo dõi số liệu bồi thường" },
           { muc: "theo-doi", duAn: "Sun Group", kho: "Mốc go-live 31/07 đã trượt, sang T8 vẫn chờ Sun World phản hồi phương án bán hàng", hoTro: "Tác động Sun World chốt phương án để triển khai ngay trong T8/2026" },
           { muc: "theo-doi", duAn: "Asahi", kho: "Tỷ lệ bồi thường NPUV T7 vọt lên 48% (lũy kế 28,84%); lũy kế 7T mới đạt 46,12% kế hoạch năm — còn 5 tháng phải làm gần 15 tỷ", hoTro: "Duyệt phương án điều chỉnh APUV & kiểm soát tổn thất nguồn lead bệnh viện" }
         ],
@@ -3379,6 +3405,21 @@
       }
 
     ];
+
+    /* ===== KY-TU-NHAP:START — do Action sinh từ file nhập liệu của Phòng, ĐỪNG SỬA TAY ===== */
+    const NHAP_LIEU = {
+      id: "2026-08", label: "Tháng 08/2026", range: "01–31/08/2026", chot: "31/08/2026", mucTieuNam: 100.0,
+      data: {
+        "plus-ew": { trangThai: "tang-truong" },
+        viettelstore: { trangThai: "sap-golive" },
+        sungroup: { trangThai: "cho-doi-tac" },
+      },
+      khoKhan: [
+      ],
+      mocThoiGian: [
+      ]
+    };
+    /* ===== KY-TU-NHAP:END ===== */
 
     const TRANG_THAI = {
       "tang-truong": { nhan: "Đang tăng trưởng", mau: "var(--c-green)", cls: "b-green" },
@@ -3941,7 +3982,7 @@
       const wb = P().data.wbooking;
       if (!wb || !wb.bangThang) { svg.closest('.chart-card').style.display = 'none'; return; }
       svg.closest('.chart-card').style.display = '';
-      const rows = wb.bangThang, W = 560, H = 260, L = 46, R = 14, T = 16, B = 32, pw = W - L - R, ph = H - T - B, ymax = 175;
+      const rows = wb.bangThang.filter(r => r[4] != null), W = 560, H = 260, L = 46, R = 14, T = 16, B = 32, pw = W - L - R, ph = H - T - B, ymax = 175;
       const csEl = $('#wb-cs');
       if (csEl) {
         const sDT = rows.reduce((s, r) => s + r[1], 0), sBT = rows.reduce((s, r) => s + r[2], 0);
@@ -3975,7 +4016,11 @@
         sVu = wb.bangThang.reduce((s, r) => s + r[3], 0), sTyLe = sDT ? sBT / sDT * 100 : 0;
       $('#wb-table').innerHTML =
         '<thead><tr><th>Tháng</th><th class="r">Doanh thu (đ)</th><th class="r">Bồi thường (đ)</th><th class="r">Số vụ</th><th class="r">Tỷ lệ BT</th></tr></thead><tbody>' +
-        wb.bangThang.map(r => '<tr><td class="num">T' + r[0] + '/2026</td><td class="r num">' + nfmt(r[1]) + '</td><td class="r num">' + nfmt(r[2]) + '</td><td class="r num">' + r[3] + '</td><td class="r"><span class="pill-bt ' + (r[4] > 100 ? 'bad' : 'ok') + ' num">' + nfmt(r[4], 2) + '%</span></td></tr>').join('') +
+        wb.bangThang.map(r => '<tr><td class="num">T' + r[0] + '/2026</td>' +
+          '<td class="r num">' + (r[1] ? nfmt(r[1]) : '<span style="color:var(--muted)">chưa có</span>') + '</td>' +
+          '<td class="r num">' + nfmt(r[2]) + '</td><td class="r num">' + r[3] + '</td>' +
+          '<td class="r">' + (r[4] == null ? '<span style="color:var(--muted)">—</span>'
+            : '<span class="pill-bt ' + (r[4] > 100 ? 'bad' : 'ok') + ' num">' + nfmt(r[4], 2) + '%</span>') + '</td></tr>').join('') +
         '<tr style="font-weight:700"><td>Tổng ' + wb.bangThang.length + 'T</td><td class="r num">' + nfmt(sDT) + '</td><td class="r num">' + nfmt(sBT) + '</td><td class="r num">' + sVu + '</td><td class="r"><span class="pill-bt ' + (sTyLe > 100 ? 'bad' : 'ok') + ' num">' + nfmt(sTyLe, 2) + '%</span></td></tr></tbody>';
     }
 
@@ -4298,7 +4343,8 @@
     })();
 
     /* ============ INIT ============ */
-    applyLiveData();
+    applyNhapLieu();   /* nội dung Phòng tự nhập -> gộp vào kỳ tương ứng */
+    applyLiveData();   /* rồi mới nạp số TripCARE/wBooking từ Google Sheet (số máy luôn thắng) */
     buildPeriodSelector();
     renderAll();
     io.observe($('#hero'));
