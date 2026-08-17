@@ -29,10 +29,14 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-TRIPCARE_ID = "1HjER2aRwjBWaSUvDXOP6ony4sIcYcZ_8"
-WBOOKING_ID = "1wWcru2htgF_hpTy3_1cRUr-EYfouAm9n5kIBZe2Hh_g"
+# ID của các Google Sheet nguồn.
+# Repo này đang để chế độ public, nên ID nào đặt ở đây là ai cũng đọc được.
+# Cách kín hơn: khai báo ở GitHub → Settings → Secrets and variables → Actions → Variables,
+# rồi XOÁ giá trị mặc định phía dưới (để trống trong ngoặc kép).
+TRIPCARE_ID = os.environ.get("TRIPCARE_SHEET_ID", "").strip() or "1HjER2aRwjBWaSUvDXOP6ony4sIcYcZ_8"
+WBOOKING_ID = os.environ.get("WBOOKING_SHEET_ID", "").strip() or "1wWcru2htgF_hpTy3_1cRUr-EYfouAm9n5kIBZe2Hh_g"
 # File "Nhập liệu báo cáo tháng" cả Phòng cùng điền (xem tools/tao_file_nhap_lieu.py).
-# Đặt ID qua biến môi trường NHAP_LIEU_SHEET_ID; để trống thì bỏ qua bước này.
+# CHỦ Ý không ghi sẵn ID ở đây — khai báo qua biến NHAP_LIEU_SHEET_ID để khỏi lộ trên repo public.
 NHAP_LIEU_ID = os.environ.get("NHAP_LIEU_SHEET_ID", "").strip()
 NAM = 2026
 KPI_TRIPCARE_TY = 60          # KPI năm của TripCARE (tỷ) để tính % hoàn thành
