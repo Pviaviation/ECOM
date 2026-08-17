@@ -9,6 +9,8 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PVI TMĐT">
+  <!-- không cho công cụ tìm kiếm lập chỉ mục trang nội bộ này -->
+  <meta name="robots" content="noindex, nofollow, noarchive">
   <title>PVI TMĐT · Dashboard điều hành</title>
 </head>
 
@@ -1912,6 +1914,85 @@
       font-family: inherit
     }
 
+    /* ============ MÀN HÌNH NHẬP MẬT KHẨU ============ */
+    body.khoa {
+      overflow: hidden
+    }
+
+    .lock {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: linear-gradient(135deg, #1B2A5B 0%, #2E3A6E 60%, #3A2A5E 120%)
+    }
+
+    .lock[hidden] {
+      display: none
+    }
+
+    .lock-box {
+      width: min(380px, 100%);
+      background: var(--card);
+      border-radius: 18px;
+      padding: 30px 26px 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .35);
+      text-align: center
+    }
+
+    .lock-box h2 {
+      font-size: 18px;
+      color: var(--ink);
+      margin-bottom: 6px
+    }
+
+    .lock-box p {
+      font-size: 13.5px;
+      color: var(--muted);
+      margin: 0 0 18px
+    }
+
+    .lock-box input {
+      width: 100%;
+      font-family: inherit;
+      font-size: 16px;
+      text-align: center;
+      letter-spacing: 3px;
+      padding: 12px 14px;
+      border: 2px solid var(--line);
+      border-radius: 11px;
+      background: var(--card2);
+      color: var(--ink)
+    }
+
+    .lock-box input:focus {
+      outline: none;
+      border-color: var(--c-blue)
+    }
+
+    .lock-box button {
+      width: 100%;
+      margin-top: 12px;
+      border: 0;
+      background: var(--red);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      padding: 12px;
+      border-radius: 11px
+    }
+
+    .lock-err {
+      color: var(--c-redneg);
+      font-size: 13px;
+      font-weight: 700;
+      margin-top: 12px;
+      min-height: 18px
+    }
+
     /* mỗi dòng trong ô ghi chú xám — tách dòng cho dễ đọc thay vì dồn một đoạn */
     .dbody .note .note-l {
       display: block;
@@ -2394,6 +2475,20 @@
       }
     }
   </style>
+
+  <!-- Cổng mật khẩu. LƯU Ý: đây là trang tĩnh trên GitHub Pages, không có máy chủ
+       xác thực — lớp này chỉ chặn người vô tình vào link và chặn công cụ tìm kiếm,
+       KHÔNG chặn được người biết xem mã nguồn trang. -->
+  <div class="lock" id="lock">
+    <div class="lock-box">
+      <h2>Dashboard điều hành · P.TMĐT</h2>
+      <p>Trang nội bộ — vui lòng nhập mật khẩu để xem</p>
+      <input type="password" id="lock-pw" placeholder="Mật khẩu" autocomplete="current-password"
+        aria-label="Mật khẩu truy cập">
+      <button type="button" id="lock-btn">Xem báo cáo</button>
+      <div class="lock-err" id="lock-err"></div>
+    </div>
+  </div>
 
   <header class="app-header">
     <div class="wrap">
@@ -4079,6 +4174,39 @@
       } else { tip.classList.remove('on'); tipEl = null; }
     });
     document.addEventListener('pointerdown', e => { if (!e.target.closest('[data-tip]')) tip.classList.remove('on'); });
+
+    /* ============ CỔNG MẬT KHẨU ============ */
+    /* Chỉ lưu mã băm của mật khẩu để bản thân chuỗi mật khẩu không nằm trong file.
+       Đổi mật khẩu: chạy trong Console `bamMK("mật khẩu mới")` rồi thay giá trị MK_BAM. */
+    const MK_BAM = "1t4k7nx";
+    function bamMK(s) {
+      let h = 5381;
+      for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+      return h.toString(36);
+    }
+    (function congMatKhau() {
+      const lop = $('#lock');
+      if (!lop) return;
+      /* mặc định khoá ngay từ lúc trang vẽ ra; đã nhập đúng trước đó thì mở luôn */
+      if (localStorage.getItem('tmdt-mo-khoa') === MK_BAM) { lop.hidden = true; return; }
+      document.body.classList.add('khoa');
+      const o = $('#lock-pw'), nut = $('#lock-btn'), loi = $('#lock-err');
+      setTimeout(() => o.focus(), 100);
+      const kiemTra = () => {
+        if (bamMK(o.value.trim()) === MK_BAM) {
+          localStorage.setItem('tmdt-mo-khoa', MK_BAM);
+          lop.hidden = true;
+          document.body.classList.remove('khoa');
+          fireHero();
+          refreshReveals();
+        } else {
+          loi.textContent = 'Mật khẩu chưa đúng, vui lòng thử lại';
+          o.value = ''; o.focus();
+        }
+      };
+      nut.addEventListener('click', kiemTra);
+      o.addEventListener('keydown', e => { if (e.key === 'Enter') kiemTra(); });
+    })();
 
     /* ============ INIT ============ */
     applyLiveData();
