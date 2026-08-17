@@ -297,11 +297,37 @@ def cac_dong(o):
     return y
 
 
+def dinh_vi_cot(hang_tieu_de, tu_khoa):
+    """Tìm vị trí cột theo TIÊU ĐỀ thay vì theo thứ tự cố định.
+
+    Nhờ vậy Phòng thêm cột mới hoặc đổi chỗ các cột thì script vẫn đọc đúng.
+    tu_khoa: {tên trường: [các từ khoá xuất hiện trong tiêu đề]}
+    """
+    vi_tri = {}
+    for i, o in enumerate(hang_tieu_de):
+        nhan = re.sub(r"\s+", " ", str(o or "")).strip().lower()
+        if not nhan:
+            continue
+        for truong, khoa in tu_khoa.items():
+            if truong in vi_tri:
+                continue
+            if any(k in nhan for k in khoa):
+                vi_tri[truong] = i
+                break
+    return vi_tri
+
+
+def o_theo_ten(hang, vi_tri, truong):
+    i = vi_tri.get(truong)
+    return lay_o(hang, i) if i is not None else ""
+
+
 def doc_file_nhap_lieu(duong_dan_html=None):
     """Đọc file nhập liệu chung -> DANH SÁCH kỳ báo cáo.
 
-    Mỗi dòng trong các tab đều có cột "Kỳ" ở đầu, nên một file dùng được cho nhiều
+    Mỗi dòng trong các tab đều có cột "Kỳ", nên một file dùng được cho nhiều
     tháng cùng lúc: người này sửa dòng kỳ 2026-08, người kia thêm dòng kỳ 2026-07.
+    Các cột được nhận diện theo TIÊU ĐỀ nên thêm cột mới không làm hỏng script.
     Trả về "BO_QUA" nếu không đọc được (giữ nguyên dữ liệu lần trước).
     """
     if not NHAP_LIEU_ID:
@@ -343,54 +369,78 @@ def doc_file_nhap_lieu(duong_dan_html=None):
             ky_theo_ma[mk] = dict(tt, id=mk, data={}, khoKhan=[], mocThoiGian=[])
         return ky_theo_ma[mk]
 
-    # --- tab DỰ ÁN: cột 0 = Kỳ, cột 1 = mã dự án ---
+    # --- tab DỰ ÁN: nhận diện cột theo tiêu đề ---
+    cot = dinh_vi_cot(tab_du_an[0] if tab_du_an else [], {
+        "ky": ["kỳ"], "ma": ["mã dự án", "mã"], "ten": ["tên dự án", "tên"],
+        "phuTrach": ["phụ trách"], "hoTro": ["hỗ trợ"], "uuTien": ["ưu tiên"],
+        "trangThai": ["trạng thái"], "dt": ["dt tháng", "doanh thu tháng"],
+        "luyKe": ["lũy kế"], "phanTramKPI": ["% kpi", "kpi năm"],
+        "cungKy2025": ["cùng kỳ"], "ghiChu": ["ghi chú"],
+        "ketQua": ["kết quả"], "keHoach": ["kế hoạch"],
+    })
     for hang in tab_du_an[1:]:
-        mk = ma_ky_hop_le(lay_o(hang, 0))
-        ma = str(lay_o(hang, 1)).strip()
+        mk = ma_ky_hop_le(o_theo_ten(hang, cot, "ky"))
+        ma = str(o_theo_ten(hang, cot, "ma")).strip()
         if not mk or not ma or ma.lower().startswith("mã"):
             continue
         muc = {
-            "trangThai": MA_TRANG_THAI.get(str(lay_o(hang, 4)).strip().lower()),
-            "dt": so_thuc(lay_o(hang, 5)),
-            "luyKe": so_thuc(lay_o(hang, 6)),
-            "phanTramKPI": so_thuc(lay_o(hang, 7)),
-            "cungKy2025": so_thuc(lay_o(hang, 8)),
-            "ghiChu": cac_dong(lay_o(hang, 9)),
-            "ketQua": cac_dong(lay_o(hang, 10)),
-            "keHoach": cac_dong(lay_o(hang, 11)),
+            "trangThai": MA_TRANG_THAI.get(str(o_theo_ten(hang, cot, "trangThai")).strip().lower()),
+            "dt": so_thuc(o_theo_ten(hang, cot, "dt")),
+            "luyKe": so_thuc(o_theo_ten(hang, cot, "luyKe")),
+            "phanTramKPI": so_thuc(o_theo_ten(hang, cot, "phanTramKPI")),
+            "cungKy2025": so_thuc(o_theo_ten(hang, cot, "cungKy2025")),
+            "ghiChu": cac_dong(o_theo_ten(hang, cot, "ghiChu")),
+            "ketQua": cac_dong(o_theo_ten(hang, cot, "ketQua")),
+            "keHoach": cac_dong(o_theo_ten(hang, cot, "keHoach")),
         }
         muc = {k: v for k, v in muc.items() if v not in (None, "", [])}
         if muc:
             lay_ky(mk)["data"][ma] = muc
-        # cột "Tên dự án" thực tế Phòng đang dùng để ghi chương trình/nhóm -> đưa xuống
-        # dòng phụ dưới tên thẻ; dự án chưa có trong dashboard sẽ được tạo thẻ mới.
-        ten_ct = str(lay_o(hang, 2)).strip()
-        nguoi = str(lay_o(hang, 3)).strip()
-        if ten_ct or nguoi:
-            thong_tin_du_an[ma] = {"ten": ma, "doiTac": ten_ct, "phuTrach": nguoi}
+        # cột "Tên dự án" Phòng đang dùng để ghi chương trình/nhóm -> hiện ở dòng phụ
+        # dưới tên thẻ; dự án chưa có trong dashboard sẽ được tạo thẻ mới.
+        ten_ct = str(o_theo_ten(hang, cot, "ten")).strip()
+        nguoi = str(o_theo_ten(hang, cot, "phuTrach")).strip()
+        ho_tro = str(o_theo_ten(hang, cot, "hoTro")).strip()
+        uu_tien = so_thuc(o_theo_ten(hang, cot, "uuTien"))
+        if ten_ct or nguoi or ho_tro or uu_tien:
+            tt = {"ten": ma, "doiTac": ten_ct, "phuTrach": nguoi, "hoTro": ho_tro}
+            if uu_tien:
+                tt["uuTien"] = max(1, min(5, int(uu_tien)))
+            thong_tin_du_an[ma] = tt
 
     # --- tab KHÓ KHĂN ---
     try:
-        for hang in tai_tab(NHAP_LIEU_ID, "KHÓ KHĂN")[1:]:
-            mk = ma_ky_hop_le(lay_o(hang, 0))
-            muc = MA_MUC_DO.get(str(lay_o(hang, 1)).strip().lower())
-            ten, kho = str(lay_o(hang, 2)).strip(), str(lay_o(hang, 3)).strip()
+        bang_kk = tai_tab(NHAP_LIEU_ID, "KHÓ KHĂN")
+        ckk = dinh_vi_cot(bang_kk[0] if bang_kk else [], {
+            "ky": ["kỳ"], "muc": ["mức"], "duAn": ["dự án"],
+            "kho": ["khó khăn", "vướng"], "hoTro": ["hỗ trợ", "đề xuất"]})
+        for hang in bang_kk[1:]:
+            mk = ma_ky_hop_le(o_theo_ten(hang, ckk, "ky"))
+            muc = MA_MUC_DO.get(str(o_theo_ten(hang, ckk, "muc")).strip().lower())
+            ten = str(o_theo_ten(hang, ckk, "duAn")).strip()
+            kho = str(o_theo_ten(hang, ckk, "kho")).strip()
             if mk and muc and ten and kho:
                 lay_ky(mk)["khoKhan"].append({"muc": muc, "duAn": ten, "kho": kho,
-                                              "hoTro": str(lay_o(hang, 4)).strip()})
+                                              "hoTro": str(o_theo_ten(hang, ckk, "hoTro")).strip()})
     except Exception:
         pass
 
     # --- tab MỐC THỜI GIAN ---
     try:
-        for hang in tai_tab(NHAP_LIEU_ID, "MỐC THỜI GIAN")[1:]:
-            mk = ma_ky_hop_le(lay_o(hang, 0))
-            ngay, ten, nd = (str(lay_o(hang, i)).strip() for i in (1, 2, 3))
+        bang_m = tai_tab(NHAP_LIEU_ID, "MỐC THỜI GIAN")
+        cm = dinh_vi_cot(bang_m[0] if bang_m else [], {
+            "ky": ["kỳ"], "ngay": ["ngày", "thời điểm"], "duAn": ["dự án"],
+            "moc": ["nội dung"], "hot": ["quan trọng"], "st": ["trạng thái"]})
+        for hang in bang_m[1:]:
+            mk = ma_ky_hop_le(o_theo_ten(hang, cm, "ky"))
+            ngay = str(o_theo_ten(hang, cm, "ngay")).strip()
+            ten = str(o_theo_ten(hang, cm, "duAn")).strip()
+            nd = str(o_theo_ten(hang, cm, "moc")).strip()
             if not (mk and ngay and nd):
                 continue
             m = {"ngay": ngay, "duAn": ten, "moc": nd,
-                 "hot": str(lay_o(hang, 4)).strip().lower() in ("x", "có", "yes", "true")}
-            st = MA_TT_MOC.get(str(lay_o(hang, 5)).strip().lower())
+                 "hot": str(o_theo_ten(hang, cm, "hot")).strip().lower() in ("x", "có", "yes", "true")}
+            st = MA_TT_MOC.get(str(o_theo_ten(hang, cm, "st")).strip().lower())
             if st:
                 m["st"] = st
             lay_ky(mk)["mocThoiGian"].append(m)
@@ -468,8 +518,13 @@ def dung_khoi_ky(ds_ky):
         if ky.get("_duAn"):
             d.append("        ,duAn: {")
             for ma, tt in ky["_duAn"].items():
-                d.append("          %s: { ten: %s, doiTac: %s, phuTrach: %s },"
-                         % (gon(ma), gon(tt["ten"]), gon(tt["doiTac"]), gon(tt["phuTrach"])))
+                phan = ["ten: %s" % gon(tt["ten"]), "doiTac: %s" % gon(tt["doiTac"]),
+                        "phuTrach: %s" % gon(tt["phuTrach"])]
+                if tt.get("hoTro"):
+                    phan.append("hoTro: %s" % gon(tt["hoTro"]))
+                if tt.get("uuTien"):
+                    phan.append("uuTien: %d" % tt["uuTien"])
+                d.append("          %s: { %s }," % (gon(ma), ", ".join(phan)))
             d.append("        }")
         d.append("      },")
     d.append("    ];")

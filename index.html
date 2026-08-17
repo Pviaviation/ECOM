@@ -2817,7 +2817,7 @@
        So cùng kỳ tính động theo số tháng của kỳ báo cáo (slice mảng). */
     /* ===== AUTO-DATA:START — do GitHub Action ghi tự động từ Google Sheet, ĐỪNG SỬA TAY ===== */
     const AUTO_DATA = {
-      capNhat: "17/08/2026 13:59",
+      capNhat: "17/08/2026 14:17",
       capNhatNgay: "17/08/2026",
       tripcare: {
         thang2026: [4.918, 3.453, 5.042, 3.464, 3.698, 4.784, 5.35, 2.645],
@@ -2896,11 +2896,14 @@
           const tt = n.duAn[ma];
           if (!PROJECTS[ma]) {
             PROJECTS[ma] = {
-              ten: tt.ten || ma, doiTac: tt.doiTac || "", uuTien: 3,
-              phuTrach: tt.phuTrach || "", hoTro: "", kpiNam: "—"
+              ten: tt.ten || ma, doiTac: tt.doiTac || "", uuTien: tt.uuTien || 3,
+              phuTrach: tt.phuTrach || "", hoTro: tt.hoTro || "", kpiNam: "—"
             };
-          } else if (tt.phuTrach && !PROJECTS[ma].phuTrach) {
-            PROJECTS[ma].phuTrach = tt.phuTrach;
+          } else {
+            /* dự án đã có: sheet được quyền sửa người phụ trách / hỗ trợ / mức ưu tiên */
+            if (tt.phuTrach) PROJECTS[ma].phuTrach = tt.phuTrach;
+            if (tt.hoTro) PROJECTS[ma].hoTro = tt.hoTro;
+            if (tt.uuTien) PROJECTS[ma].uuTien = tt.uuTien;
           }
         });
       });
@@ -3470,7 +3473,7 @@
       {
         id: "2026-08", label: "Tháng 08/2026", range: "01–31/08/2026", chot: "31/08/2026", mucTieuNam: 100.0,
         data: {
-          "asahi": { ketQua: ["10/8: Xây dựng chiến lược bán hàng KHDN cho Asahi, lên kế hoạch training cho ALCV.", "11/8: Thống nhất phí và quyền lợi bản chào BH tai nạn cho người tham gia giải chạy và gửi Asahi.", "13/8: Review Landing Page của ALCV phục vụ chạy quảng cáo, thu thập lead khách hàng và gửi feedback cho Asahi.", "14/8: Xây dựng kế hoạch bán NPUV qua hệ sinh thái Nura", "17/8: Đã họp trao đổi sản phẩm NPUV với Nura ngày 17/8 và bước đầu thống nhất sản phẩm"], keHoach: ["Phối hợp với Asahi/ALCV thống nhất kế hoạch và lịch training bán hàng KHDN vào đầu tháng 9.", "Theo dõi triển khai chương trình BH tai nạn cho giải chạy theo phương án đã thống nhất.", "Asahi/ALCV chỉnh sửa Landing Page theo feedback; PVI review lại và triển khai truyền thông sau khi hoàn thiện.", "Tiếp tục phối hợp Nura hoàn thiện phương án sản phẩm và kế hoạch triển khai NPUV."] },
+          "asahi": { ketQua: ["10/8: Xây dựng chiến lược bán hàng KHDN cho Asahi, lên kế hoạch training cho ALCV.", "11/8: Thống nhất phí và quyền lợi bản chào BH tai nạn cho người tham gia giải chạy và gửi Asahi.", "13/8: Review Landing Page của ALCV phục vụ chạy quảng cáo, thu thập lead khách hàng và gửi feedback cho Asahi.", "14/8: Xây dựng kế hoạch bán NPUV qua hệ sinh thái Nura", "17/8: Đã họp trao đổi sản phẩm NPUV với Nura và bước đầu thống nhất sản phẩm"], keHoach: ["Phối hợp với Asahi/ALCV thống nhất kế hoạch và lịch training bán hàng KHDN vào đầu tháng 9.", "Theo dõi triển khai chương trình BH tai nạn cho giải chạy theo phương án đã thống nhất.", "Asahi/ALCV chỉnh sửa Landing Page theo feedback; PVI review lại và triển khai truyền thông sau khi hoàn thiện.", "Tiếp tục phối hợp Nura hoàn thiện phương án sản phẩm và kế hoạch triển khai NPUV."] },
           "mobifone": { ketQua: ["10/8: Thống nhất và gửi bản chào BH tai nạn cho học viên sát hạch lái xe cho MobiFone Quảng Ninh."], keHoach: ["Phối hợp MobiFone Quảng Ninh tiếp cận khách hàng theo bản chào đã xây dựng và cập nhật kết quả."] },
           "plus-ew": { trangThai: "tang-truong", ketQua: ["Hoàn thiện tờ trình, dự thảo hợp đồng liên quan đến việc mở rộng đơn vị PVI phối hợp gồm PVI HCM và PVI An Giang.", "Phối hợp cùng Paraline và TCV testing chức năng chỉnh sửa đơn.", "Phối hợp cùng TCV trao trả bồi thường tại các HEAD Kuong Ngân và Minh Thương", "Cập nhật thêm các tính nắng mới trong website đào tạo HEAD: https://daotao.hondaplus.vn/", "Phối hợp cùng PVI An Giang ký hợp đồng mới với HEAD Kim Điệp"], keHoach: ["Phối hợp cùng Paraline và TCV testing chức năng tạo đơn qua API và tạo hóa đơn.", "Phối hợp cùng TCV trao trả bồi thường tại các HEAD.", "Phối hợp cùng TCV và PVI An Giang tổ chức buổi đào tạo cho HEAD Kim Điệp."] },
           "viettelstore": { trangThai: "sap-golive", ketQua: ["Hoàn thiện và gửi bộ API cấp đơn và TPA cho VST.", "Cập nhật phụ lục hợp đồng Một đổi một và gửi lại VST.", "Kiểm tra dự thảo hợp đồng nhà tái AIG và dịch vụ TPA BrighSide.", "Trao đổi với VST để lên phương án Go-Live cho sản phẩm BH 1-1, dự kiến mục tiêu Go-live trước 22/08."], keHoach: ["Phối hợp cùng IT các bên, tiếp tục trao đổi và push VST go-live chính thức chương trình Một đổi một.", "Đợi phản hồi của VST về dự thảo hợp đồng ký kết.", "Phối hợp cùng các phòng nghiệp vụ hoàn thiện bộ tài liệu đính kèm của chương trình BH Một đổi một."] },

@@ -23,7 +23,7 @@ DO = "E03A3C"
 NHAT = "EEF2F7"
 VIEN = Border(*[Side(style="thin", color="C9D2E3")] * 4)
 
-TRANG_THAI = ["Đang tăng trưởng", "Sắp go-live", "Cần chú ý", "Chờ đối tác"]
+TRANG_THAI = ["Đang tăng trưởng", "Đang thực hiện", "Sắp go-live", "Cần chú ý", "Chờ đối tác"]
 MUC_DO = ["GẤP", "Theo dõi"]
 TT_MOC = ["", "Hoàn thành", "Đã đến hạn", "Trượt hạn"]
 
@@ -49,6 +49,8 @@ TU_DONG = {"tripcare", "wbooking"}   # số liệu lấy thẳng từ Google She
 # Kỳ mặc định điền sẵn vào cột "Kỳ", và danh sách kỳ cho ô chọn nhanh
 KY_MAC_DINH = "2026-08"
 KY_CO_SAN = ["2026-07", "2026-08", "2026-09", "2026-10", "2026-11", "2026-12"]
+# danh sách nhân sự cho ô chọn nhanh cột Phụ trách / Hỗ trợ
+NHAN_SU = ["Hằng", "Thư", "Tùng", "Duy"]
 
 
 def de_muc(ws, tieu_de, rong):
@@ -90,6 +92,7 @@ def tab_huong_dan(wb):
         ("", False),
         ("QUY TẮC QUAN TRỌNG:", True),
         ("• Cột 'Mã dự án' là khoá nối với dashboard — KHÔNG sửa. Cột 'Kỳ' chọn từ danh sách có sẵn.", False),
+        ("• Cột 'Hỗ trợ' và 'Ưu tiên' (1–5 sao) sửa được bất cứ lúc nào, dashboard cập nhật theo.", False),
         ("• Ô nào để TRỐNG thì dashboard giữ nguyên nội dung cũ, không bị xoá mất.", False),
         ("• Ô nhiều ý: mỗi ý một dòng trong cùng ô (bấm Alt+Enter để xuống dòng). Không đánh số thứ tự.", False),
         ("• Doanh thu điền theo ĐƠN VỊ TỶ ĐỒNG, dùng dấu chấm thập phân (ví dụ 2.05 nghĩa là 2,05 tỷ).", False),
@@ -128,26 +131,33 @@ def tab_ky(wb):
 
 def tab_du_an(wb):
     ws = wb.create_sheet("DỰ ÁN")
-    de_muc(ws, ["Kỳ", "Mã dự án\n(không sửa)", "Tên dự án", "Phụ trách", "Trạng thái",
+    de_muc(ws, ["Kỳ", "Mã dự án\n(không sửa)", "Tên dự án", "Phụ trách", "Hỗ trợ",
+                "Ưu tiên\n(1–5 sao)", "Trạng thái",
                 "DT tháng\n(tỷ)", "Lũy kế\n(tỷ)", "% KPI năm", "Cùng kỳ 2025\n(tỷ)",
                 "Ghi chú (1–2 câu tóm tắt cho lãnh đạo)",
                 "Kết quả trong kỳ\n(mỗi ý một dòng)", "Kế hoạch tiếp theo\n(mỗi ý một dòng)"],
-            [12, 16, 22, 11, 16, 10, 10, 11, 13, 46, 52, 52])
+            [12, 16, 22, 11, 11, 11, 16, 10, 10, 11, 13, 46, 52, 52])
     for i, (ma, ten, nguoi) in enumerate(DU_AN, start=2):
         ws.cell(i, 1, KY_MAC_DINH).font = Font(bold=True, color=DO)
         ws.cell(i, 2, ma).font = Font(bold=True, color=NAVY)
         ws.cell(i, 3, ten)
         ws.cell(i, 4, nguoi)
         if ma in TU_DONG:
-            o = ws.cell(i, 6, "(tự động)")
+            o = ws.cell(i, 8, "(tự động)")
             o.font = Font(italic=True, color="5B6577")
             o.fill = PatternFill("solid", fgColor=NHAT)
-            for cot in (7, 8, 9):
+            for cot in (9, 10, 11):
                 ws.cell(i, cot).fill = PatternFill("solid", fgColor=NHAT)
         ws.row_dimensions[i].height = 58
     dv = DataValidation(type="list", formula1='"%s"' % ",".join(TRANG_THAI), allow_blank=True)
     ws.add_data_validation(dv)
-    dv.add("E2:E200")
+    dv.add("G2:G200")
+    dvn = DataValidation(type="list", formula1='"%s"' % ",".join(NHAN_SU), allow_blank=True)
+    ws.add_data_validation(dvn)
+    dvn.add("D2:E200")
+    dvu = DataValidation(type="list", formula1='"1,2,3,4,5"', allow_blank=True)
+    ws.add_data_validation(dvu)
+    dvu.add("F2:F200")
     dvk = DataValidation(type="list", formula1='"%s"' % ",".join(KY_CO_SAN), allow_blank=False)
     ws.add_data_validation(dvk)
     dvk.add("A2:A200")
