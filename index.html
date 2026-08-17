@@ -2893,7 +2893,13 @@
               "Doanh thu T8: dừng từ 10/08 do tạm ngừng bán",
               "Lũy kế 7T: 996 tr = 28,4% KPI 3,5 tỷ (−50,6% so cùng kỳ)"
             ],
-            congNo: { doiTac: "BAV", quaHan: 368203154, kyThuoc: "T3–T6/2026 · tổng đến hết T7: 413,8 tr", trangThai: "Hướng xử lý: cấn trừ vào vụ bồi thường FLC Sầm Sơn (dự phòng ~22,8 tỷ)" },
+            congNo: {
+              doiTac: "BAV",
+              tieuDe: "Công nợ phí bảo hiểm BambooCARE tính đến hết 13/08/2026",
+              quaHan: 238331881,
+              kyThuoc: "đã cấn trừ toàn bộ chi phí hoa hồng, dịch vụ",
+              trangThai: "Hướng xử lý: cấn trừ vào vụ bồi thường FLC Sầm Sơn (dự phòng ~22,8 tỷ)"
+            },
             ketQua: [
               "ĐƯỢC PHÊ DUYỆT chủ trương tạm ngừng kết nối (TTr 127/TTr-HK&KHDN ngày 06/08)",
               "Gửi CV thông báo BAV và THỰC HIỆN tạm ngừng kết nối bán từ 10/08/2026",
@@ -3015,7 +3021,7 @@
           }
         },
         khoKhan: [
-          { muc: "gap", duAn: "BambooCARE", kho: "Đã tạm ngừng kết nối bán từ 10/08 — doanh thu dừng hẳn; công nợ BAV quá hạn 368.203.154đ chưa thu được, phương án cấn trừ với vụ BT FLC Sầm Sơn (~22,8 tỷ) chưa được phê duyệt", hoTro: "Trình lãnh đạo phê duyệt phương án cấn trừ công nợ BambooCARE với chi phí bồi thường vụ FLC (thỏa thuận 3 bên PVI–BAV–FLC) để thu hồi dứt điểm" },
+          { muc: "gap", duAn: "BambooCARE", kho: "Đã tạm ngừng kết nối bán từ 10/08 — doanh thu dừng hẳn; công nợ phí bảo hiểm đến hết 13/08 còn 238.331.881đ (đã cấn trừ hoa hồng, dịch vụ), phương án cấn trừ với vụ BT FLC Sầm Sơn (~22,8 tỷ) chưa được phê duyệt", hoTro: "Trình lãnh đạo phê duyệt phương án cấn trừ công nợ BambooCARE với chi phí bồi thường vụ FLC (thỏa thuận 3 bên PVI–BAV–FLC) để thu hồi dứt điểm" },
           { muc: "gap", duAn: "SPA GoSafe", kho: "Sau kick-off 05/08, 1A lùi tiến độ: mobile app T11/2026, website rủi ro không kịp 2026 (1A chỉ cấp 3 slot Q3, bị Premium Eco & Flex Pricer chen ngang)", hoTro: "Tác động 1A/SPA ở cấp cao để giữ mục tiêu go-live website trong 2026; ủng hộ cơ chế họp hàng tuần 4 bên" },
           { muc: "gap", duAn: "Viettel Store", kho: "Còn nửa tháng để kịp mốc go-live BH '1 đổi 1' trong T8 (ra mắt iPhone 18); ADLD vẫn chưa có ngày go-live lại, doanh thu 2026 bằng 0", hoTro: "Tác động lãnh đạo VST chốt go-live ADLD và '1 đổi 1' ngay trong T8/2026" },
           { muc: "theo-doi", duAn: "wBooking", kho: "Chưa cập nhật số liệu T8; tỷ lệ bồi thường lũy kế 7T vẫn ở mức 87,01% và thị trường golf suy giảm", hoTro: "Cho ý kiến rà soát gói B20 & cơ cấu tái; ủng hộ đưa BH golf vào hệ thống đại lý PVI" },
@@ -3961,7 +3967,10 @@
       if (oXam.length)
         body += '<div class="note' + (d.trangThai === 'canh-bao' ? ' warn' : '') + '">' +
           oXam.map(x => '<div class="note-l">' + esc(x) + '</div>').join('') + '</div>';
-      if (d.congNo) body += '<div class="note warn"><b>Công nợ ' + esc(d.congNo.doiTac) + ' quá hạn: ' + nfmt(d.congNo.quaHan) + 'đ</b> (' + esc(d.congNo.kyThuoc) + ')<br>' + esc(d.congNo.trangThai) + '</div>';
+      if (d.congNo) body += '<div class="note warn"><b>' +
+        esc(d.congNo.tieuDe || ('Công nợ ' + d.congNo.doiTac + ' quá hạn')) + ': ' + nfmt(d.congNo.quaHan) + 'đ</b>' +
+        (d.congNo.kyThuoc ? ' (' + esc(d.congNo.kyThuoc) + ')' : '') +
+        (d.congNo.trangThai ? '<br>' + esc(d.congNo.trangThai) : '') + '</div>';
       if (d.danhSach) body += '<h4>Danh mục</h4><ul>' + d.danhSach.map(x => '<li><b>' + esc(x.ten) + '</b> — ' + esc(x.trangThai) + ' <span class="stars">' + '★'.repeat(x.uuTien) + '</span></li>').join('') + '</ul>';
       if (d.ketQua) body += '<h4>' + (isMonth() ? 'Kết quả / tiến độ' : 'Kết quả trong tuần') + '</h4><ul>' + d.ketQua.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
       if (d.keHoach) body += '<h4>Kế hoạch tiếp theo</h4><ul>' + d.keHoach.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
