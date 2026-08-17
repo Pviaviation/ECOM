@@ -2817,7 +2817,7 @@
        So cùng kỳ tính động theo số tháng của kỳ báo cáo (slice mảng). */
     /* ===== AUTO-DATA:START — do GitHub Action ghi tự động từ Google Sheet, ĐỪNG SỬA TAY ===== */
     const AUTO_DATA = {
-      capNhat: "17/08/2026 15:04",
+      capNhat: "17/08/2026 15:18",
       capNhatNgay: "17/08/2026",
       tripcare: {
         thang2026: [4.918, 3.453, 5.042, 3.464, 3.698, 4.784, 5.35, 2.645],
@@ -3463,6 +3463,7 @@
         data: {
           "asahi": { ketQua: ["10/8: Xây dựng chiến lược bán hàng KHDN cho Asahi, lên kế hoạch training cho ALCV.", "11/8: Thống nhất phí và quyền lợi bản chào BH tai nạn cho người tham gia giải chạy và gửi Asahi.", "13/8: Review Landing Page của ALCV phục vụ chạy quảng cáo, thu thập lead khách hàng và gửi feedback cho Asahi.", "14/8: Xây dựng kế hoạch bán NPUV qua hệ sinh thái Nura", "17/8: Đã họp trao đổi sản phẩm NPUV với Nura và bước đầu thống nhất sản phẩm"], keHoach: ["Phối hợp với Asahi/ALCV thống nhất kế hoạch và lịch training bán hàng KHDN vào đầu tháng 9.", "Theo dõi triển khai chương trình BH tai nạn cho giải chạy theo phương án đã thống nhất.", "Asahi/ALCV chỉnh sửa Landing Page theo feedback; PVI review lại và triển khai truyền thông sau khi hoàn thiện.", "Tiếp tục phối hợp Nura hoàn thiện phương án sản phẩm và kế hoạch triển khai NPUV."] },
           "mobifone": { ketQua: ["10/8: Thống nhất và gửi bản chào BH tai nạn cho học viên sát hạch lái xe cho MobiFone Quảng Ninh."], keHoach: ["Phối hợp MobiFone Quảng Ninh tiếp cận khách hàng theo bản chào đã xây dựng và cập nhật kết quả."] },
+          "zalopay": { ketQua: ["Triển khai chương trình khuyến mại 20% cho khách hàng lần đầu mua BH rơi vỡ màn hình.", "Phía Zalopay đẩy traffic sản phẩm vào mục Loyalty trên ứng dụng."], keHoach: ["Tiếp tục theo dõi hiệu quả chương trình và đưa ra các giải pháp tiếp theo."] },
           "plus-ew": { trangThai: "tang-truong", ketQua: ["Hoàn thiện tờ trình, dự thảo hợp đồng liên quan đến việc mở rộng đơn vị PVI phối hợp gồm PVI HCM và PVI An Giang.", "Phối hợp cùng Paraline và TCV testing chức năng chỉnh sửa đơn.", "Phối hợp cùng TCV trao trả bồi thường tại các HEAD Kuong Ngân và Minh Thương", "Cập nhật thêm các tính nắng mới trong website đào tạo HEAD: https://daotao.hondaplus.vn/", "Phối hợp cùng PVI An Giang ký hợp đồng mới với HEAD Kim Điệp"], keHoach: ["Phối hợp cùng Paraline và TCV testing chức năng tạo đơn qua API và tạo hóa đơn.", "Phối hợp cùng TCV trao trả bồi thường tại các HEAD.", "Phối hợp cùng TCV và PVI An Giang tổ chức buổi đào tạo cho HEAD Kim Điệp."] },
           "viettelstore": { trangThai: "sap-golive", ketQua: ["Hoàn thiện và gửi bộ API cấp đơn và TPA cho VST.", "Cập nhật phụ lục hợp đồng Một đổi một và gửi lại VST.", "Kiểm tra dự thảo hợp đồng nhà tái AIG và dịch vụ TPA BrighSide.", "Trao đổi với VST để lên phương án Go-Live cho sản phẩm BH 1-1, dự kiến mục tiêu Go-live trước 22/08."], keHoach: ["Phối hợp cùng IT các bên, tiếp tục trao đổi và push VST go-live chính thức chương trình Một đổi một.", "Đợi phản hồi của VST về dự thảo hợp đồng ký kết.", "Phối hợp cùng các phòng nghiệp vụ hoàn thiện bộ tài liệu đính kèm của chương trình BH Một đổi một."] },
           "sungroup": { trangThai: "cho-doi-tac", ketQua: ["Tiếp nhận phản hồi khảo sát của SGR và thay đổi giả định doanh thu tại link: https://pvi-aviationdivision.github.io/Sungroup_Uoctinh_Doanhthu/", "Theo cuộc họp ngày 05/08: Sun ưu tiên phát triển B2C và đề nghị PVI xây dựng Product Offer riêng theo một số use case phù hợp, trước mắt tập trung vào Sun Holiday Travel Add-on, Weather Protection và Sun Signature Member Benefit."], keHoach: ["Follow-up phản hồi tiếp theo của Sun World về tiến độ triển khai.", "Chuẩn bị các sản phẩm liên quan tới chương trình."] },
@@ -3484,10 +3485,10 @@
           "bamboocare": { ten: "bamboocare", doiTac: "BambooCARE", phuTrach: "Hằng" },
           "wbooking": { ten: "wbooking", doiTac: "wBooking (HIO)", phuTrach: "Hằng" },
           "flightdelay": { ten: "flightdelay", doiTac: "Flight Delay", phuTrach: "Hằng" },
-          "asahi": { ten: "asahi", doiTac: "Asahi (NPUV + APUV)", phuTrach: "Thư", hoTro: "Duy" },
-          "mobifone": { ten: "mobifone", doiTac: "MobiFone (Cổng BH)", phuTrach: "Thư", hoTro: "Duy" },
-          "zalopay": { ten: "zalopay", doiTac: "Zalopay (BHRVMH)", phuTrach: "Duy" },
-          "nnx": { ten: "nnx", doiTac: "NNX (Trợ cấp nằm viện)", phuTrach: "Thư" },
+          "asahi": { ten: "asahi", doiTac: "Asahi (NPUV + APUV)", phuTrach: "Thư", hoTro: "Duy", uuTien: 5 },
+          "mobifone": { ten: "mobifone", doiTac: "MobiFone (Cổng BH)", phuTrach: "Thư", hoTro: "Duy", uuTien: 3 },
+          "zalopay": { ten: "zalopay", doiTac: "Zalopay (BHRVMH)", phuTrach: "Duy", uuTien: 2 },
+          "nnx": { ten: "nnx", doiTac: "NNX (Trợ cấp nằm viện)", phuTrach: "Thư", uuTien: 1 },
           "plus-ew": { ten: "plus-ew", doiTac: "Plus & EW Honda", phuTrach: "Tùng" },
           "viettelstore": { ten: "viettelstore", doiTac: "Viettel Store", phuTrach: "Tùng" },
           "sungroup": { ten: "sungroup", doiTac: "Sun Group (BH nhúng)", phuTrach: "Tùng" },
@@ -3495,9 +3496,9 @@
           "Insurtech": { ten: "Insurtech", doiTac: "Insurtech", phuTrach: "Tùng" },
           "Chương trình Cyber cho SME (A05)": { ten: "Chương trình Cyber cho SME (A05)", doiTac: "Chương trình Cyber cho SME (A05)", phuTrach: "Tùng" },
           "O-CARCARE VP BANK (OPES)": { ten: "O-CARCARE VP BANK (OPES)", doiTac: "O-CARCARE VP BANK (OPES)", phuTrach: "Tùng" },
-          "AAA": { ten: "AAA", doiTac: "Quảng Ninh", phuTrach: "Thư" },
-          "Viettel Money": { ten: "Viettel Money", doiTac: "Viettel Money", phuTrach: "Thư" },
-          "Igloo": { ten: "Igloo", doiTac: "CPM – Ung thư thuốc đích", phuTrach: "Thư", hoTro: "Duy" },
+          "AAA": { ten: "AAA", doiTac: "Quảng Ninh", phuTrach: "Thư", uuTien: 4 },
+          "Viettel Money": { ten: "Viettel Money", doiTac: "Viettel Money", phuTrach: "Thư", uuTien: 2 },
+          "Igloo": { ten: "Igloo", doiTac: "CPM – Ung thư thuốc đích", phuTrach: "Thư", hoTro: "Duy", uuTien: 4 },
         }
       },
     ];

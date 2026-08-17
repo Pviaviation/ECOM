@@ -61,10 +61,15 @@ MA_TT_MOC = {"hoàn thành": "done", "đã đến hạn": "qua", "trượt hạn
 
 # ---------------------------------------------------------------- tải & đọc
 
-def tai_tab(sheet_id, ten_tab):
-    """Tải một tab của Google Sheet dưới dạng CSV (đọc theo TÊN tab, không theo gid)."""
+def tai_tab(sheet_id, ten_tab, dong_tieu_de=0):
+    """Tải một tab của Google Sheet dưới dạng CSV (đọc theo TÊN tab, không theo gid).
+
+    dong_tieu_de=1 dùng cho file nhập liệu: nếu để 0, Google suy ra kiểu dữ liệu cho
+    từng cột và sẽ NUỐT MẤT ô tiêu đề dạng chữ của cột toàn số (vd cột "Ưu tiên"),
+    khiến script không nhận ra cột đó.
+    """
     url = ("https://docs.google.com/spreadsheets/d/%s/gviz/tq"
-           "?tqx=out:csv&headers=0&sheet=%s" % (sheet_id, urllib.parse.quote(ten_tab)))
+           "?tqx=out:csv&headers=%d&sheet=%s" % (sheet_id, dong_tieu_de, urllib.parse.quote(ten_tab)))
     req = urllib.request.Request(url, headers={"User-Agent": "pvi-tmdt-dashboard/1.0"})
     with urllib.request.urlopen(req, timeout=90) as r:
         noi_dung = r.read().decode("utf-8")
@@ -333,8 +338,8 @@ def doc_file_nhap_lieu(duong_dan_html=None):
     if not NHAP_LIEU_ID:
         return "BO_QUA"
     try:
-        tab_ky = tai_tab(NHAP_LIEU_ID, "KỲ BÁO CÁO")
-        tab_du_an = tai_tab(NHAP_LIEU_ID, "DỰ ÁN")
+        tab_ky = tai_tab(NHAP_LIEU_ID, "KỲ BÁO CÁO", dong_tieu_de=1)
+        tab_du_an = tai_tab(NHAP_LIEU_ID, "DỰ ÁN", dong_tieu_de=1)
     except Exception as loi:
         print("   ! Không đọc được file nhập liệu (%s) — giữ nguyên dữ liệu lần trước." % loi)
         return "BO_QUA"
@@ -410,7 +415,7 @@ def doc_file_nhap_lieu(duong_dan_html=None):
 
     # --- tab KHÓ KHĂN ---
     try:
-        bang_kk = tai_tab(NHAP_LIEU_ID, "KHÓ KHĂN")
+        bang_kk = tai_tab(NHAP_LIEU_ID, "KHÓ KHĂN", dong_tieu_de=1)
         ckk = dinh_vi_cot(bang_kk[0] if bang_kk else [], {
             "ky": ["kỳ"], "muc": ["mức"], "duAn": ["dự án"],
             "kho": ["khó khăn", "vướng"], "hoTro": ["hỗ trợ", "đề xuất"]})
@@ -427,7 +432,7 @@ def doc_file_nhap_lieu(duong_dan_html=None):
 
     # --- tab MỐC THỜI GIAN ---
     try:
-        bang_m = tai_tab(NHAP_LIEU_ID, "MỐC THỜI GIAN")
+        bang_m = tai_tab(NHAP_LIEU_ID, "MỐC THỜI GIAN", dong_tieu_de=1)
         cm = dinh_vi_cot(bang_m[0] if bang_m else [], {
             "ky": ["kỳ"], "ngay": ["ngày", "thời điểm"], "duAn": ["dự án"],
             "moc": ["nội dung"], "hot": ["quan trọng"], "st": ["trạng thái"]})
