@@ -473,7 +473,10 @@ def main():
     if moi == html:
         print("Số liệu không đổi — không ghi lại file.")
         return
-    duong_dan.write_text(moi, encoding="utf-8")
+    # LUÔN ghi bằng LF (newline="\n"). Nếu để mặc định, Python trên Windows sẽ ghi CRLF
+    # trong khi GitHub Action (Linux) ghi LF -> Git tưởng cả file bị sửa và gây đụng độ.
+    with open(duong_dan, "w", encoding="utf-8", newline="\n") as f:
+        f.write(moi)
     print("Đã cập nhật %s" % duong_dan)
 
 

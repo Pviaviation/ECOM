@@ -2731,7 +2731,7 @@
        So cùng kỳ tính động theo số tháng của kỳ báo cáo (slice mảng). */
     /* ===== AUTO-DATA:START — do GitHub Action ghi tự động từ Google Sheet, ĐỪNG SỬA TAY ===== */
     const AUTO_DATA = {
-      capNhat: "17/08/2026 08:46",
+      capNhat: "17/08/2026 08:54",
       capNhatNgay: "17/08/2026",
       tripcare: {
         thang2026: [4.918, 3.453, 5.042, 3.464, 3.698, 4.784, 5.35, 2.645],
@@ -2802,9 +2802,6 @@
             (dangChay ? 'T' + mo + ' đến ' + t.denNgay + ' (' + t.soNgayDaCo + ' ngày): ' : 'T' + mo + ': ')
             + fmtTien(tc.dt) + ' · ' + nfmt(t.don2026[mo - 1]) + ' đơn · TB ' + nfmt(tc.tbNgay, 1) + ' tr/ngày',
             'Lũy kế ' + moL + ': ' + nfmt(tc.luyKe, 2) + ' tỷ / ' + nfmt(tc.soDon) + ' đơn = ' + nfmt(tc.phanTramKPI, 1) + '% KPI ' + t.kpiNam + ' tỷ',
-            'Cùng kỳ 2025' + (dangChay ? ' (đã quy về cùng số ngày)' : '') + ': ' + nfmt(tc.cungKy2025, 2) + ' tỷ / ' + nfmt(tc.soDon2025) + ' đơn'
-            + ' → phí ' + (tc.luyKe >= tc.cungKy2025 ? '+' : '−') + nfmt(Math.abs(tc.luyKe / tc.cungKy2025 - 1) * 100, 1) + '%'
-            + ', đơn ' + (tc.soDon >= tc.soDon2025 ? '+' : '−') + nfmt(Math.abs(tc.soDon / tc.soDon2025 - 1) * 100, 1) + '%',
             'Bồi thường 2026: ' + t.soVuBT + ' vụ / ' + nfmt(t.boiThuong * 1000, 2) + ' tr — tỷ lệ ' + nfmt(tc.tyLeBT, 2) + '%'
           ];
         }
@@ -2927,13 +2924,10 @@
           },
           flightdelay: {
             trangThai: "sap-golive", dt: 0, luyKe: 0,
-            ghiChu: [
-              "Chưa phát sinh doanh thu · KPI 600 tr – 2 tỷ/năm",
-              "Đã sẵn sàng kỹ thuật, chỉ chờ chốt ngày go-live với Atadi"
-            ],
-            moc: ["T8/2026: go-live Flight Delay với Atadi"],
-            ketQua: ["(Chưa có cập nhật mới trong T8 — chờ xác nhận ngày go-live với Atadi)"],
-            keHoach: ["Chuẩn bị chương trình marketing & ký biên bản nghiệm thu để GO-LIVE với Atadi trong T8/2026", "Hoàn tất ký hợp đồng và test UAT với Hồng Ngọc Hà", "Bám sát các OTA đã chào sản phẩm: Gotadi, Hồ Phi Long, Bảo Gia Trần"]
+            ghiChu: ["Chưa phát sinh doanh thu · KPI 600 tr – 2 tỷ/năm"],
+            moc: ["19/08/2026: GO-LIVE với Atadi"],
+            ketQua: ["Đã chốt ngày go-live với Atadi: 19/08/2026"],
+            keHoach: ["Hoàn tất chương trình marketing & biên bản nghiệm thu cho ngày go-live 19/08 với Atadi", "Hoàn tất ký hợp đồng và test UAT với Hồng Ngọc Hà", "Bám sát các OTA đã chào sản phẩm: Gotadi, Hồ Phi Long, Bảo Gia Trần"]
           },
           asahi: {
             trangThai: "canh-bao", luyKe: 13.031, phanTramKPI: 46.12, tyLeBT: 28.84,
@@ -3024,7 +3018,7 @@
           { muc: "gap", duAn: "BambooCARE", kho: "Đã tạm ngừng kết nối bán từ 10/08 — doanh thu dừng hẳn; công nợ phí bảo hiểm đến hết 13/08 còn 238.331.881đ (đã cấn trừ hoa hồng, dịch vụ), phương án cấn trừ với vụ BT FLC Sầm Sơn (~22,8 tỷ) chưa được phê duyệt", hoTro: "Trình lãnh đạo phê duyệt phương án cấn trừ công nợ BambooCARE với chi phí bồi thường vụ FLC (thỏa thuận 3 bên PVI–BAV–FLC) để thu hồi dứt điểm" },
           { muc: "gap", duAn: "SPA GoSafe", kho: "Sau kick-off 05/08, 1A lùi tiến độ: mobile app T11/2026, website rủi ro không kịp 2026 (1A chỉ cấp 3 slot Q3, bị Premium Eco & Flex Pricer chen ngang)", hoTro: "Tác động 1A/SPA ở cấp cao để giữ mục tiêu go-live website trong 2026; ủng hộ cơ chế họp hàng tuần 4 bên" },
           { muc: "gap", duAn: "Viettel Store", kho: "Còn nửa tháng để kịp mốc go-live BH '1 đổi 1' trong T8 (ra mắt iPhone 18); ADLD vẫn chưa có ngày go-live lại, doanh thu 2026 bằng 0", hoTro: "Tác động lãnh đạo VST chốt go-live ADLD và '1 đổi 1' ngay trong T8/2026" },
-          { muc: "theo-doi", duAn: "wBooking", kho: "Chưa cập nhật số liệu T8; tỷ lệ bồi thường lũy kế 7T vẫn ở mức 87,01% và thị trường golf suy giảm", hoTro: "Cho ý kiến rà soát gói B20 & cơ cấu tái; ủng hộ đưa BH golf vào hệ thống đại lý PVI" },
+          { muc: "theo-doi", duAn: "wBooking", kho: "Chưa cập nhật số liệu T8; tỷ lệ bồi thường lũy kế 7T vẫn ở mức 87,01% và thị trường golf suy giảm", hoTro: "Tiếp tục theo dõi số liệu bồi thường" },
           { muc: "theo-doi", duAn: "Sun Group", kho: "Mốc go-live 31/07 đã trượt, sang T8 vẫn chờ Sun World phản hồi phương án bán hàng", hoTro: "Tác động Sun World chốt phương án để triển khai ngay trong T8/2026" },
           { muc: "theo-doi", duAn: "Asahi", kho: "Tỷ lệ bồi thường NPUV T7 vọt lên 48% (lũy kế 28,84%); lũy kế 7T mới đạt 46,12% kế hoạch năm — còn 5 tháng phải làm gần 15 tỷ", hoTro: "Duyệt phương án điều chỉnh APUV & kiểm soát tổn thất nguồn lead bệnh viện" }
         ],
@@ -3036,10 +3030,10 @@
           { ngay: "10/08", duAn: "BambooCARE", moc: "Tạm ngừng kết nối bán trên kênh BAV — đến khi xử lý xong công nợ", hot: true, st: "done" },
           { ngay: "14/08", duAn: "7-Eleven (SSV)", moc: "Kỳ thi chứng chỉ đại lý cho ứng viên cuối cùng", hot: false },
           { ngay: "Giữa T8", duAn: "Insurtech – 3GO", moc: "Go-live SP TNDS & Tai nạn cá nhân qua kênh đại lý Insurtech", hot: true },
+          { ngay: "19/08", duAn: "Flight Delay", moc: "GO-LIVE với Atadi (đã xong claim portal & HĐ TPA Igloo)", hot: true },
           { ngay: "20/08", duAn: "BambooCARE", moc: "Giám định gửi báo cáo vụ FLC (Bualoi) — Ban GQKN chốt tạm ứng BT lần 2", hot: false },
           { ngay: "21/08", duAn: "BambooCARE", moc: "BAV dự kiến khôi phục đường bay HAN–UIH", hot: false },
           { ngay: "25/08", duAn: "BambooCARE", moc: "Hạn thanh toán công nợ kỳ T7 (45,6 tr)", hot: true },
-          { ngay: "Trong T8", duAn: "Flight Delay", moc: "Go-live với Atadi (đã xong claim portal & HĐ TPA Igloo)", hot: true },
           { ngay: "Trong T8", duAn: "Viettel Store", moc: "Go-live BH '1 đổi 1' — kịp ra mắt iPhone 18", hot: true },
           { ngay: "Trong T8", duAn: "TripCARE", moc: "Go-live Phase 2 UI/UX (Insider)", hot: false },
           { ngay: "Trong T8", duAn: "wBooking", moc: "Bán chính thức gói B20 tại hệ thống Vinpearl (5 sân đã đào tạo)", hot: false },
@@ -3327,7 +3321,7 @@
         { duAn: "SPA GoSafe", st: "cho-doi-tac", items: [[1, 14, "Hoàn thiện back-end"], [13, 24, "UAT với 1A"], [36, 36, "Kick-off 1A–SPA–Chubb (05/08)"], [36, 62, "Họp hàng tuần 4 bên — chờ 1A xếp lịch config"]] },
         { duAn: "Viettel Store", st: "canh-bao", items: [[1, 1, "Đổi nhà tái → AIG (01/07)"], [1, 20, "Test API ADLD xong — VST chưa chốt go-live"], [10, 62, "Hoàn thiện HĐ/API '1 đổi 1' → go-live trong T8"]] },
         { duAn: "Sun Group", st: "cho-doi-tac", items: [[1, 31, "Hoàn thiện MOU & NDA"], [32, 62, "Chờ SGR chốt phương án bán để triển khai T8"]] },
-        { duAn: "Flight Delay", st: "sap-golive", items: [[1, 14, "Xong test claim portal · ký HĐ TPA Igloo"], [14, 31, "Đào tạo sale Atadi · chào OTA"], [32, 62, "Marketing & nghiệm thu → go-live Atadi"]] },
+        { duAn: "Flight Delay", st: "sap-golive", items: [[1, 14, "Xong test claim portal · ký HĐ TPA Igloo"], [14, 31, "Đào tạo sale Atadi · chào OTA"], [32, 49, "Marketing & nghiệm thu"], [50, 50, "GO-LIVE với Atadi (19/08)"], [50, 62, "Vận hành · mở rộng OTA"]] },
         { duAn: "MobiFone", st: "cho-doi-tac", items: [[2, 2, "Bản test Cổng BH (02/07)"], [5, 25, "UAT & go-live BH DLQT trên Cổng BH ✓"], [25, 62, "Truyền thông BHDLQT · hoàn thiện thủ tục ký MOU"]] },
         { duAn: "Asahi", st: "canh-bao", items: [[1, 10, "Nâng cấp landing page NPUV · landing page lead ALCV"], [10, 31, "Mở rộng nguồn lead · chính sách TSR"], [32, 62, "Điều chỉnh APUV · kiểm soát bồi thường NPUV (T7 48%)"]] },
         { duAn: "Zalopay", st: "cho-doi-tac", items: [[1, 15, "Trình lãnh đạo phương án mới"], [32, 62, "Chờ chốt phương án triển khai"]] },
