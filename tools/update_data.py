@@ -200,7 +200,8 @@ def gom_tripcare():
         "cungKyPhi2025": ty(cung_ky_phi) if cung_ky_phi else 0,
         "cungKyDon2025": cung_ky_don or 0,
         "soVuBT": so_nguyen(lay_o(hang_nam, 7)) or 0,
-        "boiThuong": ty(so_nguyen(lay_o(hang_nam, 8)) or 0),
+        # số tiền bồi thường nhỏ nên giữ 5 chữ số thập phân, làm tròn 3 sẽ mất số lẻ (44,75 tr -> 45 tr)
+        "boiThuong": round((so_nguyen(lay_o(hang_nam, 8)) or 0) / 1e9, 5),
         "caNam2025": ty(so_nguyen(lay_o(ca_nam_truoc, 2)) or 0),
         "kpiNam": KPI_TRIPCARE_TY,
     }

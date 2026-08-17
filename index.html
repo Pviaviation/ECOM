@@ -1936,6 +1936,34 @@
       font-family: inherit
     }
 
+    /* mỗi dòng trong ô ghi chú xám — tách dòng cho dễ đọc thay vì dồn một đoạn */
+    .dbody .note .note-l {
+      display: block;
+      padding: 2px 0 2px 12px;
+      position: relative
+    }
+
+    .dbody .note .note-l+.note-l {
+      border-top: 1px dashed var(--line);
+      margin-top: 3px;
+      padding-top: 5px
+    }
+
+    .dbody .note .note-l::before {
+      content: "";
+      position: absolute;
+      left: 2px;
+      top: 11px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--c-amber)
+    }
+
+    .dbody .note.warn .note-l::before {
+      background: var(--c-redneg)
+    }
+
     /* Bảng gọn đặt trong thẻ biểu đồ (TripCARE theo tháng) — không ép min-width để khỏi tràn ngang */
     .tbl-compact {
       min-width: 0;
@@ -2673,7 +2701,7 @@
        So cùng kỳ tính động theo số tháng của kỳ báo cáo (slice mảng). */
     /* ===== AUTO-DATA:START — do GitHub Action ghi tự động từ Google Sheet, ĐỪNG SỬA TAY ===== */
     const AUTO_DATA = {
-      capNhat: "17/08/2026 08:02",
+      capNhat: "17/08/2026 08:11",
       capNhatNgay: "17/08/2026",
       tripcare: {
         thang2026: [4.918, 3.453, 5.042, 3.464, 3.698, 4.784, 5.35, 2.21],
@@ -2683,7 +2711,7 @@
         don2025: [15967, 16682, 19067, 17726, 21150, 22450, 23537, 20575, 17797, 19745, 20718, 23472],
         thangDangChay: 8, soNgayDaCo: 13, denNgay: "13/08/2026",
         cungKyPhi2025: 2.266, cungKyDon2025: 10092,   // cùng kỳ 2025 tính đúng số ngày đã có
-        soVuBT: 6, boiThuong: 0.045, caNam2025: 55.686, kpiNam: 60
+        soVuBT: 6, boiThuong: 0.04475, caNam2025: 55.686, kpiNam: 60
       },
       wbooking: {
         /* [tháng, doanh thu (đ), bồi thường (đ), số vụ, tỷ lệ BT (%)] */
@@ -2738,6 +2766,17 @@
           tc.soDon2025 = dangChay ? tcSum(t.don2025, mo - 1) + t.cungKyDon2025 : tcSum(t.don2025, mo);
           tc.boiThuong = t.boiThuong; tc.soVuBT = t.soVuBT;
           tc.tyLeBT = tc.luyKe ? Math.round(t.boiThuong / tc.luyKe * 10000) / 100 : 0;
+          /* ô ghi chú xám: tự sinh theo số mới nhất, mỗi ý một dòng — khỏi lệch với bảng */
+          const moL = mo + 'T';
+          tc.ghiChu = [
+            (dangChay ? 'T' + mo + ' đến ' + t.denNgay + ' (' + t.soNgayDaCo + ' ngày): ' : 'T' + mo + ': ')
+            + fmtTien(tc.dt) + ' · ' + nfmt(t.don2026[mo - 1]) + ' đơn · TB ' + nfmt(tc.tbNgay, 1) + ' tr/ngày',
+            'Lũy kế ' + moL + ': ' + nfmt(tc.luyKe, 2) + ' tỷ / ' + nfmt(tc.soDon) + ' đơn = ' + nfmt(tc.phanTramKPI, 1) + '% KPI ' + t.kpiNam + ' tỷ',
+            'Cùng kỳ 2025' + (dangChay ? ' (đã quy về cùng số ngày)' : '') + ': ' + nfmt(tc.cungKy2025, 2) + ' tỷ / ' + nfmt(tc.soDon2025) + ' đơn'
+            + ' → phí ' + (tc.luyKe >= tc.cungKy2025 ? '+' : '−') + nfmt(Math.abs(tc.luyKe / tc.cungKy2025 - 1) * 100, 1) + '%'
+            + ', đơn ' + (tc.soDon >= tc.soDon2025 ? '+' : '−') + nfmt(Math.abs(tc.soDon / tc.soDon2025 - 1) * 100, 1) + '%',
+            'Bồi thường 2026: ' + t.soVuBT + ' vụ / ' + nfmt(t.boiThuong * 1000, 2) + ' tr — tỷ lệ ' + nfmt(tc.tyLeBT, 2) + '%'
+          ];
         }
 
         const wb = p.data.wbooking;
@@ -2788,9 +2827,18 @@
           tripcare: {
             trangThai: "tang-truong", dt: 2.210, luyKe: 32.919, phanTramKPI: 54.87, soDon: 148058, tbNgay: 170.03,
             cungKy2025: 35.243, soDon2025: 146671, boiThuong: 0.04475, soVuBT: 6, tyLeBT: 0.14,
-            ghiChu: "Số liệu đến 13/08/2026 (13 ngày): 2,21 tỷ / 9.609 đơn · TB 170,0 tr/ngày. Lũy kế 8T 32,92 tỷ = 54,9% KPI 60 tỷ. So cùng kỳ đã quy về CÙNG SỐ NGÀY: 7T/2025 + 13 ngày đầu T8/2025 = 35,24 tỷ / 146.671 đơn",
-            ketQua: ["T8 đến 13/08: 2,21 tỷ · 9.609 đơn · TB 170,0 tr/ngày (13 ngày đầu T8/2025: 2,27 tỷ · 10.092 đơn → phí −2,5%, đơn −4,8%)", "Lũy kế 8T: 32,92 tỷ / 148.058 đơn = 54,9% KPI năm; số đơn nhỉnh hơn cùng kỳ +0,9%", "Bồi thường 2026: 6 vụ / 44,75 tr — tỷ lệ 0,14%, chưa phát sinh vụ mới trong T8"],
-            keHoach: ["Go-live Phase 2 UI/UX TripCARE (Insider)", "Triển khai cơ cấu tái mới với Chubb (digital 50-50, HH tái 52%)", "Đẩy bán qua kênh đại lý VNA; truyền thông voucher phòng chờ"]
+            /* ghiChu để trống: applyLiveData() tự sinh từng dòng theo số mới nhất của Google Sheet */
+            ketQua: [
+              "Đang phối hợp với VNA test UI/UX Phase 2 với Insider trên hệ UAT",
+              "Đã chi trả chi phí Amadeus Integration cost, đang rà soát số liệu/chứng từ Sabre/Amadeus với Chubb",
+              "Đã chốt cơ cấu tái với Chubb và nhận được Dự thảo Addendum của Chubb"
+            ],
+            keHoach: [
+              "Review Addendum và trình Tờ trình v/v cập nhật cơ cấu tái cho Kênh Digital",
+              "Tiếp tục test UI/UX với VNA/Insider",
+              "Tiếp tục trao đổi với VNA về đề xuất Flight Delay",
+              "Trao đổi, thống nhất với VNA về cơ chế mới cho Kênh Đại lý"
+            ]
           },
           spa: {
             trangThai: "cho-doi-tac", dt: 0, luyKe: 0, phanTramKPI: 0,
@@ -3543,7 +3591,8 @@
               if (!isMonth() && e.d.soGD) metric += ' · ' + nfmt(e.d.soGD) + ' GD';
               if (!isMonth() && e.d.soApp) metric += ' · ' + nfmt(e.d.soApp) + ' app';
             } else {
-              const src = (e.d.ketQua && e.d.ketQua[0]) || e.d.ghiChu || '';
+              const gc = Array.isArray(e.d.ghiChu) ? e.d.ghiChu.join(' · ') : e.d.ghiChu;
+              const src = (e.d.ketQua && e.d.ketQua[0]) || gc || '';
               const s0 = src.split('—')[0].split(';')[0].trim();
               metric = esc(s0.length > 60 ? s0.slice(0, 58).replace(/\s+\S*$/, '') + '…' : s0);
             }
@@ -3816,7 +3865,11 @@
       stats += '<div class="dstat"><div class="l">Phụ trách</div><div class="v" style="font-size:14px">' + esc(m.phuTrach) + (m.hoTro ? ' <small>· hỗ trợ: ' + esc(m.hoTro) + '</small>' : '') + '</div></div>';
 
       let body = '';
-      if (d.ghiChu) body += '<div class="note' + (d.trangThai === 'canh-bao' ? ' warn' : '') + '">' + esc(d.ghiChu) + '</div>';
+      /* ghiChu nhận cả chuỗi lẫn mảng — mảng thì mỗi phần tử một dòng cho dễ đọc */
+      if (d.ghiChu && (!Array.isArray(d.ghiChu) || d.ghiChu.length))
+        body += '<div class="note' + (d.trangThai === 'canh-bao' ? ' warn' : '') + '">' +
+          (Array.isArray(d.ghiChu) ? d.ghiChu.map(x => '<div class="note-l">' + esc(x) + '</div>').join('') : esc(d.ghiChu)) +
+          '</div>';
       if (d.congNo) body += '<div class="note warn"><b>Công nợ ' + esc(d.congNo.doiTac) + ' quá hạn: ' + nfmt(d.congNo.quaHan) + 'đ</b> (' + esc(d.congNo.kyThuoc) + ')<br>' + esc(d.congNo.trangThai) + '</div>';
       if (d.moc) body += '<h4>Mốc chính</h4><ul>' + d.moc.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
       if (d.danhSach) body += '<h4>Danh mục</h4><ul>' + d.danhSach.map(x => '<li><b>' + esc(x.ten) + '</b> — ' + esc(x.trangThai) + ' <span class="stars">' + '★'.repeat(x.uuTien) + '</span></li>').join('') + '</ul>';
