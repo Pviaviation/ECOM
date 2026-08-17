@@ -288,26 +288,11 @@
       }
     }
 
-    .btn-present {
-      border: 1px solid rgba(255, 255, 255, .25);
-      background: rgba(255, 255, 255, .08);
-      color: #fff;
-      font-size: 13px;
-      padding: 6px 13px;
-      border-radius: 9px;
-      transition: background .15s;
-    }
 
-    .btn-present:hover {
-      background: rgba(255, 255, 255, .18)
-    }
 
     @media(max-width:820px) {
 
       .chip-date,
-      .btn-present {
-        display: none
-      }
 
       .brand .ttl b {
         font-size: 14px
@@ -378,9 +363,6 @@
       }
     }
 
-    body.present .period-pick {
-      display: none
-    }
 
     /* ============ VIEWS: trang chính + các trang chi tiết ============ */
     main {
@@ -631,9 +613,6 @@
       }
     }
 
-    body.present .bottombar {
-      display: none
-    }
 
     /* ============ SECTION HEADINGS ============ */
     .sec {
@@ -792,9 +771,6 @@
       color: var(--on-hero-mut)
     }
 
-    body.present .kpi .v {
-      font-size: 46px
-    }
 
     .progress-blk {
       margin-top: 16px
@@ -2118,41 +2094,11 @@
     }
 
     /* ============ PRESENT MODE ============ */
-    body.present {
-      font-size: 17px
-    }
 
-    body.present .backbar {
-      display: none !important
-    }
 
-    body.present .sec-h h2 {
-      font-size: 21px
-    }
 
-    body.present .kcard .t {
-      font-size: 15px
-    }
 
-    .btn-exit-present {
-      display: none;
-      position: fixed;
-      right: 18px;
-      bottom: 18px;
-      z-index: 70;
-      background: var(--red);
-      color: #fff;
-      border: 0;
-      border-radius: 999px;
-      padding: 10px 18px;
-      font-weight: 700;
-      font-size: 13px;
-      box-shadow: var(--shadow-lift);
-    }
 
-    body.present .btn-exit-present {
-      display: block
-    }
 
     /* ============ MOTION SAFETY / PRINT ============ */
     @media (prefers-reduced-motion: reduce) {
@@ -2181,11 +2127,6 @@
       }
 
       .backbar,
-      .btn-present,
-      .bottombar,
-      .btn-exit-present {
-        display: none !important
-      }
 
       .card,
       .hotrow,
@@ -2233,9 +2174,6 @@
       font-size: 14.5px
     }
 
-    .btn-present {
-      font-size: 14px
-    }
 
     .sec-h h2 {
       font-size: 20px
@@ -2471,7 +2409,6 @@
       <div class="hd-spacer"></div>
       <label class="period-pick"><span>Kỳ báo cáo</span><select id="period-select" aria-label="Chọn kỳ báo cáo"></select></label>
       <span class="chip-date num" id="chip-date">Chốt số: 30/06/2026</span>
-      <button class="btn-present" id="btn-present">▣ Trình chiếu</button>
     </div>
   </header>
 
@@ -2658,8 +2595,6 @@
   <!-- Mobile bottom app bar -->
   <nav class="bottombar" id="bottombar" aria-label="Điều hướng"></nav>
 
-  <button class="btn-exit-present" id="btn-exit">✕ Thoát trình chiếu</button>
-
   <!-- Modal -->
   <div class="modal" id="modal" role="dialog" aria-modal="true">
     <div class="modal-bg" id="modal-bg"></div>
@@ -2842,77 +2777,117 @@
           },
           spa: {
             trangThai: "cho-doi-tac", dt: 0, luyKe: 0, phanTramKPI: 0,
-            ghiChu: "LÙI TIẾN ĐỘ sau kick-off 1A–SPA–Chubb ngày 05/08: 1A dự trù mobile app go-live T11/2026; website cuối T9 mới lên lịch config (+2–3 tháng) — Chubb đánh giá rủi ro không kịp live website trong 2026 do Amadeus/Chubb freeze hệ thống T12",
+            ghiChu: [
+              "Chưa phát sinh doanh thu · KPI 9,6 tỷ/năm (805 tr/tháng, CR 5%)",
+              "RỦI RO: nguy cơ trượt mục tiêu go-live website trong 2026"
+            ],
             moc: ["Cuối T9: 1A lên lịch config website (+2–3 tháng để go-live)", "T11/2026: 1A dự trù go-live mobile app", "T12/2026: Amadeus/Chubb freeze hệ thống"],
             ketQua: ["Họp kick-off 1A–SPA–Chubb ngày 05/08", "Nguyên nhân chậm: 1A chỉ cấp 3 slot Q3 cho SPA; 2 SP chen ngang ưu tiên hơn BH (Premium Eco, Flex Pricer) + các mục đã reserve trước: Flight Status, PTTT địa phương, Qwikcilver", "Ban Ancil (SPA) đã gửi mail push team EC/IT, yêu cầu 1A đẩy nhanh tiến độ để go-live website trong 2026", "Đã thống nhất cơ chế họp hàng tuần 4 bên PVI–SPA–Chubb–1A để bám tiến độ"],
             keHoach: ["Họp hàng tuần SPA–PVI–Chubb với 1A để push tiến độ", "Yêu cầu Chubb hoàn thiện: Quy tắc bảo hiểm · Dự thảo Hợp đồng tái bảo hiểm · Dự thảo Phụ lục 3 bên với Redion (Europ Assistance) · Dự thảo Phụ lục Outsourcing agreement", "Đôn đốc SPA–Chubb thống nhất Thỏa thuận CRS để SPA trình ký chung với Hợp đồng ba bên (PVI đã ký) / Thỏa thuận ISR", "Rà soát Nghị định 248/2026/NĐ-CP cùng SPA; chuẩn bị hồ sơ theo Phụ lục 05 NĐ 248 ngay trong T8", "Bám mục tiêu go-live website trong 2026; chuẩn bị vận hành cho mobile app go-live T11/2026"]
           },
           bamboocare: {
             trangThai: "canh-bao", luyKe: 0.9956, phanTramKPI: 28.4,
-            ghiChu: "ĐÃ TẠM NGỪNG kết nối bán từ 10/08/2026 (phê duyệt tại TTr 127/TTr-HK&KHDN ngày 06/08) cho đến khi BAV xử lý xong công nợ — doanh thu T8 dừng phát sinh. Trọng tâm hiện nay: phương án cấn trừ công nợ với vụ bồi thường FLC Sầm Sơn (~22,8 tỷ)",
+            ghiChu: [
+              "Doanh thu T8: dừng phát sinh từ 10/08 (đã tạm ngừng kết nối bán)",
+              "Lũy kế 7T: 995,6 tr = 28,4% KPI 3,5 tỷ · giảm 50,6% so cùng kỳ 2025",
+              "Vụ bồi thường FLC Sầm Sơn dùng để cấn trừ: dự phòng ~22,8 tỷ (PVI Hà Thành lead 40%)"
+            ],
             congNo: { doiTac: "BAV", quaHan: 368203154, kyThuoc: "T3–T6/2026 (quá hạn 12–103 ngày) · tổng công nợ đến hết T7: 413.826.563đ (kỳ T7 45,6 tr hạn 25/08)", trangThai: "Đã tạm ngừng kết nối từ 10/08; CV đã gửi BAV — khôi phục khi BAV ổn định kinh doanh & thanh toán đủ công nợ. Đang xử lý CẤN TRỪ công nợ với vụ bồi thường FLC Sầm Sơn (~22,8 tỷ)" },
             ketQua: ["ĐƯỢC PHÊ DUYỆT chủ trương tạm ngừng kết nối (TTr 127/TTr-HK&KHDN ngày 06/08)", "Gửi CV thông báo BAV và THỰC HIỆN tạm ngừng kết nối bán từ 10/08/2026", "Đã thống nhất với Ban GQKN/Ban TCKT hướng cấn trừ công nợ với vụ BT tài sản FLC Sầm Sơn — bão số 10 Bualoi (29/9/2025), ĐBH PVI Hà Thành lead 40%, tổng dự phòng BT ~22,8 tỷ", "Đã tạm ứng BT lần 1: 2 tỷ (cấn trừ vào phí BH kỳ 4 FLC nợ); dự kiến tạm ứng lần 2 ~chục tỷ cuối T8 – đầu T9", "BAV đang tái cấu trúc (3 tàu bay); dự kiến khôi phục đường bay HAN–UIH từ 21/08"],
             keHoach: ["TRÌNH LÃNH ĐẠO phương án cấn trừ công nợ BambooCARE với chi phí bồi thường vụ FLC", "Quy trình cấn trừ: B.HK làm TT cấn trừ chi phí BT (Hà Thành cấp đơn) với công nợ BambooCARE (Thủ Đô cấp đơn) → PVI–BAV ký biên bản xác nhận công nợ → ký thỏa thuận 3 bên PVI–BAV–FLC về bù trừ → Ban GQKN làm TT GQKN & đề nghị thanh toán trừ khoản công nợ", "20/08: nhận báo cáo + bảng tính từ đơn vị giám định để Ban GQKN rà soát, chốt tạm ứng BT lần 2", "25/08: đôn đốc BAV thanh toán công nợ kỳ T7 (45,6 tr)", "Phối hợp PVI Thủ Đô thu hồi dứt điểm; khôi phục kết nối khi BAV trả đủ nợ & ổn định"]
           },
           wbooking: {
             trangThai: "canh-bao", luyKe: 1.801, boiThuong: 1.567, tyLeBT: 87.01,
-            ghiChu: "CHƯA CÓ SỐ LIỆU T8 trên Google Sheet (dòng Tháng 8 còn trống, danh sách bồi thường mới đến 11/07) — bảng dưới là lũy kế 7T: DT 1,80 tỷ · BT 1,57 tỷ (87,01%)",
+            ghiChu: [
+              "Chưa có số liệu T8 trên Google Sheet (danh sách bồi thường mới cập nhật đến 11/07)",
+              "Lũy kế 7T: doanh thu 1,80 tỷ · bồi thường 1,57 tỷ = 87,01%",
+              "T2 và T4–T6 đều vượt ngưỡng hoà 100% — rủi ro lỗ nghiệp vụ"
+            ],
             bangThang: [[1, 392389785, 187500000, 3, 47.78], [2, 112288662, 125000000, 3, 111.32], [3, 356553615, 112500000, 2, 31.55], [4, 304001027, 432000000, 2, 142.11], [5, 242407448, 300000000, 5, 123.76], [6, 180525803, 287500000, 4, 159.26], [7, 212711759, 122500000, 3, 57.59]],
             ketQua: ["(Chưa có số liệu doanh thu/bồi thường T8 — chờ wBooking cập nhật Google Sheet)", "Bán chính thức gói B20 tại 5 sân Vinpearl dự kiến trong T8 (đã đào tạo 08/07)"],
             keHoach: ["Đôn đốc wBooking cập nhật doanh thu – bồi thường T8", "Chốt thời điểm bán chính thức gói B20 tại hệ thống Vinpearl", "Đưa gói BH golf vào hệ thống đại lý PVI", "Chuẩn bị Cổng thông tin số quốc gia (Hiệp hội Golf VN): T9 ra mắt beta"]
           },
           flightdelay: {
             trangThai: "sap-golive", dt: 0, luyKe: 0,
-            ghiChu: "Đã sẵn sàng go-live với Atadi trong T8/2026 (xong test claim portal, ký HĐ TPA với Igloo, đào tạo sale Atadi) — chờ ký biên bản nghiệm thu & chốt ngày go-live chính thức",
+            ghiChu: [
+              "Chưa phát sinh doanh thu · KPI 600 tr – 2 tỷ/năm (attach rate 1–2%)",
+              "Đã sẵn sàng kỹ thuật: xong claim portal, ký HĐ TPA với Igloo, đào tạo sale Atadi"
+            ],
             moc: ["T8/2026: go-live Flight Delay với Atadi"],
             ketQua: ["(Chưa có cập nhật mới trong T8 — chờ xác nhận ngày go-live với Atadi)"],
             keHoach: ["Chuẩn bị chương trình marketing & ký biên bản nghiệm thu để GO-LIVE với Atadi trong T8/2026", "Hoàn tất ký hợp đồng và test UAT với Hồng Ngọc Hà", "Bám sát các OTA đã chào sản phẩm: Gotadi, Hồ Phi Long, Bảo Gia Trần"]
           },
           asahi: {
             trangThai: "canh-bao", luyKe: 13.031, phanTramKPI: 46.12, tyLeBT: 28.84,
-            ghiChu: "Số 7T — chưa có báo cáo T8. Lũy kế 7T 13,03 tỷ = 46,12% kế hoạch năm (28 tỷ); tỷ lệ bồi thường NPUV lũy kế 28,84% (T7 tăng vọt lên 48%)",
+            ghiChu: [
+              "Chưa có báo cáo T8 — số dưới đây là lũy kế 7T",
+              "Lũy kế 7T: 13,03 tỷ = 46,12% kế hoạch năm 28 tỷ · còn 5 tháng phải làm ~15 tỷ",
+              "Tỷ lệ bồi thường NPUV: 28,84% lũy kế, riêng T7 vọt lên 48% — cao nhất năm"
+            ],
             ketQua: ["(Chưa có báo cáo T8)"],
             keHoach: ["Làm việc Ban CN, Actuary & Asahi thống nhất phương án điều chỉnh An Phúc Ưu Việt (APUV)", "Kiểm soát tỷ lệ bồi thường NPUV sau khi T7 vọt lên 48%", "Chi tiết hóa hợp tác toàn diện PVI – Asahi – Asahi LivWell"]
           },
           mobifone: {
             trangThai: "cho-doi-tac", luyKe: 0.0246, phanTramKPI: 1.2,
-            ghiChu: "Số 7T — chưa có báo cáo T8. Đã go-live BH Du lịch quốc tế trên Cổng BH nhưng lũy kế mới 24,6 tr = 1,2% KPI năm",
+            ghiChu: [
+              "Chưa có báo cáo T8 — số dưới đây là lũy kế 7T",
+              "Lũy kế 7T: 24,6 tr = 1,2% KPI 2 tỷ — đã go-live nhưng doanh thu chưa chuyển biến"
+            ],
             ketQua: ["(Chưa có báo cáo T8)"],
             keHoach: ["Đẩy truyền thông BHDLQT đa kênh cùng MDS (SMS, Fanpage, Zalo OA)", "Hoàn thiện thủ tục ký MOU hợp tác chiến lược với MobiFone"]
           },
           zalopay: {
             trangThai: "cho-doi-tac", luyKe: 0.1491, canQuyetDinh: true,
-            ghiChu: "Số 7T — chưa có báo cáo T8. Vẫn chờ chốt phương án triển khai mới",
+            ghiChu: [
+              "Chưa có báo cáo T8 — số dưới đây là lũy kế 7T",
+              "Lũy kế 7T: 149,1 tr = 24,9% KPI 600 tr"
+            ],
             ketQua: ["(Chưa có báo cáo T8)"],
             keHoach: ["TRÌNH LÃNH ĐẠO phương án triển khai mới"]
           },
           nnx: {
             trangThai: "tang-truong", luyKe: 15.493,
-            ghiChu: "Số 7T — chưa có báo cáo T8. Lũy kế 7T 15,49 tỷ, giữ đà tăng mạnh so cùng kỳ",
+            ghiChu: [
+              "Chưa có báo cáo T8 — số dưới đây là lũy kế 7T",
+              "Lũy kế 7T: 15,49 tỷ = 59,6% KPI 26 tỷ — dự án tăng trưởng mạnh nhất Phòng"
+            ],
             ketQua: ["(Chưa có báo cáo T8)"], keHoach: ["Duy trì đà tăng, theo dõi chất lượng khai thác"]
           },
           "plus-ew": {
             trangThai: "tang-truong", luyKe: 2.1, soDon: 3603,
-            ghiChu: "Số 7T — chưa có báo cáo T8 (nguồn pvi-honda-report.netlify.app cập nhật 03/08)",
+            ghiChu: [
+              "Chưa có báo cáo T8 — số dưới đây là lũy kế 7T (nguồn pvi-honda-report.netlify.app, cập nhật 03/08)",
+              "Lũy kế 7T: 2,10 tỷ / 3.603 đơn = 19,1% KPI 11 tỷ · 20 HEAD đang hoạt động"
+            ],
             ketQua: ["(Chưa có báo cáo T8)"],
             keHoach: ["Hoàn thiện kết nối API hondaplus.vn ↔ PVI Connect", "Mở rộng HEAD ở tỉnh"]
           },
           viettelstore: {
             trangThai: "canh-bao", dt: 0, luyKe: 0,
-            ghiChu: "Chưa phát sinh doanh thu 2026. Mục tiêu go-live BH '1 đổi 1' trong T8/2026 để kịp ra mắt iPhone 18; ADLD vẫn chờ VST chốt ngày go-live lại",
+            ghiChu: [
+              "Chưa phát sinh doanh thu 2026 · KPI 5 tỷ (ADLD 4 tỷ + EW 1 tỷ)",
+              "VST vẫn ưu tiên bán cho MIC tại toàn bộ cửa hàng"
+            ],
+            moc: ["T8/2026: go-live BH '1 đổi 1' — kịp ra mắt iPhone 18"],
             ketQua: ["(Chưa có cập nhật mới trong T8)"],
             keHoach: ["Kết nối API & go-live BH '1 đổi 1' trong T8/2026 (cùng Phòng CN&CDS, IT VST, TPA)", "Thúc đẩy VST chốt ngày go-live chính thức ADLD"]
           },
           sungroup: {
             trangThai: "cho-doi-tac", dt: 0, luyKe: 0,
-            ghiChu: "Đã xong MOU & NDA với Sun World; đang chờ SGR phản hồi phương án bán hàng để triển khai trong T8/2026",
+            ghiChu: [
+              "Chưa phát sinh doanh thu · ước tính quy mô Sun Group ~325 tỷ/năm",
+              "Mốc go-live trước 31/07 đã trượt — đang chờ Sun World phản hồi"
+            ],
             ketQua: ["(Chưa có cập nhật mới trong T8)"],
             keHoach: ["Follow-up phản hồi của Sun World về phương án bán hàng"],
             link: "https://pvi-aviationdivision.github.io/Sungroup_Uoctinh_Doanhthu/"
           },
           khac: {
             trangThai: "cho-doi-tac", dt: 0, luyKe: 0,
-            ghiChu: "Các mốc tháng 8: Insurtech 3GO go-live giữa T8 · A05 dự sự kiện An ninh mạng VN 06/08 và KOL Summit cuối T8 · 7-Eleven thi chứng chỉ đại lý 14/08 · họp học kinh nghiệm PolicyStreet 05/08, Ledgertech 06/08 · Igloo họp chốt SP ung thư CPM 05/08",
+            ghiChu: [
+              "Chưa phát sinh doanh thu — 9 hướng đang triển khai / đàm phán (chi tiết ở danh mục bên dưới)",
+              "Gần doanh thu nhất: Insurtech 3GO (go-live giữa T8) và A05 Cyber Shield SME"
+            ],
             danhSach: [
               { ten: "Insurtech – 3GO", trangThai: "Xong hợp đồng, bộ API, thư chỉ định; go-live SP TNDS & Tai nạn cá nhân giữa T8/2026", uuTien: 5 },
               { ten: "A05 — BH Cyber Shield SME", trangThai: "Dự sự kiện An ninh mạng VN 06/08; chuẩn bị KOL Summit cuối T8", uuTien: 5 },
@@ -3865,13 +3840,16 @@
       stats += '<div class="dstat"><div class="l">Phụ trách</div><div class="v" style="font-size:14px">' + esc(m.phuTrach) + (m.hoTro ? ' <small>· hỗ trợ: ' + esc(m.hoTro) + '</small>' : '') + '</div></div>';
 
       let body = '';
-      /* ghiChu nhận cả chuỗi lẫn mảng — mảng thì mỗi phần tử một dòng cho dễ đọc */
-      if (d.ghiChu && (!Array.isArray(d.ghiChu) || d.ghiChu.length))
+      /* Ô xám = số liệu nổi bật + mốc chính, mỗi ý MỘT DÒNG.
+         Nguyên tắc nội dung: KHÔNG tóm tắt lại những gì đã diễn giải ở phần
+         "Kết quả / tiến độ" và "Kế hoạch tiếp theo" bên dưới, tránh trùng lặp. */
+      const oXam = [];
+      if (d.ghiChu) oXam.push.apply(oXam, Array.isArray(d.ghiChu) ? d.ghiChu : [d.ghiChu]);
+      if (d.moc) oXam.push.apply(oXam, d.moc);
+      if (oXam.length)
         body += '<div class="note' + (d.trangThai === 'canh-bao' ? ' warn' : '') + '">' +
-          (Array.isArray(d.ghiChu) ? d.ghiChu.map(x => '<div class="note-l">' + esc(x) + '</div>').join('') : esc(d.ghiChu)) +
-          '</div>';
+          oXam.map(x => '<div class="note-l">' + esc(x) + '</div>').join('') + '</div>';
       if (d.congNo) body += '<div class="note warn"><b>Công nợ ' + esc(d.congNo.doiTac) + ' quá hạn: ' + nfmt(d.congNo.quaHan) + 'đ</b> (' + esc(d.congNo.kyThuoc) + ')<br>' + esc(d.congNo.trangThai) + '</div>';
-      if (d.moc) body += '<h4>Mốc chính</h4><ul>' + d.moc.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
       if (d.danhSach) body += '<h4>Danh mục</h4><ul>' + d.danhSach.map(x => '<li><b>' + esc(x.ten) + '</b> — ' + esc(x.trangThai) + ' <span class="stars">' + '★'.repeat(x.uuTien) + '</span></li>').join('') + '</ul>';
       if (d.ketQua) body += '<h4>' + (isMonth() ? 'Kết quả / tiến độ' : 'Kết quả trong tuần') + '</h4><ul>' + d.ketQua.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
       if (d.keHoach) body += '<h4>Kế hoạch tiếp theo</h4><ul>' + d.keHoach.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
@@ -3937,7 +3915,6 @@
     document.addEventListener('keydown', e => {
       if (e.key !== 'Escape') return;
       if (modal.classList.contains('on')) { closeModal(); return; }
-      if (document.body.classList.contains('present')) { togglePresent(false); return; }
       if (curView !== 'home') setView('home');
     });
 
@@ -4054,14 +4031,6 @@
     buildBottomBar();
     $('#bottombar').addEventListener('click', e => { const b = e.target.closest('button'); if (b && b.dataset.view) setView(b.dataset.view); });
 
-    /* ============ PRESENT ============ */
-    function togglePresent(on) {
-      document.body.classList.toggle('present', on);
-      if (on && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => { });
-      if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => { });
-    }
-    if ($('#btn-present')) $('#btn-present').addEventListener('click', () => togglePresent(true));
-    if ($('#btn-exit')) $('#btn-exit').addEventListener('click', () => togglePresent(false));
 
     /* ============ REVEAL / IO ============ */
     function revealEl(el) {
