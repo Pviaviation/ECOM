@@ -2817,7 +2817,7 @@
        So cùng kỳ tính động theo số tháng của kỳ báo cáo (slice mảng). */
     /* ===== AUTO-DATA:START — do GitHub Action ghi tự động từ Google Sheet, ĐỪNG SỬA TAY ===== */
     const AUTO_DATA = {
-      capNhat: "17/08/2026 14:39",
+      capNhat: "17/08/2026 15:04",
       capNhatNgay: "17/08/2026",
       tripcare: {
         thang2026: [4.918, 3.453, 5.042, 3.464, 3.698, 4.784, 5.35, 2.645],
@@ -2890,6 +2890,14 @@
             if (k !== ma) { n.duAn[k] = n.duAn[ma]; delete n.duAn[ma]; }
           });
         }
+      });
+      /* Nhóm gộp đã ngừng dùng: mỗi dự án con giờ là một dòng riêng trong sheet.
+         Chạy SAU bước đổi tên -> mã, vì trong sheet người dùng gõ "Các dự án khác". */
+      const NGUNG_DUNG = ['khac'];
+      ds.forEach(n => {
+        [n && n.data, n && n.duAn].forEach(o => {
+          if (o) NGUNG_DUNG.forEach(k => { delete o[k]; });
+        });
       });
       ds.forEach(n => {
         Object.keys((n && n.duAn) || {}).forEach(ma => {
@@ -3157,30 +3165,10 @@
             keHoach: ["Follow-up phản hồi của Sun World về phương án bán hàng"],
             link: "https://pvi-aviationdivision.github.io/Sungroup_Uoctinh_Doanhthu/"
           },
-          khac: {
-            trangThai: "cho-doi-tac", dt: 0, luyKe: 0,
-            ghiChu: [
-              "Chưa phát sinh doanh thu · 9 hướng đang triển khai / đàm phán",
-              "Gần ra doanh thu nhất: Insurtech 3GO (go-live giữa T8) và A05 Cyber Shield SME"
-            ],
-            danhSach: [
-              { ten: "Insurtech – 3GO", trangThai: "Xong hợp đồng, bộ API, thư chỉ định; go-live SP TNDS & Tai nạn cá nhân giữa T8/2026", uuTien: 5 },
-              { ten: "A05 — BH Cyber Shield SME", trangThai: "Dự sự kiện An ninh mạng VN 06/08; chuẩn bị KOL Summit cuối T8", uuTien: 5 },
-              { ten: "OPES–O-Car–VPBank — Vật chất xe", trangThai: "Đã chốt phương án tính phí, nhận dự thảo HĐ; OPES chờ VPBank duyệt", uuTien: 5 },
-              { ten: "Igloo — BH ung thư CPM", trangThai: "Họp chốt sản phẩm 05/08; chuẩn bị đăng ký Bộ Tài chính", uuTien: 1 },
-              { ten: "7-Eleven (SSV)", trangThai: "Kỳ thi chứng chỉ đại lý cho ứng viên cuối 14/08; SSV muốn nhúng landing page PVI vào app", uuTien: 3 },
-              { ten: "BH TNDS ô tô qua cửa khẩu", trangThai: "Đang xây đề án nội bộ sau khi họp C08", uuTien: 2 },
-              { ten: "Nura — BH sức khỏe telesales", trangThai: "Xây kịch bản bán hàng cho kênh telesales", uuTien: 2 },
-              { ten: "Ledgertech & PolicyStreet", trangThai: "Đã họp học kinh nghiệm bảo hiểm số/embedded: PolicyStreet 05/08, Ledgertech 06/08", uuTien: 2 },
-              { ten: "GTEL / VNPT", trangThai: "Đang trao đổi hợp tác toàn diện", uuTien: 2 }
-            ],
-            keHoach: ["Insurtech: hoàn tất go-live giữa T8/2026, ký hợp đồng", "A05: tổ chức KOL Summit cuối T8 giới thiệu BH Cyber Shield SME", "O-Car/VPBank: hoàn thiện tờ trình, ký HĐ đồng bảo hiểm với OPES & kết nối API", "7-Eleven: hoàn thiện chứng chỉ đại lý sau kỳ thi 14/08, dựng landing page"]
-          }
         },
         khoKhan: [
           { muc: "gap", duAn: "BambooCARE", kho: "Đã tạm ngừng kết nối bán từ 10/08 — doanh thu dừng hẳn; công nợ phí bảo hiểm đến hết 13/08 còn 238.331.881đ (đã cấn trừ hoa hồng, dịch vụ), phương án cấn trừ với vụ BT FLC Sầm Sơn (~22,8 tỷ) chưa được phê duyệt", hoTro: "Trình lãnh đạo phê duyệt phương án cấn trừ công nợ BambooCARE với chi phí bồi thường vụ FLC (thỏa thuận 3 bên PVI–BAV–FLC) để thu hồi dứt điểm" },
           { muc: "gap", duAn: "SPA GoSafe", kho: "Sau kick-off 05/08, 1A lùi tiến độ: mobile app T11/2026, website rủi ro không kịp 2026 (1A chỉ cấp 3 slot Q3, bị Premium Eco & Flex Pricer chen ngang)", hoTro: "Tác động 1A/SPA ở cấp cao để giữ mục tiêu go-live website trong 2026; ủng hộ cơ chế họp hàng tuần 4 bên" },
-          { muc: "gap", duAn: "Viettel Store", kho: "Còn nửa tháng để kịp mốc go-live BH '1 đổi 1' trong T8 (ra mắt iPhone 18); ADLD vẫn chưa có ngày go-live lại, doanh thu 2026 bằng 0", hoTro: "Tác động lãnh đạo VST chốt go-live ADLD và '1 đổi 1' ngay trong T8/2026" },
           { muc: "theo-doi", duAn: "wBooking", kho: "Tỷ lệ bồi thường lũy kế vẫn ở mức cao, nhiều tháng vượt ngưỡng hoà 100%; thị trường golf suy giảm — xem bảng doanh thu & bồi thường", hoTro: "Tiếp tục theo dõi số liệu bồi thường" },
           { muc: "theo-doi", duAn: "Sun Group", kho: "Mốc go-live 31/07 đã trượt, sang T8 vẫn chờ Sun World phản hồi phương án bán hàng", hoTro: "Tác động Sun World chốt phương án để triển khai ngay trong T8/2026" },
           { muc: "theo-doi", duAn: "Asahi", kho: "Tỷ lệ bồi thường NPUV T7 vọt lên 48% (lũy kế 28,84%); lũy kế 7T mới đạt 46,12% kế hoạch năm — còn 5 tháng phải làm gần 15 tỷ", hoTro: "Duyệt phương án điều chỉnh APUV & kiểm soát tổn thất nguồn lead bệnh viện" }
