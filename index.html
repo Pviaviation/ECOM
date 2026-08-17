@@ -943,8 +943,14 @@
     /* ============ KANBAN (Khối B) ============ */
     .kanban {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 12px
+    }
+
+    @media(max-width:1180px) {
+      .kanban {
+        grid-template-columns: repeat(3, 1fr)
+      }
     }
 
     @media(max-width:1000px) {
@@ -1658,6 +1664,11 @@
     .b-green {
       background: rgba(30, 158, 90, .13);
       color: var(--c-green)
+    }
+
+    .b-blue {
+      background: rgba(46, 107, 230, .13);
+      color: var(--c-blue)
     }
 
     .b-amber {
@@ -2659,7 +2670,7 @@
       <div class="sec" id="sec-gantt">
         <div class="sec-h"><h2>Kế hoạch triển khai T7–T8 · Gantt</h2><span class="sub">tổng hợp từ kế hoạch tuần của các dự án</span><span class="rule"></span></div>
         <div class="card reveal">
-          <div class="legend"><span><i style="background:var(--c-green)"></i>Đang tăng trưởng</span><span><i style="background:var(--c-amber)"></i>Sắp go-live</span><span><i style="background:var(--c-redneg)"></i>Cần chú ý</span><span><i style="background:var(--c-slate)"></i>Chờ đối tác</span></div>
+          <div class="legend"><span><i style="background:var(--c-green)"></i>Đang tăng trưởng</span><span><i style="background:var(--c-blue)"></i>Đang thực hiện</span><span><i style="background:var(--c-amber)"></i>Sắp go-live</span><span><i style="background:var(--c-redneg)"></i>Cần chú ý</span><span><i style="background:var(--c-slate)"></i>Chờ đối tác</span></div>
           <div class="gantt-scroll"><div class="gantt" id="gantt"></div></div>
         </div>
       </div>
@@ -2668,7 +2679,7 @@
       <div class="sec" id="sec-roadmap">
         <div class="sec-h"><h2>Product roadmap · T8/2026 → Q1/2027</h2><span class="sub">dự kiến — Phòng cập nhật theo tiến độ thực tế mỗi kỳ</span><span class="rule"></span></div>
         <div class="card reveal">
-          <div class="legend"><span><i style="background:var(--c-green)"></i>Đang tăng trưởng</span><span><i style="background:var(--c-amber)"></i>Sắp go-live</span><span><i style="background:var(--c-redneg)"></i>Cần chú ý</span><span><i style="background:var(--c-slate)"></i>Chờ đối tác / chuẩn bị</span></div>
+          <div class="legend"><span><i style="background:var(--c-green)"></i>Đang tăng trưởng</span><span><i style="background:var(--c-blue)"></i>Đang thực hiện</span><span><i style="background:var(--c-amber)"></i>Sắp go-live</span><span><i style="background:var(--c-redneg)"></i>Cần chú ý</span><span><i style="background:var(--c-slate)"></i>Chờ đối tác / chuẩn bị</span></div>
           <div class="gantt-scroll"><div class="gantt roadmap" id="roadmap"></div></div>
         </div>
       </div>
@@ -2806,7 +2817,7 @@
        So cùng kỳ tính động theo số tháng của kỳ báo cáo (slice mảng). */
     /* ===== AUTO-DATA:START — do GitHub Action ghi tự động từ Google Sheet, ĐỪNG SỬA TAY ===== */
     const AUTO_DATA = {
-      capNhat: "17/08/2026 13:50",
+      capNhat: "17/08/2026 13:59",
       capNhatNgay: "17/08/2026",
       tripcare: {
         thang2026: [4.918, 3.453, 5.042, 3.464, 3.698, 4.784, 5.35, 2.645],
@@ -2856,6 +2867,43 @@
       if (typeof NHAP_LIEU === 'undefined' || !NHAP_LIEU) return;
       const ds = Array.isArray(NHAP_LIEU) ? NHAP_LIEU : [NHAP_LIEU];   // nhận cả 1 kỳ lẫn nhiều kỳ
       let themKyMoi = false;
+      /* Dự án chưa có trong dashboard -> tự tạo thẻ mới.
+         Theo cách Phòng đang dùng: cột "Mã dự án" là tên đối tác/chương trình (hiện làm
+         tiêu đề thẻ), cột "Tên dự án" là nhóm/nội dung (hiện ở dòng nhỏ dưới tiêu đề). */
+      /* Gõ tên dự án đã có (vd "Các dự án khác") thay vì mã của nó thì vẫn nhận ra,
+         tránh dashboard mọc thêm một thẻ trùng tên. */
+      const doiKhoa = ma => {
+        if (PROJECTS[ma]) return ma;
+        const g = ma.trim().toLowerCase();
+        return Object.keys(PROJECTS).find(k => (PROJECTS[k].ten || '').trim().toLowerCase() === g) || ma;
+      };
+      ds.forEach(n => {
+        if (n && n.data) {
+          Object.keys(n.data).forEach(ma => {
+            const k = doiKhoa(ma);
+            if (k !== ma) { n.data[k] = Object.assign(n.data[k] || {}, n.data[ma]); delete n.data[ma]; }
+          });
+        }
+        if (n && n.duAn) {
+          Object.keys(n.duAn).forEach(ma => {
+            const k = doiKhoa(ma);
+            if (k !== ma) { n.duAn[k] = n.duAn[ma]; delete n.duAn[ma]; }
+          });
+        }
+      });
+      ds.forEach(n => {
+        Object.keys((n && n.duAn) || {}).forEach(ma => {
+          const tt = n.duAn[ma];
+          if (!PROJECTS[ma]) {
+            PROJECTS[ma] = {
+              ten: tt.ten || ma, doiTac: tt.doiTac || "", uuTien: 3,
+              phuTrach: tt.phuTrach || "", hoTro: "", kpiNam: "—"
+            };
+          } else if (tt.phuTrach && !PROJECTS[ma].phuTrach) {
+            PROJECTS[ma].phuTrach = tt.phuTrach;
+          }
+        });
+      });
       ds.forEach(n => {
         if (!n || !n.id) return;
         let p = PERIODS.find(x => x.id === n.id);
@@ -3422,12 +3470,56 @@
 
     ];
 
-    /* ===== KY-TU-NHAP:START — chưa có dữ liệu từ file nhập liệu ===== */
-    const NHAP_LIEU = [];
+    /* ===== KY-TU-NHAP:START — do Action sinh từ file nhập liệu của Phòng, ĐỪNG SỬA TAY ===== */
+    const NHAP_LIEU = [
+      {
+        id: "2026-08", label: "Tháng 08/2026", range: "01–31/08/2026", chot: "31/08/2026", mucTieuNam: 100.0,
+        data: {
+          "asahi": { ketQua: ["10/8: Xây dựng chiến lược bán hàng KHDN cho Asahi, lên kế hoạch training cho ALCV.", "11/8: Thống nhất phí và quyền lợi bản chào BH tai nạn cho người tham gia giải chạy và gửi Asahi.", "13/8: Review Landing Page của ALCV phục vụ chạy quảng cáo, thu thập lead khách hàng và gửi feedback cho Asahi.", "14/8: Xây dựng kế hoạch bán NPUV qua hệ sinh thái Nura", "17/8: Đã họp trao đổi sản phẩm NPUV với Nura ngày 17/8 và bước đầu thống nhất sản phẩm"], keHoach: ["Phối hợp với Asahi/ALCV thống nhất kế hoạch và lịch training bán hàng KHDN vào đầu tháng 9.", "Theo dõi triển khai chương trình BH tai nạn cho giải chạy theo phương án đã thống nhất.", "Asahi/ALCV chỉnh sửa Landing Page theo feedback; PVI review lại và triển khai truyền thông sau khi hoàn thiện.", "Tiếp tục phối hợp Nura hoàn thiện phương án sản phẩm và kế hoạch triển khai NPUV."] },
+          "mobifone": { ketQua: ["10/8: Thống nhất và gửi bản chào BH tai nạn cho học viên sát hạch lái xe cho MobiFone Quảng Ninh."], keHoach: ["Phối hợp MobiFone Quảng Ninh tiếp cận khách hàng theo bản chào đã xây dựng và cập nhật kết quả."] },
+          "plus-ew": { trangThai: "tang-truong", ketQua: ["Hoàn thiện tờ trình, dự thảo hợp đồng liên quan đến việc mở rộng đơn vị PVI phối hợp gồm PVI HCM và PVI An Giang.", "Phối hợp cùng Paraline và TCV testing chức năng chỉnh sửa đơn.", "Phối hợp cùng TCV trao trả bồi thường tại các HEAD Kuong Ngân và Minh Thương", "Cập nhật thêm các tính nắng mới trong website đào tạo HEAD: https://daotao.hondaplus.vn/", "Phối hợp cùng PVI An Giang ký hợp đồng mới với HEAD Kim Điệp"], keHoach: ["Phối hợp cùng Paraline và TCV testing chức năng tạo đơn qua API và tạo hóa đơn.", "Phối hợp cùng TCV trao trả bồi thường tại các HEAD.", "Phối hợp cùng TCV và PVI An Giang tổ chức buổi đào tạo cho HEAD Kim Điệp."] },
+          "viettelstore": { trangThai: "sap-golive", ketQua: ["Hoàn thiện và gửi bộ API cấp đơn và TPA cho VST.", "Cập nhật phụ lục hợp đồng Một đổi một và gửi lại VST.", "Kiểm tra dự thảo hợp đồng nhà tái AIG và dịch vụ TPA BrighSide.", "Trao đổi với VST để lên phương án Go-Live cho sản phẩm BH 1-1, dự kiến mục tiêu Go-live trước 22/08."], keHoach: ["Phối hợp cùng IT các bên, tiếp tục trao đổi và push VST go-live chính thức chương trình Một đổi một.", "Đợi phản hồi của VST về dự thảo hợp đồng ký kết.", "Phối hợp cùng các phòng nghiệp vụ hoàn thiện bộ tài liệu đính kèm của chương trình BH Một đổi một."] },
+          "sungroup": { trangThai: "cho-doi-tac", ketQua: ["Tiếp nhận phản hồi khảo sát của SGR và thay đổi giả định doanh thu tại link: https://pvi-aviationdivision.github.io/Sungroup_Uoctinh_Doanhthu/", "Theo cuộc họp ngày 05/08: Sun ưu tiên phát triển B2C và đề nghị PVI xây dựng Product Offer riêng theo một số use case phù hợp, trước mắt tập trung vào Sun Holiday Travel Add-on, Weather Protection và Sun Signature Member Benefit."], keHoach: ["Follow-up phản hồi tiếp theo của Sun World về tiến độ triển khai.", "Chuẩn bị các sản phẩm liên quan tới chương trình."] },
+          "7-Eleven (SSV)": { trangThai: "sap-golive", ketQua: ["Hiện SSV chỉ có 2/3 nhân sự đủ chứng chỉ đại lý BH, dùng phương án mượn tạm một người bên PVI Bến Thành để ký kết.", "Tiếp nhận dự thảo hợp đồng đại lý bản phản hồi của SSV và phối hợp nghiệp vụ PVI kiểm tra."], keHoach: ["Tiếp tục trao đổi cùng SSV để hoàn thiện các dự thảo hợp đồng hợp tác.", "Trao đổi với Phòng IT PVI để tạo landing page nhúng để bán hàng trên app của SSV.", "Trao đổi cùng SSV lên phương án bán hàng trên App/Web.", "Tiếp tục trao đổi với SSV và phối hợp cùng PVI Bến Thành hoàn thiện đào tạo và thi chứng chỉ đại lý."] },
+          "Insurtech": { trangThai: "sap-golive", ketQua: ["Gửi lại dự thảo cuối cùng về các hợp đồng, thỏa thuận, nội dung hiển thị trên app/web cho Insurtech.", "Phối hợp cùng Insurtech testing demo hệ thống cấp đơn và đưa feedback."], keHoach: ["Tiếp tục trao đổi và phối hợp cùng Insurtech hoàn thiện kết nối.", "Gửi lại dự thảo cuối cùng về các hợp đồng, thỏa thuận, nội dung hiển thị trên app/web cho Insurtech.", "Hoàn thiện Tờ trình chủ trương triển khai và DMCP."] },
+          "Chương trình Cyber cho SME (A05)": { trangThai: "sap-golive", ketQua: ["Hoàn thiện website: Cyber Shield SME – Bảo hiểm An ninh Mạng cho Doanh nghiệp | Bảo hiểm PVI (https://cyber.pvi.com.vn/#) bao gồm luồng giới thiệu, nhập liệu, thanh toán và tạo GCNBH điện tử.", "Hoàn thiện các Banner email", "Trao đổi với các ban nghiệp vụ để ban hành wording bản tiếng việt.", "Trao đổi với A05 về nội dung sự kiện hội thảo 21/8.", "Chuẩn bị slide tham luận và tờ rơi truyền thông trong hội thảo"], keHoach: ["Hoàn thiện kết nối API và testing cho hệ thống cấp đơn. Cấp đơn bởi Ban HK&KHDN.", "Phối hợp cùng Văn phòng chuẩn bị khâu hậu cần cho chương trình 21/08.", "Xây dựng và hoàn thiện tờ trình chủ trương triển  khai và sự kiện 21/08."] },
+          "Các dự án khác": { ketQua: ["Nhận thông tin Số bán + doanh thu chương trình.", "Gửi lại OPES bộ thỏa thuận đồng bảo hiểm.", "Trao đổi với IT PVI về tiến độ thực hiện kết nối với OPES. Hiện đã có bộ API sẵn sàng, có thể kết nối trong vòng 5-7 ngày.", "Phối hợp tổ chức cuộc họp kickoff IT với OPES ngày 14/08", "Tiếp nhận Hợp đồng đại lý 3 bên của OPES & VPBANK"], keHoach: ["Hoàn thiện Hợp đồng & Thỏa thuận liên quan, gửi lại OPES.", "Phối hợp cùng IT và PVI Link lên phương án API với OPES và hoàn thiện trước 25/08. Mục tiêu Go-live trước 07/09."] },
+          "AAA": { trangThai: "dang-thuc-hien", ketQua: ["13/8: Dự thảo MOU với AAA để triển khai hợp tác bảo hiểm tại khu vực Quảng Ninh"], keHoach: ["Phối hợp AAA làm việc trực tiếp với đầu mối khu vực Quảng Ninh"] },
+          "Viettel Money": { trangThai: "dang-thuc-hien", ketQua: ["11/8: Review và thống nhất nội dung Phụ lục chuyển đổi chủ thể với Viettel Money."], keHoach: ["Phối hợp Viettel Money thực hiện thủ tục trình ký Phụ lục chuyển đổi chủ thể."] },
+          "Igloo": { trangThai: "dang-thuc-hien", ketQua: ["14/8: Xây dựng quy trình xử lý bồi thường, bảo lãnh viện phí và gửi đối tác đánh giá; đề xuất quy trình phối hợp bảo lãnh khi KH ra nước ngoài điều trị ung thư."], keHoach: ["Phối hợp Actuary và Ban CN tính toán mức phí bảo hiểm sản phẩm CPM.", "Phối hợp đối tác thống nhất quy trình bảo lãnh viện phí khi KH điều trị ung thư tại nước ngoài."] },
+        },
+        khoKhan: [
+        ],
+        mocThoiGian: [
+        ]
+        ,duAn: {
+          "tripcare": { ten: "tripcare", doiTac: "TripCARE", phuTrach: "Hằng" },
+          "spa": { ten: "spa", doiTac: "SPA GoSafe", phuTrach: "Hằng" },
+          "bamboocare": { ten: "bamboocare", doiTac: "BambooCARE", phuTrach: "Hằng" },
+          "wbooking": { ten: "wbooking", doiTac: "wBooking (HIO)", phuTrach: "Hằng" },
+          "flightdelay": { ten: "flightdelay", doiTac: "Flight Delay", phuTrach: "Hằng" },
+          "asahi": { ten: "asahi", doiTac: "Asahi (NPUV + APUV)", phuTrach: "Thư" },
+          "mobifone": { ten: "mobifone", doiTac: "MobiFone (Cổng BH)", phuTrach: "Thư" },
+          "zalopay": { ten: "zalopay", doiTac: "Zalopay (BHRVMH)", phuTrach: "Thư" },
+          "nnx": { ten: "nnx", doiTac: "NNX (Trợ cấp nằm viện)", phuTrach: "Thư" },
+          "plus-ew": { ten: "plus-ew", doiTac: "Plus & EW Honda", phuTrach: "Tùng" },
+          "viettelstore": { ten: "viettelstore", doiTac: "Viettel Store", phuTrach: "Tùng" },
+          "sungroup": { ten: "sungroup", doiTac: "Sun Group (BH nhúng)", phuTrach: "Tùng" },
+          "7-Eleven (SSV)": { ten: "7-Eleven (SSV)", doiTac: "Các dự án khác", phuTrach: "Tùng" },
+          "Insurtech": { ten: "Insurtech", doiTac: "Các dự án khác", phuTrach: "Tùng" },
+          "Chương trình Cyber cho SME (A05)": { ten: "Chương trình Cyber cho SME (A05)", doiTac: "Các dự án khác", phuTrach: "Tùng" },
+          "Các dự án khác": { ten: "Các dự án khác", doiTac: "Các dự án khác", phuTrach: "Tùng" },
+          "AAA": { ten: "AAA", doiTac: "Quảng Ninh", phuTrach: "Thư" },
+          "Viettel Money": { ten: "Viettel Money", doiTac: "Viettel Money", phuTrach: "Thư" },
+          "Igloo": { ten: "Igloo", doiTac: "CPM – Ung thư thuốc đích", phuTrach: "Thư" },
+        }
+      },
+    ];
     /* ===== KY-TU-NHAP:END ===== */
 
     const TRANG_THAI = {
       "tang-truong": { nhan: "Đang tăng trưởng", mau: "var(--c-green)", cls: "b-green" },
+      "dang-thuc-hien": { nhan: "Đang thực hiện", mau: "var(--c-blue)", cls: "b-blue" },
       "sap-golive": { nhan: "Sắp go-live", mau: "var(--c-amber)", cls: "b-amber" },
       "canh-bao": { nhan: "Cần chú ý", mau: "var(--c-redneg)", cls: "b-red" },
       "cho-doi-tac": { nhan: "Chờ đối tác", mau: "var(--c-slate)", cls: "b-slate" }
@@ -3780,7 +3872,7 @@
 
     /* ============ RENDER: KANBAN (Khối B) ============ */
     function renderKanban() {
-      const order = ["tang-truong", "sap-golive", "canh-bao", "cho-doi-tac"];
+      const order = ["tang-truong", "dang-thuc-hien", "sap-golive", "canh-bao", "cho-doi-tac"];
       const list = entries();
       $('#kanban').innerHTML = order.map(st => {
         const col = list.filter(e => e.d.trangThai === st);

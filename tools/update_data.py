@@ -50,6 +50,7 @@ KY_KET_THUC = "===== KY-TU-NHAP:END ===== */"
 # nhãn trong file nhập liệu -> khoá dùng trong dashboard
 MA_TRANG_THAI = {
     "đang tăng trưởng": "tang-truong",
+    "đang thực hiện": "dang-thuc-hien",
     "sắp go-live": "sap-golive",
     "cần chú ý": "canh-bao",
     "chờ đối tác": "cho-doi-tac",
@@ -333,6 +334,7 @@ def doc_file_nhap_lieu(duong_dan_html=None):
         return None
 
     ky_theo_ma = {}   # mã kỳ -> dict dữ liệu
+    thong_tin_du_an = {}   # mã dự án -> {ten, doiTac, phuTrach} để tạo thẻ cho dự án mới
 
     def lay_ky(mk):
         if mk not in ky_theo_ma:
@@ -360,6 +362,12 @@ def doc_file_nhap_lieu(duong_dan_html=None):
         muc = {k: v for k, v in muc.items() if v not in (None, "", [])}
         if muc:
             lay_ky(mk)["data"][ma] = muc
+        # cột "Tên dự án" thực tế Phòng đang dùng để ghi chương trình/nhóm -> đưa xuống
+        # dòng phụ dưới tên thẻ; dự án chưa có trong dashboard sẽ được tạo thẻ mới.
+        ten_ct = str(lay_o(hang, 2)).strip()
+        nguoi = str(lay_o(hang, 3)).strip()
+        if ten_ct or nguoi:
+            thong_tin_du_an[ma] = {"ten": ma, "doiTac": ten_ct, "phuTrach": nguoi}
 
     # --- tab KHÓ KHĂN ---
     try:
@@ -412,7 +420,10 @@ def doc_file_nhap_lieu(duong_dan_html=None):
             print("   ! Bỏ qua kỳ %s: chưa có trong dashboard và mới chỉ có trạng thái." % mk)
             continue
         ket_qua.append(ky)
-    return ket_qua or None
+    if not ket_qua:
+        return None
+    ket_qua[0]["_duAn"] = thong_tin_du_an     # gắn vào kỳ đầu tiên, dashboard đọc chung
+    return ket_qua
 
 
 
@@ -441,7 +452,7 @@ def dung_khoi_ky(ds_ky):
                          "ghiChu", "ketQua", "keHoach"):
                 if khoa in m:
                     phan.append("%s: %s" % (khoa, gon(m[khoa])))
-            d.append("          %s: { %s }," % (gon(ma) if "-" in ma else ma, ", ".join(phan)))
+            d.append("          %s: { %s }," % (gon(ma), ", ".join(phan)))
         d.append("        },")
         d.append("        khoKhan: [")
         for k in ky["khoKhan"]:
@@ -454,6 +465,12 @@ def dung_khoi_ky(ds_ky):
             d.append("          { ngay: %s, duAn: %s, moc: %s, hot: %s%s },"
                      % (gon(m["ngay"]), gon(m["duAn"]), gon(m["moc"]), "true" if m["hot"] else "false", st))
         d.append("        ]")
+        if ky.get("_duAn"):
+            d.append("        ,duAn: {")
+            for ma, tt in ky["_duAn"].items():
+                d.append("          %s: { ten: %s, doiTac: %s, phuTrach: %s },"
+                         % (gon(ma), gon(tt["ten"]), gon(tt["doiTac"]), gon(tt["phuTrach"])))
+            d.append("        }")
         d.append("      },")
     d.append("    ];")
     d.append("    /* %s" % KY_KET_THUC)
@@ -511,8 +528,14 @@ def main():
     wbooking = gom_wbooking()
     print("   %d tháng có số" % len(wbooking["thang2026"]))
 
-    print("Đang đọc file nhập liệu của Phòng…" if NHAP_LIEU_ID
-          else "Chưa cấu hình NHAP_LIEU_SHEET_ID — bỏ qua phần nhập liệu.")
+    if NHAP_LIEU_ID:
+        print("Đang đọc file nhập liệu của Phòng…")
+    else:
+        print("!" * 78)
+        print("CHƯA KHAI BÁO biến NHAP_LIEU_SHEET_ID → nội dung Phòng nhập trên Google")
+        print("Sheet sẽ KHÔNG lên dashboard. Khai báo tại: repo → Settings →")
+        print("Secrets and variables → Actions → tab Variables → New repository variable.")
+        print("!" * 78)
     ky = doc_file_nhap_lieu(duong_dan)
     if ky and ky != "BO_QUA":
         for k in ky:

@@ -26,6 +26,14 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Kiểm tra đã khai báo file nhập liệu chưa
+        run: |
+          if [ -z "${{ vars.NHAP_LIEU_SHEET_ID }}" ]; then
+            echo "::warning::CHƯA KHAI BÁO biến NHAP_LIEU_SHEET_ID — nội dung Phòng nhập trên Google Sheet sẽ KHÔNG được cập nhật. Vào Settings → Secrets and variables → Actions → tab Variables → New repository variable, tên NHAP_LIEU_SHEET_ID."
+          else
+            echo "OK: đã khai báo NHAP_LIEU_SHEET_ID"
+          fi
+
       - name: Lấy số từ Google Sheet và ghi vào index.html
         env:
           # ID file "Nhập liệu báo cáo tháng" cả Phòng cùng điền.
