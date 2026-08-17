@@ -46,6 +46,10 @@ DU_AN = [
 
 TU_DONG = {"tripcare", "wbooking"}   # số liệu lấy thẳng từ Google Sheet doanh thu
 
+# Kỳ mặc định điền sẵn vào cột "Kỳ", và danh sách kỳ cho ô chọn nhanh
+KY_MAC_DINH = "2026-08"
+KY_CO_SAN = ["2026-07", "2026-08", "2026-09", "2026-10", "2026-11", "2026-12"]
+
 
 def de_muc(ws, tieu_de, rong):
     for i, (ten, w) in enumerate(zip(tieu_de, rong), start=1):
@@ -74,19 +78,25 @@ def tab_huong_dan(wb):
         ("", False),
         ("Mỗi người phụ trách dự án nào thì tự điền dòng của dự án đó. Dashboard sẽ tự lấy số từ file này.", False),
         ("", False),
-        ("1. Tab KỲ BÁO CÁO — sửa mã kỳ, nhãn và ngày chốt số mỗi khi bắt đầu tháng mới.", False),
-        ("2. Tab DỰ ÁN — mỗi dự án một dòng: trạng thái, doanh thu, kết quả, kế hoạch.", False),
+        ("CỘT 'KỲ' Ở ĐẦU MỖI TAB LÀ QUAN TRỌNG NHẤT:", True),
+        ("Mỗi dòng tự khai nó thuộc tháng nào, nên hai người có thể cập nhật hai tháng khác nhau", False),
+        ("cùng lúc — ví dụ Tùng sửa dòng kỳ 2026-08 còn Thư thêm dòng kỳ 2026-07, không ảnh hưởng nhau.", False),
+        ("Muốn bổ sung cho tháng khác: chép dòng dự án của mình xuống dưới rồi đổi ô 'Kỳ'.", False),
+        ("", False),
+        ("1. Tab KỲ BÁO CÁO — mỗi tháng một dòng (nhãn, khoảng thời gian, ngày chốt số).", False),
+        ("2. Tab DỰ ÁN — mỗi dòng = một dự án trong một kỳ: trạng thái, doanh thu, kết quả, kế hoạch.", False),
         ("3. Tab KHÓ KHĂN — việc cần lãnh đạo hỗ trợ (hiện ngay trang chính của dashboard).", False),
         ("4. Tab MỐC THỜI GIAN — các mốc go-live, hạn thanh toán, sự kiện trong kỳ.", False),
         ("", False),
         ("QUY TẮC QUAN TRỌNG:", True),
-        ("• Cột 'Mã dự án' là khoá nối với dashboard — KHÔNG sửa, không xoá dòng, không đổi thứ tự.", False),
+        ("• Cột 'Mã dự án' là khoá nối với dashboard — KHÔNG sửa. Cột 'Kỳ' chọn từ danh sách có sẵn.", False),
+        ("• Ô nào để TRỐNG thì dashboard giữ nguyên nội dung cũ, không bị xoá mất.", False),
         ("• Ô nhiều ý: mỗi ý một dòng trong cùng ô (bấm Alt+Enter để xuống dòng). Không đánh số thứ tự.", False),
         ("• Doanh thu điền theo ĐƠN VỊ TỶ ĐỒNG, dùng dấu chấm thập phân (ví dụ 2.05 nghĩa là 2,05 tỷ).", False),
         ("• Dòng TripCARE và wBooking: BỎ TRỐNG các cột số — dashboard tự lấy từ Google Sheet doanh thu.", False),
         ("• Chưa có số liệu thì để trống, đừng điền số 0 (số 0 sẽ hiển thị là 'đã phát sinh 0 đồng').", False),
         ("", False),
-        ("Điền xong không cần làm gì thêm: dashboard tự cập nhật 2 lần/ngày (7h và 17h).", False),
+        ("Điền xong không cần làm gì thêm: dashboard tự cập nhật 4 lần/ngày (8h, 10h, 14h, 16h).", False),
     ]
     for i, (txt, dam) in enumerate(dong, start=1):
         o = ws.cell(i, 1, txt)
@@ -96,71 +106,86 @@ def tab_huong_dan(wb):
 
 
 def tab_ky(wb):
+    """Mỗi kỳ báo cáo một DÒNG — nhờ vậy trong cùng file có thể vừa cập nhật
+    tháng 8 (người này) vừa cập nhật tháng 7 (người kia)."""
     ws = wb.create_sheet("KỲ BÁO CÁO")
-    de_muc(ws, ["Trường", "Giá trị", "Giải thích"], [26, 34, 62])
+    de_muc(ws, ["Mã kỳ\n(không sửa định dạng)", "Nhãn hiển thị", "Khoảng thời gian",
+                "Chốt số đến ngày", "Mục tiêu năm (tỷ)", "Lưu ý chung (không bắt buộc)"],
+           [18, 20, 22, 18, 16, 48])
     dong = [
-        ("Mã kỳ", "2026-09", "Định dạng NĂM-THÁNG, ví dụ 2026-10 cho tháng 10"),
-        ("Nhãn hiển thị", "Tháng 09/2026", "Tên hiện trên ô chọn kỳ của dashboard"),
-        ("Khoảng thời gian", "01–30/09/2026", ""),
-        ("Chốt số đến ngày", "30/09/2026", "Ngày số liệu được chốt"),
-        ("Mục tiêu năm (tỷ)", 100, "Mục tiêu doanh thu cả năm của Phòng"),
-        ("Lưu ý chung", "", "Câu lưu ý hiện kèm bảng doanh thu (để trống nếu không có)"),
+        ("2026-08", "Tháng 08/2026", "01–31/08/2026", "31/08/2026", 100, ""),
+        ("2026-09", "Tháng 09/2026", "01–30/09/2026", "30/09/2026", 100, ""),
     ]
-    for i, (a, b, c) in enumerate(dong, start=2):
-        ws.cell(i, 1, a).font = Font(bold=True)
-        ws.cell(i, 2, b)
-        ws.cell(i, 3, c).font = Font(italic=True, color="5B6577")
+    for i, hang in enumerate(dong, start=2):
+        for j, gt in enumerate(hang, start=1):
+            ws.cell(i, j, gt)
+        ws.cell(i, 1).font = Font(bold=True, color=NAVY)
+    o = ws.cell(len(dong) + 3, 1, "Thêm tháng mới: chép một dòng ở trên rồi sửa lại — "
+                                  "mã kỳ theo định dạng NĂM-THÁNG (2026-10, 2026-11…)")
+    o.font = Font(italic=True, color=DO)
     to_o(ws)
 
 
 def tab_du_an(wb):
     ws = wb.create_sheet("DỰ ÁN")
-    de_muc(ws, ["Mã dự án\n(không sửa)", "Tên dự án", "Phụ trách", "Trạng thái",
+    de_muc(ws, ["Kỳ", "Mã dự án\n(không sửa)", "Tên dự án", "Phụ trách", "Trạng thái",
                 "DT tháng\n(tỷ)", "Lũy kế\n(tỷ)", "% KPI năm", "Cùng kỳ 2025\n(tỷ)",
                 "Ghi chú (1–2 câu tóm tắt cho lãnh đạo)",
                 "Kết quả trong kỳ\n(mỗi ý một dòng)", "Kế hoạch tiếp theo\n(mỗi ý một dòng)"],
-            [16, 22, 11, 16, 10, 10, 11, 13, 46, 52, 52])
+            [12, 16, 22, 11, 16, 10, 10, 11, 13, 46, 52, 52])
     for i, (ma, ten, nguoi) in enumerate(DU_AN, start=2):
-        ws.cell(i, 1, ma).font = Font(bold=True, color=NAVY)
-        ws.cell(i, 2, ten)
-        ws.cell(i, 3, nguoi)
+        ws.cell(i, 1, KY_MAC_DINH).font = Font(bold=True, color=DO)
+        ws.cell(i, 2, ma).font = Font(bold=True, color=NAVY)
+        ws.cell(i, 3, ten)
+        ws.cell(i, 4, nguoi)
         if ma in TU_DONG:
-            o = ws.cell(i, 5, "(tự động)")
+            o = ws.cell(i, 6, "(tự động)")
             o.font = Font(italic=True, color="5B6577")
             o.fill = PatternFill("solid", fgColor=NHAT)
-            for cot in (6, 7, 8):
+            for cot in (7, 8, 9):
                 ws.cell(i, cot).fill = PatternFill("solid", fgColor=NHAT)
         ws.row_dimensions[i].height = 58
     dv = DataValidation(type="list", formula1='"%s"' % ",".join(TRANG_THAI), allow_blank=True)
     ws.add_data_validation(dv)
-    dv.add("D2:D%d" % (len(DU_AN) + 1))
+    dv.add("E2:E200")
+    dvk = DataValidation(type="list", formula1='"%s"' % ",".join(KY_CO_SAN), allow_blank=False)
+    ws.add_data_validation(dvk)
+    dvk.add("A2:A200")
     to_o(ws)
 
 
 def tab_kho_khan(wb):
     ws = wb.create_sheet("KHÓ KHĂN")
-    de_muc(ws, ["Mức độ", "Dự án", "Khó khăn / vướng mắc", "Đề xuất lãnh đạo hỗ trợ"],
-           [12, 22, 62, 62])
+    de_muc(ws, ["Kỳ", "Mức độ", "Dự án", "Khó khăn / vướng mắc", "Đề xuất lãnh đạo hỗ trợ"],
+           [12, 12, 22, 58, 58])
     for i in range(2, 14):
+        ws.cell(i, 1, KY_MAC_DINH).font = Font(bold=True, color=DO)
         ws.row_dimensions[i].height = 46
     dv = DataValidation(type="list", formula1='"%s"' % ",".join(MUC_DO), allow_blank=True)
     ws.add_data_validation(dv)
-    dv.add("A2:A30")
+    dv.add("B2:B60")
+    dvk = DataValidation(type="list", formula1='"%s"' % ",".join(KY_CO_SAN), allow_blank=False)
+    ws.add_data_validation(dvk)
+    dvk.add("A2:A60")
     to_o(ws)
 
 
 def tab_moc(wb):
     ws = wb.create_sheet("MỐC THỜI GIAN")
-    de_muc(ws, ["Ngày / thời điểm", "Dự án", "Nội dung mốc", "Quan trọng?\n(x)", "Trạng thái"],
-           [18, 22, 62, 12, 18])
+    de_muc(ws, ["Kỳ", "Ngày / thời điểm", "Dự án", "Nội dung mốc", "Quan trọng?\n(x)", "Trạng thái"],
+           [12, 18, 22, 56, 12, 18])
     for i in range(2, 26):
+        ws.cell(i, 1, KY_MAC_DINH).font = Font(bold=True, color=DO)
         ws.row_dimensions[i].height = 30
     dv1 = DataValidation(type="list", formula1='"%s"' % ",".join(TT_MOC[1:]), allow_blank=True)
     ws.add_data_validation(dv1)
-    dv1.add("E2:E40")
+    dv1.add("F2:F60")
     dv2 = DataValidation(type="list", formula1='"x"', allow_blank=True)
     ws.add_data_validation(dv2)
-    dv2.add("D2:D40")
+    dv2.add("E2:E60")
+    dvk = DataValidation(type="list", formula1='"%s"' % ",".join(KY_CO_SAN), allow_blank=False)
+    ws.add_data_validation(dvk)
+    dvk.add("A2:A60")
     to_o(ws)
 
 

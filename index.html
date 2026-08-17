@@ -2806,7 +2806,7 @@
        So cùng kỳ tính động theo số tháng của kỳ báo cáo (slice mảng). */
     /* ===== AUTO-DATA:START — do GitHub Action ghi tự động từ Google Sheet, ĐỪNG SỬA TAY ===== */
     const AUTO_DATA = {
-      capNhat: "17/08/2026 11:15",
+      capNhat: "17/08/2026 11:49",
       capNhatNgay: "17/08/2026",
       tripcare: {
         thang2026: [4.918, 3.453, 5.042, 3.464, 3.698, 4.784, 5.35, 2.645],
@@ -2853,22 +2853,38 @@
        - Mã kỳ chưa có trong dashboard thì tạo kỳ mới.
        Nhờ vậy cùng một file nhập liệu dùng được cho tháng 8, tháng 7… tuỳ "Mã kỳ". */
     function applyNhapLieu() {
-      if (typeof NHAP_LIEU === 'undefined' || !NHAP_LIEU || !NHAP_LIEU.id) return;
-      const n = NHAP_LIEU;
-      let p = PERIODS.find(x => x.id === n.id);
-      if (!p) {
-        p = { id: n.id, type: "month", label: n.label || n.id, range: n.range || "", chot: n.chot || "", mucTieuNam: n.mucTieuNam || 100, data: {}, khoKhan: [], mocThoiGian: [] };
-        PERIODS.push(p);
+      if (typeof NHAP_LIEU === 'undefined' || !NHAP_LIEU) return;
+      const ds = Array.isArray(NHAP_LIEU) ? NHAP_LIEU : [NHAP_LIEU];   // nhận cả 1 kỳ lẫn nhiều kỳ
+      let themKyMoi = false;
+      ds.forEach(n => {
+        if (!n || !n.id) return;
+        let p = PERIODS.find(x => x.id === n.id);
+        if (!p) {
+          p = { id: n.id, type: "month", label: n.label || n.id, range: n.range || "", chot: n.chot || "", mucTieuNam: n.mucTieuNam || 100, data: {}, khoKhan: [], mocThoiGian: [] };
+          PERIODS.push(p);
+          themKyMoi = true;
+        }
+        ['label', 'range', 'chot', 'luuY'].forEach(k => { if (n[k]) p[k] = n[k]; });
+        if (n.mucTieuNam) p.mucTieuNam = n.mucTieuNam;
+        Object.keys(n.data || {}).forEach(ma => {
+          p.data[ma] = Object.assign(p.data[ma] || {}, n.data[ma]);
+        });
+        /* Khó khăn & mốc: sheet chỉ THAY PHẦN CỦA NHỮNG DỰ ÁN ĐƯỢC NHẮC TỚI.
+           Nhờ vậy Tùng thêm mốc cho dự án của mình không làm mất mốc của Thư,
+           mà vẫn sửa/xoá được mốc do chính mình nhập. */
+        if (n.khoKhan && n.khoKhan.length) {
+          const ds2 = new Set(n.khoKhan.map(k => k.duAn));
+          p.khoKhan = (p.khoKhan || []).filter(k => !ds2.has(k.duAn)).concat(n.khoKhan);
+        }
+        if (n.mocThoiGian && n.mocThoiGian.length) {
+          const ds3 = new Set(n.mocThoiGian.map(m => m.duAn));
+          p.mocThoiGian = (p.mocThoiGian || []).filter(m => !ds3.has(m.duAn)).concat(n.mocThoiGian);
+        }
+      });
+      if (themKyMoi) {
         PERIODS.sort((a, b) => (a.id < b.id ? 1 : a.id > b.id ? -1 : 0));   // mới nhất lên đầu
         activePeriodId = PERIODS[0].id;
       }
-      ['label', 'range', 'chot', 'luuY'].forEach(k => { if (n[k]) p[k] = n[k]; });
-      if (n.mucTieuNam) p.mucTieuNam = n.mucTieuNam;
-      Object.keys(n.data || {}).forEach(ma => {
-        p.data[ma] = Object.assign(p.data[ma] || {}, n.data[ma]);
-      });
-      if (n.khoKhan && n.khoKhan.length) p.khoKhan = n.khoKhan;
-      if (n.mocThoiGian && n.mocThoiGian.length) p.mocThoiGian = n.mocThoiGian;
     }
 
     /* Nạp số từ AUTO_DATA vào KỲ MỚI NHẤT: chỉ ghi đè CON SỐ của TripCARE & wBooking,
@@ -3406,19 +3422,8 @@
 
     ];
 
-    /* ===== KY-TU-NHAP:START — do Action sinh từ file nhập liệu của Phòng, ĐỪNG SỬA TAY ===== */
-    const NHAP_LIEU = {
-      id: "2026-08", label: "Tháng 08/2026", range: "01–31/08/2026", chot: "31/08/2026", mucTieuNam: 100.0,
-      data: {
-        "plus-ew": { trangThai: "tang-truong" },
-        viettelstore: { trangThai: "sap-golive" },
-        sungroup: { trangThai: "cho-doi-tac" },
-      },
-      khoKhan: [
-      ],
-      mocThoiGian: [
-      ]
-    };
+    /* ===== KY-TU-NHAP:START — chưa có dữ liệu từ file nhập liệu ===== */
+    const NHAP_LIEU = [];
     /* ===== KY-TU-NHAP:END ===== */
 
     const TRANG_THAI = {
