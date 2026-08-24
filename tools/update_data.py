@@ -362,11 +362,25 @@ def tai_lien_ket(sheet_id):
                 dan = ma_html.unescape(dan).strip()
                 chu = chuan(bo_the(chu))
                 if chu and dan.startswith(("http://", "https://")):
+                    canh_bao_link_cut(chu, dan)
                     neo.append((chu, dan))
             if neo:
                 bang.setdefault(chuan(bo_the(o)), neo)
     print("   %d ô có hyperlink" % len(bang))
     return bang
+
+
+def canh_bao_link_cut(chu, dan):
+    """Kêu lên khi đường dẫn có dấu ba chấm — dấu hiệu copy nhầm bản hiển thị bị cắt.
+
+    Đã dính một lần: link SharePoint chép ra thành .../personal/ha_dop…_vn/... và
+    trả về 404. Trông vẫn như link bình thường trên dashboard nên không ai biết hỏng.
+    Vẫn đưa link lên (biết đâu có thật), chỉ ghi cảnh báo vào log của Action.
+    """
+    if "…" in urllib.parse.unquote(dan):
+        print("::warning::Đường dẫn của '%s' có dấu ba chấm (…) — gần như chắc chắn là "
+              "link bị cắt ngắn khi copy và sẽ lỗi 404. Mở lại file trên SharePoint/Drive, "
+              "bấm Share → Copy link rồi dán đè: %s" % (chu, dan))
 
 
 def gan_lien_ket(o):
