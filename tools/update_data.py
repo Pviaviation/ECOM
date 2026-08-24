@@ -19,6 +19,7 @@ Chỉ dùng thư viện chuẩn của Python — không cần cài gì thêm.
 """
 
 import csv
+import html as ma_html
 import io
 import json
 import os
@@ -26,6 +27,7 @@ import re
 import sys
 import urllib.parse
 import urllib.request
+import zipfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -57,6 +59,10 @@ MA_TRANG_THAI = {
 }
 MA_MUC_DO = {"gấp": "gap", "theo dõi": "theo-doi"}
 MA_TT_MOC = {"hoàn thành": "done", "đã đến hạn": "qua", "trượt hạn": "truot"}
+
+# Hyperlink Phòng chèn bằng Ctrl+K trên file nhập liệu.
+# {nội dung ô đã chuẩn hoá: [(chữ hiển thị, đường dẫn), ...]} — nạp một lần mỗi lần chạy.
+LIEN_KET = {}
 
 
 # ---------------------------------------------------------------- tải & đọc
@@ -293,13 +299,98 @@ def so_thuc(o):
 
 
 def cac_dong(o):
-    """Ô nhiều dòng -> list; bỏ dòng trống và dấu gạch đầu dòng người dùng tự thêm."""
+    """Ô nhiều dòng -> list; bỏ dòng trống và dấu gạch đầu dòng người dùng tự thêm.
+
+    Đường dẫn Phòng chèn bằng Ctrl+K được gắn lại vào chữ trước khi tách dòng.
+    """
     y = []
-    for d in str(o or "").replace("\r", "\n").split("\n"):
+    for d in gan_lien_ket(o).replace("\r", "\n").split("\n"):
         d = re.sub(r"^\s*[-•*·]\s*", "", d).strip()
         if d:
             y.append(d)
     return y
+
+
+# ------------------------------------------- hyperlink trong file nhập liệu
+
+def bo_the(html):
+    """HTML của một ô -> chữ thuần (<br> thành xuống dòng, bỏ thẻ, giải mã &amp; …)."""
+    s = re.sub(r"(?i)<br\s*/?>", "\n", html)
+    s = re.sub(r"(?i)</?(p|div|tr)\b[^>]*>", "\n", s)
+    s = re.sub(r"<[^>]+>", "", s)
+    return ma_html.unescape(s)
+
+
+def chuan(s):
+    """Chuẩn hoá để so khớp: mọi khoảng trắng (kể cả xuống dòng) gom thành một dấu cách."""
+    return re.sub(r"\s+", " ", str(s or "")).strip()
+
+
+def tai_lien_ket(sheet_id):
+    """Đọc các hyperlink Phòng chèn bằng Ctrl+K trên Google Sheet.
+
+    Bản CSV (gviz) mà script dùng để lấy chữ chỉ trả về phần chữ hiển thị và MẤT
+    đường dẫn. Bản xuất ZIP (mỗi tab một file HTML) thì giữ nguyên thẻ <a>, nên
+    tải thêm một lần nữa rồi khớp ngược lại theo nội dung ô.
+
+    Trả về {nội dung ô đã chuẩn hoá: [(chữ hiển thị, đường dẫn), ...]}, gộp chung
+    mọi tab — bảng này chỉ để tra cứu, hai ô trùng hệt nội dung thì link cũng như nhau.
+    Lỗi mạng hay sheet không cho tải: trả về {} và chữ vẫn hiện bình thường, chỉ mất link.
+    """
+    url = "https://docs.google.com/spreadsheets/d/%s/export?format=zip" % sheet_id
+    req = urllib.request.Request(url, headers={"User-Agent": "pvi-tmdt-dashboard/1.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=120) as r:
+            goi = zipfile.ZipFile(io.BytesIO(r.read()))
+    except Exception as loi:
+        print("   ! Không tải được bản HTML để lấy hyperlink (%s) — chữ vẫn hiện, chỉ mất link." % loi)
+        return {}
+
+    bang = {}
+    for ten in goi.namelist():
+        if not ten.lower().endswith(".html"):
+            continue
+        try:
+            html = goi.read(ten).decode("utf-8", "replace")
+        except Exception:
+            continue
+        for o in re.findall(r"(?is)<td\b[^>]*>(.*?)</td>", html):
+            if "<a " not in o.lower():
+                continue
+            neo = []
+            for dan, chu in re.findall(r'(?is)<a\b[^>]*\bhref="([^"]*)"[^>]*>(.*?)</a>', o):
+                dan = ma_html.unescape(dan).strip()
+                chu = chuan(bo_the(chu))
+                if chu and dan.startswith(("http://", "https://")):
+                    neo.append((chu, dan))
+            if neo:
+                bang.setdefault(chuan(bo_the(o)), neo)
+    print("   %d ô có hyperlink" % len(bang))
+    return bang
+
+
+def gan_lien_ket(o):
+    """Chèn đường dẫn vào chữ theo dạng [chữ](đường dẫn) để trang web dựng thẻ <a>.
+
+    Ô Phòng dán thẳng đường dẫn đầy đủ thì không cần qua đây — trang web tự nhận ra.
+    """
+    chuoi = str(o or "")
+    neo = LIEN_KET.get(chuan(chuoi))
+    if not neo:
+        return chuoi
+    # Thay bằng ô đánh dấu trước, ghép chữ thật sau — tránh trường hợp đường dẫn
+    # vừa chèn lại chứa đúng chữ của cái link kế tiếp và bị thay chồng lên nhau.
+    kho = []
+    for chu, dan in neo:
+        mau = r"\s+".join(re.escape(t) for t in chu.split(" "))
+        moi, so = re.subn(mau, "\x00%d\x00" % len(kho), chuoi, count=1)
+        if so:
+            chuoi = moi
+            # ( ) trong đường dẫn sẽ phá cú pháp [chữ](đường dẫn) -> mã hoá lại
+            kho.append("[%s](%s)" % (chu, dan.replace("(", "%28").replace(")", "%29")))
+    for i, v in enumerate(kho):
+        chuoi = chuoi.replace("\x00%d\x00" % i, v)
+    return chuoi
 
 
 def dinh_vi_cot(hang_tieu_de, tu_khoa):
@@ -344,6 +435,9 @@ def doc_file_nhap_lieu(duong_dan_html=None):
         print("   ! Không đọc được file nhập liệu (%s) — giữ nguyên dữ liệu lần trước." % loi)
         return "BO_QUA"
 
+    global LIEN_KET
+    LIEN_KET = tai_lien_ket(NHAP_LIEU_ID)
+
     def ma_ky_hop_le(o):
         o = str(o or "").strip()
         return o if re.fullmatch(r"\d{4}-\d{2}", o) else None
@@ -358,7 +452,7 @@ def doc_file_nhap_lieu(duong_dan_html=None):
                 "range": str(lay_o(hang, 2)).strip(),
                 "chot": str(lay_o(hang, 3)).strip(),
                 "mucTieuNam": so_thuc(lay_o(hang, 4)) or 100,
-                "luuY": str(lay_o(hang, 5)).strip(),
+                "luuY": gan_lien_ket(lay_o(hang, 5)).strip(),
             }
     if not thong_tin:
         print("   ! Tab 'KỲ BÁO CÁO' chưa có dòng nào hợp lệ (cột Mã kỳ dạng 2026-08) — bỏ qua.")
@@ -423,10 +517,10 @@ def doc_file_nhap_lieu(duong_dan_html=None):
             mk = ma_ky_hop_le(o_theo_ten(hang, ckk, "ky"))
             muc = MA_MUC_DO.get(str(o_theo_ten(hang, ckk, "muc")).strip().lower())
             ten = str(o_theo_ten(hang, ckk, "duAn")).strip()
-            kho = str(o_theo_ten(hang, ckk, "kho")).strip()
+            kho = gan_lien_ket(o_theo_ten(hang, ckk, "kho")).strip()
             if mk and muc and ten and kho:
                 lay_ky(mk)["khoKhan"].append({"muc": muc, "duAn": ten, "kho": kho,
-                                              "hoTro": str(o_theo_ten(hang, ckk, "hoTro")).strip()})
+                                              "hoTro": gan_lien_ket(o_theo_ten(hang, ckk, "hoTro")).strip()})
     except Exception:
         pass
 
@@ -440,7 +534,7 @@ def doc_file_nhap_lieu(duong_dan_html=None):
             mk = ma_ky_hop_le(o_theo_ten(hang, cm, "ky"))
             ngay = str(o_theo_ten(hang, cm, "ngay")).strip()
             ten = str(o_theo_ten(hang, cm, "duAn")).strip()
-            nd = str(o_theo_ten(hang, cm, "moc")).strip()
+            nd = gan_lien_ket(o_theo_ten(hang, cm, "moc")).strip()
             if not (mk and ngay and nd):
                 continue
             m = {"ngay": ngay, "duAn": ten, "moc": nd,

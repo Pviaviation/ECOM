@@ -1795,6 +1795,32 @@
       display: inline-block
     }
 
+    /* Đường dẫn Phòng chèn từ file nhập liệu, nằm lẫn trong câu chữ */
+    a.lnk-in {
+      color: var(--c-blue);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      text-decoration-thickness: 1px;
+      word-break: break-word
+    }
+
+    a.lnk-in::after {
+      content: " ↗";
+      font-size: .85em;
+      text-decoration: none;
+      display: inline-block
+    }
+
+    a.lnk-in:hover {
+      text-decoration-thickness: 2px
+    }
+
+    /* trên nền xanh navy (ô xám cảnh báo nằm trong thẻ tối) vẫn phải đọc được */
+    .note a.lnk-in {
+      color: var(--c-blue)
+    }
+
     /* ============ TABLES ============ */
     .tbl-wrap {
       overflow-x: auto;
@@ -3737,6 +3763,44 @@
     }
     function fullDong(ty) { return nfmt(Math.round(ty * 1e9)) + 'đ'; }
     function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+    /* Chữ có kèm đường dẫn -> HTML có thẻ <a>. Nhận HAI cách Phòng nhập trên Google Sheet:
+         1. Bôi đen chữ rồi Ctrl+K (chèn hyperlink) — Action chuyển thành dạng [chữ](đường dẫn)
+         2. Dán thẳng đường dẫn đầy đủ vào ô, vd: https://...
+       Mọi thứ đều escape trước, chỉ nhận http/https để không dính javascript: và bạn bè. */
+    const RE_LINK_MD = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+    const RE_LINK_TRAN = /(^|[\s(])(https?:\/\/[^\s<>"']+)/g;
+    function urlAnToan(u) {
+      try { const p = new URL(u); return (p.protocol === 'http:' || p.protocol === 'https:') ? p.href : null; }
+      catch (e) { return null; }
+    }
+    function neo(url, chu) {
+      const an = urlAnToan(url);
+      if (!an) return esc(chu);
+      return '<a class="lnk-in" href="' + esc(an) + '" target="_blank" rel="noopener noreferrer">' + esc(chu) + '</a>';
+    }
+    function escLink(s) {
+      const goc = String(s == null ? '' : s);
+      let ra = '', cuoi = 0;
+      // vòng 1: dạng [chữ](đường dẫn)
+      goc.replace(RE_LINK_MD, (khop, chu, url, vt) => {
+        ra += tuDongNeo(goc.slice(cuoi, vt)) + neo(url, chu);
+        cuoi = vt + khop.length;
+        return khop;
+      });
+      return ra + tuDongNeo(goc.slice(cuoi));
+    }
+    /* vòng 2: đường dẫn trần nằm lẫn trong chữ */
+    function tuDongNeo(s) {
+      let ra = '', cuoi = 0;
+      s.replace(RE_LINK_TRAN, (khop, dau, url, vt) => {
+        // dấu câu cuối câu không thuộc đường dẫn
+        const cat = url.replace(/[.,;:!?)\]}]+$/, '');
+        ra += esc(s.slice(cuoi, vt)) + esc(dau) + neo(cat, cat);
+        cuoi = vt + dau.length + cat.length;
+        return khop;
+      });
+      return ra + esc(s.slice(cuoi));
+    }
     /* doanh thu "hiển thị" của 1 entry trong kỳ (tháng: dt/luyKe; tuần: dtTuan) */
     function entryRevenue(e) {
       if (isMonth()) return e.d.luyKe;
@@ -3926,7 +3990,7 @@
       $('#hotspots').innerHTML = (P().khoKhan || []).map(h =>
         '<div class="hotrow reveal">' +
         '<span class="lvl ' + (h.muc === 'gap' ? 'gap' : 'watch') + '"><span class="pulse"></span>' + (h.muc === 'gap' ? 'GẤP' : 'THEO DÕI') + '</span>' +
-        '<div class="bd"><div class="p">' + esc(h.duAn) + '</div><div class="w">' + esc(h.kho) + '</div><div class="s">' + esc(h.hoTro) + '</div></div>' +
+        '<div class="bd"><div class="p">' + esc(h.duAn) + '</div><div class="w">' + escLink(h.kho) + '</div><div class="s">' + escLink(h.hoTro) + '</div></div>' +
         '</div>').join('');
     }
 
@@ -3936,7 +4000,7 @@
         const chip = m.st === 'done' ? '<span class="tl-chip ok">✓ Hoàn thành</span>'
           : m.st === 'truot' ? '<span class="tl-chip late">✕ Trượt hạn</span>'
             : m.st === 'qua' ? '<span class="tl-chip due">Đã đến hạn · chờ cập nhật</span>' : '';
-        return '<div class="tl-item' + (m.hot ? ' hot' : '') + (m.st === 'done' ? ' done' : '') + (m.st === 'truot' ? ' late' : '') + '"><div class="d num">' + esc(m.ngay) + '</div><div class="p">' + esc(m.duAn) + '</div><div class="m">' + esc(m.moc) + '</div>' + chip + '</div>';
+        return '<div class="tl-item' + (m.hot ? ' hot' : '') + (m.st === 'done' ? ' done' : '') + (m.st === 'truot' ? ' late' : '') + '"><div class="d num">' + esc(m.ngay) + '</div><div class="p">' + esc(m.duAn) + '</div><div class="m">' + escLink(m.moc) + '</div>' + chip + '</div>';
       }).join('');
     }
 
@@ -4003,13 +4067,16 @@
         '<tfoot><tr><td colspan="8" style="font-size:13px;color:var(--muted);font-weight:400;padding:10px 12px">' +
         'Màu cột % KPI so với tiến độ đều theo thời gian (' + nfmt(mo / 12 * 100, 0) + '% sau ' + mo + '/12 tháng): ' +
         '<b style="color:var(--c-green)">xanh</b> = đạt tiến độ · <b style="color:var(--c-amber)">vàng</b> = chậm · <b style="color:var(--c-redneg)">đỏ</b> = chậm nhiều.' +
-        (P().luuY ? ' <br>Lưu ý: ' + esc(P().luuY) : '') + '</td></tr></tfoot>';
+        (P().luuY ? ' <br>Lưu ý: ' + escLink(P().luuY) : '') + '</td></tr></tfoot>';
     }
 
     /* So sánh tỷ lệ bồi thường giữa các dự án có số liệu */
     function buildBtBars() {
       const el = $('#bt-bars'); if (!el) return;
-      const list = entries().filter(e => e.d.tyLeBT != null || e.d.tyLeBT6T != null)
+      /* TripCARE đứng ngoài bảng so sánh: số vụ bồi thường còn quá ít nên tỷ lệ
+         chưa phản ánh đúng rủi ro, để chung sẽ làm lệch cách đọc biểu đồ. */
+      const list = entries().filter(e => e.id !== 'tripcare')
+        .filter(e => e.d.tyLeBT != null || e.d.tyLeBT6T != null)
         .map(e => ({ ten: e.m.ten, v: (e.d.tyLeBT != null ? e.d.tyLeBT : e.d.tyLeBT6T), dt: e.d.luyKe, bt: e.d.boiThuong, vu: e.d.soVuBT }))
         .sort((a, b) => b.v - a.v);
       if (!list.length) { el.closest('.sec').style.display = 'none'; return; }
@@ -4025,7 +4092,7 @@
           '<span class="bar" style="position:relative"><i data-w="' + Math.min(100, r.v / max * 100) + '" style="background:' + col + '"></i>' +
           '<span style="position:absolute;left:' + (100 / max * 100) + '%;top:-2px;bottom:-2px;width:2px;background:var(--c-redneg);opacity:.55"></span></span>' +
           '<span class="v num" style="color:' + col + '">' + nfmt(r.v, 2) + '%</span></div>';
-      }).join('') + '<div style="font-size:12.5px;color:var(--muted);margin-top:10px">Vạch đỏ = ngưỡng hòa 100% (bồi thường bằng doanh thu). Dự án không có vạch màu là chưa phát sinh bồi thường trong kỳ.</div>';
+      }).join('') + '<div style="font-size:12.5px;color:var(--muted);margin-top:10px">Vạch đỏ = ngưỡng hòa 100% (bồi thường bằng doanh thu). Dự án không có vạch màu là chưa phát sinh bồi thường trong kỳ. TripCARE không đưa vào so sánh do số vụ bồi thường còn quá ít.</div>';
     }
 
     function buildNpuvLine() {
@@ -4193,14 +4260,14 @@
       if (d.moc) oXam.push.apply(oXam, d.moc);
       if (oXam.length)
         body += '<div class="note' + (d.trangThai === 'canh-bao' ? ' warn' : '') + '">' +
-          oXam.map(x => '<div class="note-l">' + esc(x) + '</div>').join('') + '</div>';
+          oXam.map(x => '<div class="note-l">' + escLink(x) + '</div>').join('') + '</div>';
       if (d.congNo) body += '<div class="note warn"><b>' +
         esc(d.congNo.tieuDe || ('Công nợ ' + d.congNo.doiTac + ' quá hạn')) + ': ' + nfmt(d.congNo.quaHan) + 'đ</b>' +
         (d.congNo.kyThuoc ? ' (' + esc(d.congNo.kyThuoc) + ')' : '') +
         (d.congNo.trangThai ? '<br>' + esc(d.congNo.trangThai) : '') + '</div>';
       if (d.danhSach) body += '<h4>Danh mục</h4><ul>' + d.danhSach.map(x => '<li><b>' + esc(x.ten) + '</b> — ' + esc(x.trangThai) + ' <span class="stars">' + '★'.repeat(x.uuTien) + '</span></li>').join('') + '</ul>';
-      if (d.ketQua) body += '<h4>' + (isMonth() ? 'Kết quả / tiến độ' : 'Kết quả trong tuần') + '</h4><ul>' + d.ketQua.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
-      if (d.keHoach) body += '<h4>Kế hoạch tiếp theo</h4><ul>' + d.keHoach.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
+      if (d.ketQua) body += '<h4>' + (isMonth() ? 'Kết quả / tiến độ' : 'Kết quả trong tuần') + '</h4><ul>' + d.ketQua.map(x => '<li>' + escLink(x) + '</li>').join('') + '</ul>';
+      if (d.keHoach) body += '<h4>Kế hoạch tiếp theo</h4><ul>' + d.keHoach.map(x => '<li>' + escLink(x) + '</li>').join('') + '</ul>';
       if (m.link) body += '<a class="lnk" href="' + m.link + '" target="_blank" rel="noopener">Xem báo cáo chi tiết ↗</a>';
 
       return '<div class="dcard-h"><div><div class="t">' + esc(m.ten) + '</div><div class="pt">' + esc(m.doiTac) + ' · <span class="stars">' + '★'.repeat(m.uuTien) + '</span></div></div>' +
