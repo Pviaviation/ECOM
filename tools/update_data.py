@@ -283,19 +283,46 @@ def gom_wbooking():
 # ------------------------------------- kỳ báo cáo do cả Phòng tự nhập liệu
 
 def so_thuc(o):
-    """'2,05' hoặc '2.05' -> 2.05 · ô trống -> None (KHÔNG quy về 0)."""
-    chuoi = str(o or "").strip().replace(" ", "")
-    if not chuoi:
+    """Ô nhập số -> float · ô trống hoặc không đọc được -> None (KHÔNG quy về 0).
+
+    Chấp nhận cách gõ thật của Phòng, kể cả khi kèm đơn vị:
+        '2,05' · '2.05' · '1,86 tỷ' · '996 tr' · '53%' · '1.234,5' · '24.500 đ'
+    Mọi ký tự không phải chữ số / dấu phân cách đều bị bỏ trước khi đọc, nên
+    thêm đơn vị vào ô không còn làm mất số như trước.
+    """
+    chuoi = re.sub(r"[^\d,.\-]", "", str(o or ""))
+    if not re.search(r"\d", chuoi):
         return None
-    chuoi = chuoi.replace("%", "")
-    if chuoi.count(",") == 1 and chuoi.count(".") == 0:
-        chuoi = chuoi.replace(",", ".")
-    else:
-        chuoi = chuoi.replace(",", "")
+    co_cham, co_phay = "." in chuoi, "," in chuoi
+    if co_cham and co_phay:
+        # có cả hai: dấu đứng SAU là dấu thập phân, dấu kia là ngăn nghìn
+        if chuoi.rfind(",") > chuoi.rfind("."):
+            chuoi = chuoi.replace(".", "").replace(",", ".")
+        else:
+            chuoi = chuoi.replace(",", "")
+    elif co_phay:
+        # một dấu phẩy là thập phân kiểu Việt (14,8); nhiều dấu là ngăn nghìn
+        chuoi = chuoi.replace(",", "") if chuoi.count(",") > 1 else chuoi.replace(",", ".")
+    elif chuoi.count(".") > 1:
+        chuoi = chuoi.replace(".", "")       # 1.234.567 -> ngăn nghìn
     try:
         return float(chuoi)
     except ValueError:
         return None
+
+
+def so_thuc_canh_bao(o, ten_cot, ma_du_an):
+    """Như so_thuc nhưng kêu lên khi ô CÓ chữ mà không đọc ra số.
+
+    Trước đây ô gõ '1,86 tỷ' bị bỏ qua lặng lẽ: dashboard giữ nguyên số cũ và
+    không ai biết là số mới đã không lên. Thà ồn còn hơn sai số của lãnh đạo.
+    """
+    tri = so_thuc(o)
+    goc = str(o or "").strip()
+    if tri is None and goc and goc.lower() not in ("(tự động)", "n/a", "-", "chưa có"):
+        print("::warning::Ô '%s' của dự án '%s' ghi %r nhưng không đọc ra số — "
+              "dashboard sẽ giữ số cũ. Sửa lại thành dạng số, vd 1,86" % (ten_cot, ma_du_an, goc))
+    return tri
 
 
 def cac_dong(o):
@@ -498,10 +525,10 @@ def doc_file_nhap_lieu(duong_dan_html=None):
             continue
         muc = {
             "trangThai": MA_TRANG_THAI.get(str(o_theo_ten(hang, cot, "trangThai")).strip().lower()),
-            "dt": so_thuc(o_theo_ten(hang, cot, "dt")),
-            "luyKe": so_thuc(o_theo_ten(hang, cot, "luyKe")),
-            "phanTramKPI": so_thuc(o_theo_ten(hang, cot, "phanTramKPI")),
-            "cungKy2025": so_thuc(o_theo_ten(hang, cot, "cungKy2025")),
+            "dt": so_thuc_canh_bao(o_theo_ten(hang, cot, "dt"), "DT tháng", ma),
+            "luyKe": so_thuc_canh_bao(o_theo_ten(hang, cot, "luyKe"), "Lũy kế", ma),
+            "phanTramKPI": so_thuc_canh_bao(o_theo_ten(hang, cot, "phanTramKPI"), "% KPI năm", ma),
+            "cungKy2025": so_thuc_canh_bao(o_theo_ten(hang, cot, "cungKy2025"), "Cùng kỳ 2025", ma),
             "ghiChu": cac_dong(o_theo_ten(hang, cot, "ghiChu")),
             "ketQua": cac_dong(o_theo_ten(hang, cot, "ketQua")),
             "keHoach": cac_dong(o_theo_ten(hang, cot, "keHoach")),
